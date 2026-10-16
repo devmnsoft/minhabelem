@@ -1,16 +1,32 @@
 using System.Globalization;
 using System.Threading.RateLimiting;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Localization;
+using Microsoft.AspNetCore.Localization.Routing;
+using Microsoft.Extensions.Localization;
 using MinhaBelem.Core.Security;
 using MinhaBelem.Infrastructure.Identity;
 using MinhaBelem.Infrastructure.MySql;
+using MinhaBelem.Web.Resources;
 using MinhaBelem.Web.Security;
-using Microsoft.AspNetCore.DataProtection;
 
 var builder = WebApplication.CreateBuilder(args);
 CultureInfo.DefaultThreadCurrentCulture = CultureInfo.GetCultureInfo("pt-BR");
 CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.GetCultureInfo("pt-BR");
-builder.Services.AddControllersWithViews(o => o.Filters.Add(new Microsoft.AspNetCore.Mvc.AutoValidateAntiforgeryTokenAttribute()));
+
+builder.Services.AddLocalization(o => o.ResourcesPath = "Resources");
+builder.Services.AddSingleton<IStringLocalizerFactory, MinhaBelemStringLocalizerFactory>();
+builder.Services.AddTransient(typeof(IStringLocalizer<>), typeof(StringLocalizer<>));
+builder.Services.AddSingleton<IStringLocalizer, MinhaBelemStringLocalizer>();
+builder.Services.AddSingleton<IStringLocalizer<SharedResource>, MinhaBelemStringLocalizer>();
+
+builder.Services.AddControllersWithViews(o => o.Filters.Add(new Microsoft.AspNetCore.Mvc.AutoValidateAntiforgeryTokenAttribute()))
+    .AddViewLocalization()
+    .AddDataAnnotationsLocalization(o => {
+        o.DataAnnotationLocalizerProvider = (_, factory) => factory.Create(typeof(SharedResource));
+    });
+
 builder.Services.AddMinhaBelemInfrastructure(builder.Configuration);
 var keyProtection = builder.Services.AddDataProtection().SetApplicationName("MinhaBelem");
 if (builder.Configuration["DataProtection:KeysPath"] is { Length: > 0 } keysPath)
@@ -64,8 +80,10 @@ builder.Services.AddRateLimiter(o =>
         ctx.Connection.RemoteIpAddress?.ToString() ?? "unknown", _ => new FixedWindowRateLimiterOptions { PermitLimit = limit, Window = TimeSpan.FromMinutes(1), QueueLimit = 0 }));
     Add("public", 120); Add("login", 12); Add("submission", 3);
 });
+
 var app = builder.Build();
 app.UseForwardedHeaders();
+
 // Operacao explicita. Nunca aplicar SQL no startup ou publish normal.
 if (args.Contains("--initialize-database"))
 {
@@ -87,20 +105,78 @@ if (args.Contains("--import-legacy"))
     await scope.ServiceProvider.GetRequiredService<LegacyDataImporter>().ImportAsync();
     return;
 }
+
 if (!app.Environment.IsDevelopment()) { app.UseExceptionHandler("/Home/Error"); app.UseHsts(); }
+
+var supportedCultures = SupportedCultures.All.Select(c => new CultureInfo(c)).ToList();
+var locOptions = new RequestLocalizationOptions
+{
+    DefaultRequestCulture = new RequestCulture(SupportedCultures.Portuguese),
+    SupportedCultures = supportedCultures,
+    SupportedUICultures = supportedCultures
+};
+locOptions.RequestCultureProviders.Insert(0, new CookieRequestCultureProvider { CookieName = ".AspNetCore.Culture" });
+app.UseRequestLocalization(locOptions);
+
+// Intercepta rotas com prefixo de cultura e ajusta a cultura na requisicao
+app.Use(async (ctx, next) =>
+{
+    var segments = ctx.Request.Path.Value?.Split('/', StringSplitOptions.RemoveEmptyEntries);
+    if (segments is { Length: > 0 } && SupportedCultures.All.Contains(segments[0], StringComparer.OrdinalIgnoreCase))
+    {
+        var cult = SupportedCultures.Normalize(segments[0]);
+        var ci = new CultureInfo(cult);
+        CultureInfo.CurrentCulture = ci;
+        CultureInfo.CurrentUICulture = ci;
+    }
+    await next();
+});
+
 app.Use(async (ctx, next) =>
 {
     ctx.Response.Headers["X-Content-Type-Options"] = "nosniff";
     ctx.Response.Headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
     ctx.Response.Headers["X-Frame-Options"] = "DENY";
-    ctx.Response.Headers["Content-Security-Policy"] = "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: https:; connect-src 'self'; frame-ancestors 'none'; form-action 'self'; base-uri 'self'";
+    ctx.Response.Headers["Content-Security-Policy"] = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https:; connect-src 'self' https:; frame-ancestors 'none'; form-action 'self'; base-uri 'self'";
     if (ctx.Request.Path.StartsWithSegments("/conta") || ctx.Request.Path.StartsWithSegments("/editorial") || ctx.Request.Path.StartsWithSegments("/admin")) ctx.Response.Headers.CacheControl = "no-store";
     await next();
 });
-app.UseHttpsRedirection(); app.UseStaticFiles(); app.UseRouting();
-app.UseRateLimiter(); app.UseAuthentication(); app.UseAuthorization();
+
+app.UseHttpsRedirection();
+app.UseStaticFiles();
+app.UseRouting();
+
+app.UseRateLimiter();
+app.UseAuthentication();
+app.UseAuthorization();
+
 app.UseWhen(ctx => HttpMethods.IsGet(ctx.Request.Method), branch => branch.UseStatusCodePagesWithReExecute("/Home/Status", "?code={0}"));
+
+app.MapGet("/idioma/mudar", (string cultura, string? returnUrl, HttpContext ctx) =>
+{
+    var normalized = SupportedCultures.Normalize(cultura);
+    ctx.Response.Cookies.Append(
+        CookieRequestCultureProvider.DefaultCookieName,
+        CookieRequestCultureProvider.MakeCookieValue(new RequestCulture(normalized)),
+        new CookieOptions { Expires = DateTimeOffset.UtcNow.AddYears(1), IsEssential = true, SameSite = SameSiteMode.Strict, Secure = true });
+
+    if (!string.IsNullOrWhiteSpace(returnUrl) && Uri.IsWellFormedUriString(returnUrl, UriKind.Relative))
+    {
+        var trimmed = returnUrl.TrimStart('/');
+        var parts = trimmed.Split('/', 2);
+        if (parts.Length > 0 && SupportedCultures.All.Contains(parts[0], StringComparer.OrdinalIgnoreCase))
+        {
+            returnUrl = "/" + normalized + (parts.Length > 1 ? "/" + parts[1] : "");
+        }
+        return Results.LocalRedirect(returnUrl);
+    }
+    return Results.LocalRedirect("/" + normalized);
+});
+
 app.MapHealthChecks("/health");
+app.MapControllerRoute("localized", "{culture:regex(^(pt-BR|en|fr|es|ru|zh-Hans|ja)$)}/{controller=Home}/{action=Index}/{id?}").RequireRateLimiting("public");
 app.MapControllerRoute("default", "{controller=Home}/{action=Index}/{id?}").RequireRateLimiting("public");
+
 app.Run();
 public partial class Program { }
+

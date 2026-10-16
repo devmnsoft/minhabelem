@@ -59,16 +59,16 @@ public sealed class PlaceRepository(MySqlDataSource dataSource) : IPlaceReposito
         catch (JsonException) { return Array.Empty<OpeningHours>(); }
     }
 
-    private async Task<List<Place>> QueryAsync(string sql, object parameters, CancellationToken ct)
+    private async Task<List<Place>> QueryAsync(string sql, object parameters, CancellationToken ct, string? culture = null)
     {
         await using var connection = await dataSource.OpenConnectionAsync(ct);
         var rows = (await connection.QueryAsync<PlaceRow>(new CommandDefinition(sql, parameters, cancellationToken: ct))).AsList();
         var places = rows.Select(Map).ToList();
-        if (places.Count > 0) await LoadChildrenAsync(connection, places, ct);
+        if (places.Count > 0) await LoadChildrenAsync(connection, places, culture, ct);
         return places;
     }
 
-    private static async Task LoadChildrenAsync(MySqlConnector.MySqlConnection connection, List<Place> places, CancellationToken ct)
+    private static async Task LoadChildrenAsync(MySqlConnector.MySqlConnection connection, List<Place> places, string? culture, CancellationToken ct)
     {
         var ids = places.Select(p => p.Id).ToArray();
         var audiences = await connection.QueryAsync<(long PlaceId, string Audience)>(new CommandDefinition(
@@ -82,6 +82,30 @@ public sealed class PlaceRepository(MySqlDataSource dataSource) : IPlaceReposito
         var byFeature = features.Where(f => Enum.TryParse<AccessibilityFeature>(f.Feature, true, out _))
             .GroupBy(f => f.PlaceId)
             .ToDictionary(g => g.Key, g => (IReadOnlyList<AccessibilityFeature>)g.Select(x => Enum.Parse<AccessibilityFeature>(x.Feature, true)).ToArray());
+
+        if (!string.IsNullOrWhiteSpace(culture) && !culture.StartsWith("pt", StringComparison.OrdinalIgnoreCase))
+        {
+            var targetLang = culture.Trim();
+            var langPrefix = culture.Split('-')[0] + "%";
+            var translations = (await connection.QueryAsync<PlaceTranslation>(new CommandDefinition("""
+                SELECT place_id AS PlaceId, target_language AS TargetLanguage,
+                       name AS Name, editorial_note AS EditorialNote, cultural_notes AS CulturalNotes
+                FROM mb_place_translations
+                WHERE place_id IN @ids AND (target_language = @targetLang OR target_language LIKE @langPrefix) AND review_status = 'Approved'
+                ORDER BY version DESC
+                """, new { ids, targetLang, langPrefix }, cancellationToken: ct))).ToList();
+
+            var byPlace = translations.GroupBy(t => t.PlaceId).ToDictionary(g => g.Key, g => g.First());
+            foreach (var place in places)
+            {
+                if (byPlace.TryGetValue(place.Id, out var trans))
+                {
+                    place.LocalizedName = trans.Name;
+                    place.LocalizedEditorialNote = trans.EditorialNote;
+                    place.CulturalNotes = trans.CulturalNotes;
+                }
+            }
+        }
 
         foreach (var place in places)
         {
@@ -125,7 +149,7 @@ public sealed class PlaceRepository(MySqlDataSource dataSource) : IPlaceReposito
         {
             var term = query.Search.Trim();
             if (term.Length > 120) term = term[..120];
-            clauses.Add("(name LIKE @search OR formatted_address LIKE @search)");
+            clauses.Add("(name LIKE @search OR formatted_address LIKE @search OR editorial_note LIKE @search OR EXISTS (SELECT 1 FROM mb_place_translations pt WHERE pt.place_id = mb_places.id AND (pt.name LIKE @search OR pt.editorial_note LIKE @search)))");
             parameters.Add("search", $"%{term.Replace("%", "\\%", StringComparison.Ordinal)}%");
         }
         if (query.Audience is not null)
@@ -163,7 +187,7 @@ public sealed class PlaceRepository(MySqlDataSource dataSource) : IPlaceReposito
         parameters.Add("offset", (Math.Max(1, query.Page) - 1) * Math.Clamp(query.PageSize, 1, 60));
 
         var sql = $"{Select} WHERE {string.Join(" AND ", clauses)} ORDER BY {order} LIMIT @limit OFFSET @offset";
-        return await QueryAsync(sql, parameters, ct);
+        return await QueryAsync(sql, parameters, ct, query.Culture);
     }
 
     public async Task<long> UpsertAsync(Place place, CancellationToken ct)

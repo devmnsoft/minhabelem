@@ -111,11 +111,14 @@ public static class InfrastructureServiceCollectionExtensions
         services.AddScoped<ICommunityRepository, CommunityRepository>();
         services.AddScoped<IAdvertiserRepository, AdvertiserRepository>();
         services.AddScoped<IDashboardRepository, DashboardRepository>();
+        services.AddScoped<ITranslationRepository, TranslationRepository>();
+        services.AddScoped<ITouristRepository, TouristRepository>();
 
         services.AddSingleton(sp => sp.GetRequiredService<IOptions<AiOptions>>().Value);
         services.AddScoped<AiRunLogger>();
         services.AddSingleton<IAiClientResolver, AiClientResolver>();
         services.AddScoped<IAiAnalysisService, AiAnalysisService>();
+        services.AddScoped<IContentTranslationService, ContentTranslationService>();
 
         services.AddIdentityCore<ApplicationUser>()
             .AddRoles<IdentityRole<long>>()

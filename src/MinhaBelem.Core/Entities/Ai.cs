@@ -12,7 +12,8 @@ public enum AiTask
     DuplicateCheck,
     FreshnessCheck,
     SafetyCheck,
-    PublishPackage
+    PublishPackage,
+    Translate
 }
 
 /// <summary>Registro obrigatório de toda chamada de IA: modelo, versão, custo e resultado.</summary>

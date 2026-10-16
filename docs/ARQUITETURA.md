@@ -1,40 +1,49 @@
-# Arquitetura integrada — Sprints 03 e 03B
+# Arquitetura integrada — Sprints 03, 03B e 04
 
-`MinhaBelem.Web → MinhaBelem.Infrastructure → MinhaBelem.Core`. A Web usa os contratos Core; Infrastructure fornece MySQL/Dapper, Identity stores, conectores, IA, Places e workers. `AddMinhaBelemInfrastructure` é o ponto único de composição. Serviços Web legados foram removidos; tabelas antigas permanecem para importação explícita e preservação de dados.
+`MinhaBelem.Web → MinhaBelem.Infrastructure → MinhaBelem.Core`. A Web usa os contratos Core; Infrastructure fornece MySQL/Dapper, Identity stores, conectores, IA, Places, Internacionalização e workers. `AddMinhaBelemInfrastructure` é o ponto único de composição. Serviços Web legados foram removidos; tabelas antigas permanecem para importação explícita e preservação de dados.
 
 ```mermaid
-flowchart LR
-    A[Fonte aprovada] --> B[Worker e conector autorizado]
-    B --> C[Snapshot, deduplicação e checkpoint MySQL]
-    C --> D[Gateway IA e fila editorial]
-    D --> E[Editor com MFA]
-    E --> F[Conferência, edição e aprovação]
-    F --> G[Publicação, revisão e auditoria]
-    G --> H[Portal, agenda e busca]
-    B --> I[Proposta de alteração da fonte]
-    I --> E
+flowchart TD
+    A[Fonte Aprovada / Dados Turísticos] --> B[Worker / Ingestão / Places]
+    B --> C[MySQL 8 utf8mb4: mb_content / mb_places]
+    C --> D[ContentTranslationService: Groq / Gemini / DeepSeek]
+    D --> E[Fila de Moderação Humana: mb_content_translations]
+    E --> F{Revisão Editorial?}
+    F -- Aprovada --> G[Publicação Multilíngue Oficial]
+    F -- Rejeitada --> H[Ajuste / Retradução]
+    G --> I[Portal MinhaBelém: 7 Idiomas]
+    I --> J[Explore Belém: Roteiros 1-5 dias]
+    I --> K[Glossário Cultural Amazônico]
+    I --> L[Busca e Agenda Multilíngue]
 ```
 
-## Persistência e concorrência
+## Persistência e Concorrência
 
 Um `MySqlDataSource` com pool limitado atende a aplicação. Sessões MySQL usam UTC; a interface converte para America/Belém. Importação de candidato, revisão e auditoria usam transações. Edições verificam o número de revisão para impedir sobrescrita concorrente. Mudanças da fonte criam propostas comparáveis, sem sobrescrever publicações. Recorrências têm identificador por ocorrência.
 
-O SQL canônico é embarcado sem cópia divergente. O migrador explícito usa lock MySQL e checksum por seção. DDL MySQL tem commit implícito: não se promete rollback transacional do esquema inteiro.
+O SQL canônico é embarcado sem cópia divergente em `MINHABELEM.SQL`. O migrador explícito usa lock MySQL e checksum SHA256 por seção (`MINHABELEM`, `003_operacao`, `004_descoberta`, `005_localidades`, `006_midia`, `007_relacionamentos`, `008_internacionalizacao_turismo`).
 
-## Coleta e integrações
+## Internacionalização e Localização (Sprint 04)
 
-Há uma instância registrada do coletor e um lock distribuído MySQL por ciclo. Fontes usam escopos independentes, paralelismo limitado, agendamento persistido, cotas, checkpoint, ETag/Last-Modified, retries transitórios limitados e backoff de até 24 horas. O ciclo padrão é dez minutos; frequência e cota da fonte prevalecem. Reiniciar o processo retoma candidatos pendentes. O coletor nunca publica.
+1. **7 Idiomas Nativos Suportados:** `pt-BR` (Português - Padrão Editorial), `en` (Inglês), `fr` (Francês), `es` (Espanhol), `ru` (Russo com suporte cirílico completo), `zh-Hans` (Chinês Simplificado com fontes CJK) e `ja` (Japonês com Kanji/Kana).
+2. **Resolução de Cultura:**
+   * Rotas localizadas opcionais: `/{culture}/...` (ex: `/en/guia`, `/fr/agenda`, `/ja/explore`).
+   * Cookie seguro persistente: `mb_culture` gerado no endpoint `/idioma/mudar`.
+   * Cabeçalho de negociação HTTP: `Accept-Language`.
+3. **Catálogo Unificado e Resx:** Paridade estrita de 100% de chaves em todos os idiomas, validada continuamente por `LocalizationCatalog.VerifyCompleteness()`.
+4. **SEO Multilíngue:** Canonical URLs, tags de cabeçalho `xhtml:link` com atributos `hreflang` para os 7 idiomas mais `x-default`, e `/sitemap.xml` estruturado.
+5. **Busca Multilíngue:** Consultas Dapper com busca inteligente em tabelas de tradução (`mb_content_translations` e `mb_place_translations`) sem quebrar a indexação original.
 
-RSS/Atom, iCalendar, JSON-LD, JSON personalizado/governamental, pesquisa autorizada e APIs sociais usam o mesmo registro de conectores. `Html` lê Event JSON-LD, sem scraping genérico; `Json` é compatibilidade com JSON personalizado. APIs sociais aguardam credenciais e escopos reais.
+## Inteligência de Tradução e Preservação Cultural
 
-Groq, Gemini e DeepSeek usam o gateway existente com fallback limitado e rastreio de modelo, tokens, custo estimado e falhas. A IA sugere dados; não recebe autoridade de publicação. Texto externo é entrada não confiável. A triagem local retém determinados padrões de dados sensíveis/menores antes do envio externo.
+* Gateway único com fallback automático entre **Groq**, **Google Gemini** e **DeepSeek**.
+* **Preservação de Expressões Culturais:** Nomes autóctones e expressões paraenses sagradas (*Ver-o-Peso, Círio de Nazaré, Tacacá, Maniçoba, Carimbó, Açaí, Tucupi, Jambu*) são protegidos contra traduções literais impróprias e enriquecidos com notas de contexto cultural para o leitor estrangeiro.
+* O texto original em português nunca é sobrescrito. Cada tradução gera um registro imutável com versionamento, provedor, modelo e status de moderação (`Pending`, `Approved`, `Rejected`).
 
-O guia persiste IDs Places e informações editoriais próprias. Dados Google/fotos são consultados na requisição, com `no-store` e créditos. OCR/vídeo exigem autorização da fonte, licença/crédito por mídia, hosts permitidos e executáveis locais. Bytes de mídia ficam em memória; extração, direitos e ator ficam persistidos.
+## Portal Turístico "Explore Belém"
 
-## Acesso e segurança
+* Módulo dedicado em `/explore` com roteiros completos de 1, 2, 3 e 5 dias.
+* Cada roteiro inclui paradas sequenciais (`mb_tourist_itinerary_stops`), período do dia, duração estimada, dicas de experiência e integração com Google Maps.
+* Orientações práticas verificadas sobre o clima equatorial (chuvas da tarde), segurança (DEATur, Polícia 190, SAMU 192) e acessibilidade motora.
 
-Identity guarda hashes de senha e protege tokens TOTP/recuperação com Data Protection. Permissões exigem prova de MFA na sessão. Suspensão, troca de senha/perfil e revogação invalidam acesso. Permissões customizadas ficam separadas dos seeds e sobrevivem à reexecução SQL.
-
-Saída HTTP usa HTTPS, validação IP/DNS, conexão ao IP público validado e bloqueio de redirects/redes privadas ou reservadas. Credenciais são referências a segredos vinculados ao domínio autorizado. Razor faz escaping, formulários usam antiforgery e SQL usa parâmetros. Rate limiting local por processo precisa de complemento no proxy em múltiplas instâncias.
-
-Consulte [evidências e limites](SPRINT-03-HOMOLOGACAO.md). A arquitetura não substitui homologação externa, revisão de privacidade ou validação do servidor de produção.
+Consulte [evidências e homologação](SPRINT-04-HOMOLOGACAO.md). A arquitetura não substitui homologação externa, revisão jurídica ou validação do servidor de produção.

@@ -32,12 +32,15 @@ public static class Permissions
     public const string AuditRead = "audit.read";
     public const string UserManage = "user.manage";
     public const string SettingsManage = "settings.manage";
+    public const string TranslationRead = "translation.read";
+    public const string TranslationManage = "translation.manage";
 
     public static readonly string[] All =
     [
         DashboardRead, ContentRead, ContentWrite, ContentPublish, ContentDelete,
         CandidateRead, CandidateReview, SourceManage, PlaceManage, SubmissionModerate,
-        AdvertiserManage, AiRun, AuditRead, UserManage, SettingsManage
+        AdvertiserManage, AiRun, AuditRead, UserManage, SettingsManage,
+        TranslationRead, TranslationManage
     ];
 
     public static readonly IReadOnlyDictionary<string, string> Descriptions = new Dictionary<string, string>
@@ -56,7 +59,9 @@ public static class Permissions
         [AiRun] = "Executar análise de inteligência artificial",
         [AuditRead] = "Consultar trilha de auditoria",
         [UserManage] = "Gerenciar usuários, papéis e permissões",
-        [SettingsManage] = "Alterar configurações da plataforma"
+        [SettingsManage] = "Alterar configurações da plataforma",
+        [TranslationRead] = "Ver idiomas, traduções e métricas de internacionalização",
+        [TranslationManage] = "Gerenciar, solicitar IA e aprovar traduções de conteúdo"
     };
 
     public static readonly IReadOnlyDictionary<string, string[]> ByRole = new Dictionary<string, string[]>
@@ -65,11 +70,13 @@ public static class Permissions
         [Roles.Editor] =
         [
             DashboardRead, ContentRead, ContentWrite, ContentPublish,
-            CandidateRead, CandidateReview, SourceManage, AiRun, SubmissionModerate, PlaceManage
+            CandidateRead, CandidateReview, SourceManage, AiRun, SubmissionModerate, PlaceManage,
+            TranslationRead, TranslationManage
         ],
         [Roles.Moderator] =
         [
-            DashboardRead, ContentRead, CandidateRead, CandidateReview, SubmissionModerate, AiRun, PlaceManage
+            DashboardRead, ContentRead, CandidateRead, CandidateReview, SubmissionModerate, AiRun, PlaceManage,
+            TranslationRead
         ],
         [Roles.Advertiser] = [AdvertiserManage]
     };

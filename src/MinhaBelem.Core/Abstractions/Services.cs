@@ -73,3 +73,34 @@ public interface ICurrentUserAccessor
     IReadOnlyList<string> Permissions { get; }
     bool IsInRole(string role);
 }
+
+public sealed record ContentTranslationResult(
+    bool Success,
+    string? Title,
+    string? Summary,
+    string? Body,
+    string? CulturalNotes,
+    string? DetectedSourceLanguage,
+    string Provider,
+    string Model,
+    decimal CostUsd,
+    string? Error);
+
+public sealed record PlaceTranslationResult(
+    bool Success,
+    string? Name,
+    string? EditorialNote,
+    string? CulturalNotes,
+    string? DetectedSourceLanguage,
+    string Provider,
+    string Model,
+    decimal CostUsd,
+    string? Error);
+
+public interface IContentTranslationService
+{
+    Task<ContentTranslationResult> TranslateContentAsync(ContentItem content, string targetLanguage, long? actorId, CancellationToken ct);
+    Task<PlaceTranslationResult> TranslatePlaceAsync(Place place, string targetLanguage, long? actorId, CancellationToken ct);
+    Task<string> DetectLanguageAsync(string text, CancellationToken ct);
+}
+

@@ -46,6 +46,7 @@ public sealed class ContentQuery
     public int Page { get; set; } = 1;
     public int PageSize { get; set; } = 12;
     public ContentSort Sort { get; set; } = ContentSort.Recent;
+    public string? Culture { get; set; }
 }
 
 public enum ContentSort { Recent, Upcoming, Oldest }
@@ -106,6 +107,7 @@ public sealed class PlaceQuery
     public PlaceSort Sort { get; set; } = PlaceSort.Relevance;
     public int Page { get; set; } = 1;
     public int PageSize { get; set; } = 24;
+    public string? Culture { get; set; }
 }
 
 public interface IAuditRepository
@@ -141,3 +143,41 @@ public interface IDashboardRepository
 {
     Task<DashboardSnapshot> BuildAsync(CancellationToken ct);
 }
+
+public sealed record TranslationStats(
+    int TotalContent,
+    int TotalPlaces,
+    int TotalTranslations,
+    int PendingReviews,
+    int ApprovedTranslations,
+    IReadOnlyDictionary<string, int> CountByLanguage);
+
+public interface ITranslationRepository
+{
+    Task<IReadOnlyList<Language>> GetLanguagesAsync(bool onlyEnabled, CancellationToken ct);
+    Task<Language?> GetLanguageAsync(string code, CancellationToken ct);
+    Task<bool> UpdateLanguageAsync(Language language, CancellationToken ct);
+    Task<ContentTranslation?> GetContentTranslationAsync(long contentId, string targetLanguage, CancellationToken ct);
+    Task<IReadOnlyList<ContentTranslation>> GetContentTranslationsAsync(long contentId, CancellationToken ct);
+    Task<long> UpsertContentTranslationAsync(ContentTranslation translation, CancellationToken ct);
+    Task<bool> SetContentTranslationStatusAsync(long id, TranslationReviewStatus status, long? reviewerId, string? notes, CancellationToken ct);
+    Task<PlaceTranslation?> GetPlaceTranslationAsync(long placeId, string targetLanguage, CancellationToken ct);
+    Task<IReadOnlyList<PlaceTranslation>> GetPlaceTranslationsAsync(long placeId, CancellationToken ct);
+    Task<long> UpsertPlaceTranslationAsync(PlaceTranslation translation, CancellationToken ct);
+    Task<bool> SetPlaceTranslationStatusAsync(long id, TranslationReviewStatus status, long? reviewerId, string? notes, CancellationToken ct);
+    Task<IReadOnlyList<CulturalGlossaryItem>> GetCulturalGlossaryAsync(CancellationToken ct);
+    Task<IReadOnlyList<ContentTranslation>> PendingContentTranslationsAsync(int take, CancellationToken ct);
+    Task<IReadOnlyList<PlaceTranslation>> PendingPlaceTranslationsAsync(int take, CancellationToken ct);
+    Task<TranslationStats> GetStatsAsync(CancellationToken ct);
+    Task<IReadOnlyList<ContentItem>> UntranslatedContentAsync(string targetLanguage, int take, CancellationToken ct);
+    Task<IReadOnlyList<Place>> UntranslatedPlacesAsync(string targetLanguage, int take, CancellationToken ct);
+}
+
+public interface ITouristRepository
+{
+    Task<IReadOnlyList<TouristItinerary>> GetItinerariesAsync(CancellationToken ct);
+    Task<TouristItinerary?> GetItineraryBySlugAsync(string slug, CancellationToken ct);
+    Task<IReadOnlyList<TouristItineraryStop>> GetItineraryStopsAsync(long itineraryId, CancellationToken ct);
+    Task<IReadOnlyList<Place>> GetFeaturedPlacesAsync(int take, CancellationToken ct);
+}
+

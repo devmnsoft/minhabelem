@@ -1,0 +1,155 @@
+@model IReadOnlyList<MinhaBelem.Core.Entities.Language>
+@using MinhaBelem.Core.Entities
+@using MinhaBelem.Core.Abstractions
+
+@{
+    ViewData["Title"] = "Gerenciar Idiomas";
+    var stats = ViewData["Stats"] as TranslationStats;
+    var aiRuns = ViewData["AiRuns"] as IReadOnlyList<AiRun> ?? Array.Empty<AiRun>();
+}
+
+<section class="section">
+    <div class="sectionhead">
+        <div>
+            <span class="eyebrow">ADMINISTRAÇÃO MULTILÍNGUE</span>
+            <h1>🌐 Idiomas da Plataforma</h1>
+        </div>
+        <a href="/admin/traducoes" class="button secondary">Fila de Traduções →</a>
+    </div>
+
+    @if (TempData["Notice"] is string notice)
+    {
+        <p class="notice" role="status">@notice</p>
+    }
+
+    @if (stats is not null)
+    {
+        <div class="grid stats-grid" style="margin-bottom: 24px;">
+            <div class="card stat-card">
+                <span class="small">✅ Traduções Aprovadas</span>
+                <h3>@stats.ApprovedTranslations</h3>
+            </div>
+            <div class="card stat-card">
+                <span class="small">🌐 Total de Traduções</span>
+                <h3>@stats.TotalTranslations</h3>
+            </div>
+            <div class="card stat-card">
+                <span class="small">⏳ Pendentes de Revisão</span>
+                <h3>@stats.PendingReviews</h3>
+            </div>
+            <div class="card stat-card">
+                <span class="small">📰 Total de Notícias</span>
+                <h3>@stats.TotalContent</h3>
+            </div>
+        </div>
+    }
+
+    <p>O MinhaBelém suporta 7 idiomas oficiais com o Português brasileiro como idioma editorial de referência.</p>
+
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Código</th>
+                    <th>Nome</th>
+                    <th>Nativo</th>
+                    <th>Bandeira</th>
+                    <th>Revisão Obrigatória</th>
+                    <th>Status</th>
+                    <th>Padrão</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var lang in Model)
+                {
+                    <tr>
+                        <td><code>@lang.Code</code></td>
+                        <td><strong>@lang.Name</strong></td>
+                        <td>@lang.NativeName</td>
+                        <td>@lang.FlagEmoji</td>
+                        <td>@(lang.RequiresHumanApproval ? "Sim (Exige aprovação)" : "Não (Publicação direta)")</td>
+                        <td>
+                            @if (lang.IsEnabled)
+                            {
+                                <span class="badge badge-success">✅ Ativo</span>
+                            }
+                            else
+                            {
+                                <span class="badge badge-muted">Inativo</span>
+                            }
+                        </td>
+                        <td>
+                            @if (lang.IsDefault)
+                            {
+                                <span class="badge badge-primary">★ Padrão</span>
+                            }
+                            else
+                            {
+                                <span>-</span>
+                            }
+                        </td>
+                        <td>
+                            @if (!lang.IsDefault)
+                            {
+                                <form action="/admin/idiomas/@lang.Code/estado" method="post" style="display:inline;">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="enabled" value="@(lang.IsEnabled ? "false" : "true")" />
+                                    <input type="hidden" name="requiresApproval" value="@(lang.RequiresHumanApproval ? "true" : "false")" />
+                                    <button type="submit" class="button small secondary">
+                                        @(lang.IsEnabled ? "Desativar" : "Ativar")
+                                    </button>
+                                </form>
+                            }
+                            else
+                            {
+                                <small class="text-muted">Inalterável</small>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    @if (aiRuns.Count > 0)
+    {
+        <h2 style="margin-top: 36px;">🤖 Histórico de Execuções de IA (Tradução)</h2>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Provedor</th>
+                        <th>Modelo</th>
+                        <th>Tokens</th>
+                        <th>Latência</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var run in aiRuns.Take(10))
+                    {
+                        <tr>
+                            <td>@run.CreatedAt.ToString("dd/MM/yyyy HH:mm:ss")</td>
+                            <td><strong>@run.Provider</strong></td>
+                            <td><code>@run.Model</code></td>
+                            <td>@((run.PromptTokens ?? 0) + (run.CompletionTokens ?? 0))</td>
+                            <td>@(run.LatencyMs)ms</td>
+                            <td>
+                                <span class="badge @(run.Success ? "badge-success" : "badge-rejected")">
+                                    @(run.Success ? "Sucesso" : "Falha")
+                                </span>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+
+    <div class="actions">
+        <a href="/admin" class="button secondary">← Painel Admin</a>
+        <a href="/admin/traducoes" class="button">Fila de Traduções</a>
+    </div>
+</section>

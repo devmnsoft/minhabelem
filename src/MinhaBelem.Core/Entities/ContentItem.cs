@@ -32,6 +32,16 @@ public sealed class ContentItem
     public string Summary { get; set; } = string.Empty;
     public string? Body { get; set; }
 
+    public string? LocalizedTitle { get; set; }
+    public string? LocalizedSummary { get; set; }
+    public string? LocalizedBody { get; set; }
+    public string? CulturalNotes { get; set; }
+
+    public string DisplayTitle => !string.IsNullOrWhiteSpace(LocalizedTitle) ? LocalizedTitle : Title;
+    public string DisplaySummary => !string.IsNullOrWhiteSpace(LocalizedSummary) ? LocalizedSummary : Summary;
+    public string DisplayBody => !string.IsNullOrWhiteSpace(LocalizedBody) ? LocalizedBody : (Body ?? string.Empty);
+
+
     public string? Neighborhood { get; set; }
     public string? Municipality { get; set; }
     public string State { get; set; } = BelemGeography.State;

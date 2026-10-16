@@ -1,0 +1,47 @@
+@model IReadOnlyList<MinhaBelem.Core.Entities.CulturalGlossaryItem>
+@using System.Globalization
+
+@{
+    ViewData["Title"] = Loc["Glossary_Title"].Value;
+    var currentCulture = CultureInfo.CurrentUICulture.Name;
+}
+
+<section class="section cultural-glossary-page">
+    <div class="sectionhead">
+        <div>
+            <a href="/explore" class="back-link">← Voltar para Explore Belém</a>
+            <span class="eyebrow">IDENTIDADE & PATRIMÔNIO AMAZÔNICO</span>
+            <h1>📖 @Loc["Glossary_Title"]</h1>
+        </div>
+        <p class="small">Expressões culturais, culinárias e históricas que tornam a experiência em Belém única no mundo.</p>
+    </div>
+
+    <div class="glossary-intro card notice">
+        <p>
+            🌿 <strong>Aviso cultural aos visitantes internacionais:</strong> Em Belém, a cultura cabocla e indígena pulsa viva nos pratos, na música e nas feiras.
+            Nomes como <em>Ver-o-Peso</em>, <em>Tacacá</em>, <em>Açaí</em> e <em>Círio de Nazaré</em> não são apenas atrações — são símbolos sagrados de orgulho e afeto do povo paraense.
+        </p>
+    </div>
+
+    <div class="grid glossary-full-grid">
+        @foreach (var item in Model)
+        {
+            <article class="card glossary-full-card">
+                <div class="glossary-card-top">
+                    <h2>@item.Term</h2>
+                </div>
+                
+                <span class="eyebrow glossary-category-tag">@item.Category</span>
+
+                <div class="glossary-definition" style="margin-top: 10px;">
+                    <p>@item.GetExplanation(currentCulture)</p>
+                </div>
+            </article>
+        }
+    </div>
+
+    <div class="actions">
+        <a href="/explore" class="button">🗺️ Explorar Roteiros Turísticos</a>
+        <a href="/guia" class="button secondary">🏛️ Guia de Lugares</a>
+    </div>
+</section>

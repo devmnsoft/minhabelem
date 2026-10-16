@@ -38,6 +38,14 @@ public class Place
     public bool IsPublished { get; set; }
     public string? EditorialNote { get; set; }
     public string? EditorialNoteSource { get; set; }
+
+    public string? LocalizedName { get; set; }
+    public string? LocalizedEditorialNote { get; set; }
+    public string? CulturalNotes { get; set; }
+
+    public string DisplayName => !string.IsNullOrWhiteSpace(LocalizedName) ? LocalizedName : Name;
+    public string DisplayEditorialNote => !string.IsNullOrWhiteSpace(LocalizedEditorialNote) ? LocalizedEditorialNote : (EditorialNote ?? string.Empty);
+
     public DateTime CachedAt { get; set; }
     public DateTime PurgeAfter { get; set; }
     public DateTime CreatedAt { get; set; }

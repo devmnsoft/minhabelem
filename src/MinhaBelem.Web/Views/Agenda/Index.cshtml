@@ -1,7 +1,131 @@
 @model MinhaBelem.Web.Models.AgendaPage
 @using MinhaBelem.Web.Models
-<section class="hero"><p class="eyebrow">VIVA BELÉM E O PARÁ</p><h1>@Model.Title</h1><p>@Model.Description</p></section>
-<nav class="categories" aria-label="Explorar a agenda"><a href="/agora">Agora</a><a href="/agenda/semana">Esta semana</a><a href="/programacao-infantil">Infantil</a><a href="/cinema-teatro">Cinema e teatro</a><a href="/esporte-lazer">Esporte e lazer</a><a href="/eventos-gratuitos">Gratuitos</a><a href="/meu-bairro">Meu bairro</a><a href="/fim-de-semana">Fim de semana</a><a href="/eventos-do-para">Todo o Pará</a><a href="/feriados">Feriados</a></nav>
-<section class="section"><form method="get" class="filters"><label>Período<select name="dias">@foreach(var period in new[]{(0,"Hoje"),(1,"Amanhã"),(7,"7 dias"),(30,"30 dias"),(90,"90 dias"),(180,"6 meses"),(365,"12 meses")}){<option value="@period.Item1" selected="@(Model.Days == period.Item1)">@period.Item2</option>}</select></label><label>Classificação mínima até<input type="number" name="idade" min="0" max="18" /></label><label>Busca<input name="busca" maxlength="120" /></label><label>Bairro<input name="bairro" maxlength="120" /></label><label>Município<input name="municipio" list="municipios" maxlength="120" /></label><datalist id="municipios">@foreach(var m in MinhaBelem.Core.Text.BelemGeography.Municipalities){<option value="@m.Name"></option>}</datalist><label>Público<select name="publico"><option value="">Todos</option>@foreach(var audience in Enum.GetNames<MinhaBelem.Core.Taxonomy.Audience>()){<option>@audience</option>}</select></label><label>Acessibilidade<select name="acessibilidade"><option value="">Todas</option>@foreach(var feature in Enum.GetNames<MinhaBelem.Core.Taxonomy.AccessibilityFeature>()){<option>@feature</option>}</select></label><label><input name="gratuito" type="checkbox" value="true" /> Gratuitos</label><button>Buscar</button></form>
-@if(Model.Items.Count == 0){<div class="empty"><h2>Nenhuma programação confirmada para estes filtros</h2><p>Amplie o período ou consulte novamente. Só exibimos dados publicados pela equipe; datas não confirmadas aguardam revisão.</p></div>}
-<div class="grid">@foreach(var item in Model.Items){<article class="card"><p class="eyebrow">@MinhaBelem.Core.Taxonomy.Taxonomy.Info(item.Category).Label</p>@if(item.Status == MinhaBelem.Core.Entities.ContentStatus.Cancelled){<p class="notice">Cancelado</p>}<h2><a href="/Home/Detalhe/@item.Id">@item.Title</a></h2>@if(item.EventStartAt is { } start){<p><time datetime="@start.ToString("O")">@PortalTime.Local(start).ToString("dd/MM/yyyy HH:mm")</time></p>}<p>@item.Summary</p><p>@item.Neighborhood · @item.Municipality</p><p>@(item.IsFree ? "Gratuito" : item.TicketPriceText ?? "Consulte preço na fonte")</p><p class="small">@item.SourceName · Verificado em @PortalTime.Local(item.LastVerifiedAt).ToString("g")</p></article>}</div></section>
+@using System.Globalization
+
+@{
+    ViewData["Title"] = $"{Model.Title} — MinhaBelém";
+    var currentCulture = CultureInfo.CurrentUICulture;
+}
+
+<section class="hero">
+    <p class="eyebrow">VIVA BELÉM E O PARÁ 🇧🇷</p>
+    <h1>@Model.Title</h1>
+    <p>@Model.Description</p>
+</section>
+
+<nav class="categories" aria-label="Explorar a agenda">
+    <a href="/agora">Agora</a>
+    <a href="/agenda/semana">Esta semana</a>
+    <a href="/programacao-infantil">Infantil</a>
+    <a href="/cinema-teatro">Cinema e teatro</a>
+    <a href="/esporte-lazer">Esporte e lazer</a>
+    <a href="/eventos-gratuitos">Gratuitos</a>
+    <a href="/meu-bairro">Meu bairro</a>
+    <a href="/fim-de-semana">Fim de semana</a>
+    <a href="/eventos-do-para">Todo o Pará</a>
+    <a href="/feriados">Feriados</a>
+</nav>
+
+<section class="section">
+    <form method="get" class="filters" role="search">
+        <label>
+            Período
+            <select name="dias">
+                @foreach (var period in new[] { (0, "Hoje"), (1, "Amanhã"), (7, "7 dias"), (30, "30 dias"), (90, "90 dias"), (180, "6 meses"), (365, "12 meses") })
+                {
+                    <option value="@period.Item1" selected="@(Model.Days == period.Item1)">@period.Item2</option>
+                }
+            </select>
+        </label>
+        <label>
+            Classificação mínima até
+            <input type="number" name="idade" min="0" max="18" />
+        </label>
+        <label>
+            Busca
+            <input name="busca" maxlength="120" placeholder="@Loc["Search_Placeholder"]" />
+        </label>
+        <label>
+            Bairro
+            <input name="bairro" maxlength="120" />
+        </label>
+        <label>
+            Município
+            <input name="municipio" list="municipios" maxlength="120" />
+        </label>
+        <datalist id="municipios">
+            @foreach (var m in MinhaBelem.Core.Text.BelemGeography.Municipalities)
+            {
+                <option value="@m.Name"></option>
+            }
+        </datalist>
+        <label>
+            Público
+            <select name="publico">
+                <option value="">Todos</option>
+                @foreach (var audience in Enum.GetNames<MinhaBelem.Core.Taxonomy.Audience>())
+                {
+                    <option value="@audience">@audience</option>
+                }
+            </select>
+        </label>
+        <label>
+            Acessibilidade
+            <select name="acessibilidade">
+                <option value="">Todas</option>
+                @foreach (var feature in Enum.GetNames<MinhaBelem.Core.Taxonomy.AccessibilityFeature>())
+                {
+                    <option value="@feature">@feature</option>
+                }
+            </select>
+        </label>
+        <label>
+            <input name="gratuito" type="checkbox" value="true" /> Gratuitos
+        </label>
+        <button type="submit">@Loc["Search_Button"]</button>
+    </form>
+
+    @if (Model.Items.Count == 0)
+    {
+        <div class="empty">
+            <h2>@Loc["General_Empty"]</h2>
+            <p>Amplie o período ou consulte novamente. Só exibimos dados publicados pela equipe; datas não confirmadas aguardam revisão.</p>
+        </div>
+    }
+    else
+    {
+        <div class="grid">
+            @foreach (var item in Model.Items)
+            {
+                <article class="card event-card">
+                    <p class="eyebrow">@MinhaBelem.Core.Taxonomy.Taxonomy.Info(item.Category).Label</p>
+                    @if (item.Status == MinhaBelem.Core.Entities.ContentStatus.Cancelled)
+                    {
+                        <p class="notice error-notice">Cancelado</p>
+                    }
+                    <h2><a href="/Home/Detalhe/@item.Id">@item.DisplayTitle</a></h2>
+                    
+                    @if (item.EventStartAt is { } start)
+                    {
+                        <p class="event-time">
+                            📅 <time datetime="@start.ToString("O")">
+                                @PortalTime.Local(start).ToString("g", currentCulture)
+                            </time>
+                        </p>
+                    }
+                    
+                    <p>@(item.LocalizedSummary ?? item.Summary)</p>
+
+                    @if (!string.IsNullOrWhiteSpace(item.CulturalNotes))
+                    {
+                        <div class="cultural-badge">🌿 @item.CulturalNotes</div>
+                    }
+
+                    <p class="small">📍 @item.Neighborhood · @item.Municipality</p>
+                    <p><strong>@(item.IsFree ? "Gratuito" : item.TicketPriceText ?? "Consulte preço na fonte")</strong></p>
+                    <p class="small">📰 @item.SourceName · Verificado em @PortalTime.Local(item.LastVerifiedAt).ToString("d", currentCulture)</p>
+                </article>
+            }
+        </div>
+    }
+</section>

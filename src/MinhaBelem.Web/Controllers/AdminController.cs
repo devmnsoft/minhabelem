@@ -17,7 +17,7 @@ namespace MinhaBelem.Web.Controllers;
 [Route("admin"), Authorize]
 public sealed class AdminController(IAdministrationRepository admin, IDashboardRepository dashboard, IIngestionRepository ingestion, IAuditRepository audit,
     IAiRunRepository aiRuns, UserManager<ApplicationUser> users, ICommunityRepository community, IPlaceRepository places, IPlacesClient google, IOptions<AiOptions> aiOptions,
-    IDiscoveryRepository discovery, ISourceCollection collector) : Controller
+    IDiscoveryRepository discovery, ISourceCollection collector, ITranslationRepository translation, IContentTranslationService translationService, IContentRepository content) : Controller
 {
     private long Actor => long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
     private Task Audit(string action, string type, long? id, CancellationToken ct) => audit.WriteAsync(new AuditEntry { ActorId = Actor, Action = action, EntityType = type, EntityId = id }, ct);
@@ -152,5 +152,99 @@ public sealed class AdminController(IAdministrationRepository admin, IDashboardR
         // Apenas identificador Google e informacoes editoriais proprias. Sem persistir resposta Places.
         var id = await places.UpsertAsync(new Place { GooglePlaceId = model.GooglePlaceId.Trim(), Name = HtmlText.Clean(model.Name, 300), EditorialNote = HtmlText.Clean(model.Note, 1000), Neighborhood = HtmlText.Clean(model.Bairro, 120), Municipality = HtmlText.Clean(model.Municipio, 120), PrimaryType = model.Category, Audiences = model.Audiences, Accessibility = model.Accessibility, Slug = "local-" + Hashing.UrlHashHex(model.GooglePlaceId)[..24], IsPublished = true, CachedAt = DateTime.UtcNow, PurgeAfter = DateTime.UtcNow.AddYears(10) }, ct);
         await Audit("place.curated", "place", id, ct); return RedirectToAction(nameof(Lugares));
+    }
+
+    [HttpGet("idiomas"), Authorize(Policy = Permissions.TranslationRead)]
+    public async Task<IActionResult> Idiomas(CancellationToken ct)
+    {
+        ViewData["Stats"] = await translation.GetStatsAsync(ct);
+        ViewData["AiRuns"] = (await aiRuns.RecentAsync(50, ct)).Where(r => r.Task == AiTask.Translate).ToList();
+        return View(await translation.GetLanguagesAsync(false, ct));
+    }
+
+    [HttpPost("idiomas/{code}/estado"), Authorize(Policy = Permissions.TranslationManage)]
+    public async Task<IActionResult> SalvarIdiomaEstado(string code, bool enabled, bool requiresApproval, CancellationToken ct)
+    {
+        var lang = await translation.GetLanguageAsync(code, ct);
+        if (lang is null) return NotFound();
+        if (lang.IsDefault && !enabled) return BadRequest("O idioma padrão não pode ser desativado.");
+        lang.IsEnabled = enabled;
+        lang.RequiresHumanApproval = requiresApproval;
+        await translation.UpdateLanguageAsync(lang, ct);
+        await Audit("language.updated", "language", null, ct);
+        TempData["Notice"] = $"Configurações do idioma '{lang.Name}' atualizadas.";
+        return RedirectToAction(nameof(Idiomas));
+    }
+
+    [HttpGet("traducoes"), Authorize(Policy = Permissions.TranslationRead)]
+    public async Task<IActionResult> Traducoes(string? lang, CancellationToken ct)
+    {
+        var targetLang = string.IsNullOrWhiteSpace(lang) ? "en" : lang;
+        ViewData["SelectedLanguage"] = targetLang;
+        ViewData["Languages"] = await translation.GetLanguagesAsync(true, ct);
+        ViewData["Stats"] = await translation.GetStatsAsync(ct);
+        ViewData["PendingContent"] = await translation.PendingContentTranslationsAsync(50, ct);
+        ViewData["PendingPlaces"] = await translation.PendingPlaceTranslationsAsync(50, ct);
+        ViewData["UntranslatedContent"] = await translation.UntranslatedContentAsync(targetLang, 20, ct);
+        ViewData["UntranslatedPlaces"] = await translation.UntranslatedPlacesAsync(targetLang, 20, ct);
+        return View();
+    }
+
+    [HttpPost("traducoes/conteudo/{id:long}/revisar"), Authorize(Policy = Permissions.TranslationManage)]
+    public async Task<IActionResult> RevisarTraducaoConteudo(long id, bool approve, string? notes, CancellationToken ct)
+    {
+        var status = approve ? TranslationReviewStatus.Approved : TranslationReviewStatus.Rejected;
+        await translation.SetContentTranslationStatusAsync(id, status, Actor, notes, ct);
+        await Audit("translation.content.reviewed", "translation", id, ct);
+        TempData["Notice"] = approve ? "Tradução de conteúdo aprovada para publicação pública." : "Tradução rejeitada.";
+        return RedirectToAction(nameof(Traducoes));
+    }
+
+    [HttpPost("traducoes/lugar/{id:long}/revisar"), Authorize(Policy = Permissions.TranslationManage)]
+    public async Task<IActionResult> RevisarTraducaoLugar(long id, bool approve, string? notes, CancellationToken ct)
+    {
+        var status = approve ? TranslationReviewStatus.Approved : TranslationReviewStatus.Rejected;
+        await translation.SetPlaceTranslationStatusAsync(id, status, Actor, notes, ct);
+        await Audit("translation.place.reviewed", "translation", id, ct);
+        TempData["Notice"] = approve ? "Tradução de lugar turístico aprovada para publicação pública." : "Tradução rejeitada.";
+        return RedirectToAction(nameof(Traducoes));
+    }
+
+    [HttpPost("traducoes/solicitar-ia"), Authorize(Policy = Permissions.TranslationManage)]
+    public async Task<IActionResult> SolicitarTraducaoAi(string type, long id, string targetLanguage, CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(targetLanguage)) return BadRequest();
+
+        if (string.Equals(type, "content", StringComparison.OrdinalIgnoreCase))
+        {
+            var item = await content.GetAsync(id, ct);
+            if (item is null) return NotFound();
+            var res = await translationService.TranslateContentAsync(item, targetLanguage, Actor, ct);
+            if (!res.Success) TempData["Notice"] = $"Aviso ao traduzir: {res.Error}";
+            else TempData["Notice"] = $"Tradução via IA ({res.Provider}) gerada com sucesso! Revise e aprove para publicação.";
+            await Audit("translation.ai_requested.content", "content", id, ct);
+        }
+        else if (string.Equals(type, "place", StringComparison.OrdinalIgnoreCase))
+        {
+            var place = await places.GetAsync(id, ct);
+            if (place is null) return NotFound();
+            var res = await translationService.TranslatePlaceAsync(place, targetLanguage, Actor, ct);
+            if (!res.Success) TempData["Notice"] = $"Aviso ao traduzir: {res.Error}";
+            else TempData["Notice"] = $"Tradução via IA ({res.Provider}) gerada com sucesso! Revise e aprove para publicação.";
+            await Audit("translation.ai_requested.place", "place", id, ct);
+        }
+        return RedirectToAction(nameof(Traducoes), new { lang = targetLanguage });
+    }
+
+    [HttpGet("traducoes/comparar/{id:long}"), Authorize(Policy = Permissions.TranslationRead)]
+    public async Task<IActionResult> Comparar(long id, string targetLanguage, CancellationToken ct)
+    {
+        var item = await content.GetAsync(id, ct);
+        if (item is null) return NotFound();
+        var trans = await translation.GetContentTranslationAsync(id, targetLanguage, ct);
+        ViewData["Content"] = item;
+        ViewData["Translation"] = trans;
+        ViewData["TargetLanguage"] = targetLanguage;
+        return View();
     }
 }

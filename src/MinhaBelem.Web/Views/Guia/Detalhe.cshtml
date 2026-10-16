@@ -1,10 +1,101 @@
 @model MinhaBelem.Core.Entities.Place
-<article class="section article"><p class="eyebrow">GUIA DA CIDADE</p><h1>@ViewData["EditorialName"]</h1><p>@Model.EditorialNote</p>
-@if(ViewData["Live"] is true){<div class="google-place-content"><h2>@Model.Name</h2><p>@Model.FormattedAddress</p><p>@Model.Phone</p><p>Preço informado: @(Model.PriceText ?? "Consulte o estabelecimento")</p><ul>@foreach(var hours in Model.OpeningHours){<li>@hours.Label</li>}</ul>
-@if(ViewData["Photo"] is string photo){<figure><img src="@photo" alt="Vista de @Model.Name, fornecida pelo Google Maps" loading="lazy" referrerpolicy="no-referrer" /><figcaption>@foreach(var author in Model.PhotoAuthors){<span>Foto: @if(author.PhotoUri is not null){<img class="author-avatar" src="@author.PhotoUri" alt="" />}<a href="@author.Uri" target="_blank" rel="noopener noreferrer">@author.Name</a> </span>}@if(MinhaBelem.Core.Security.SafeUrl.Validate(Model.PhotoGoogleMapsUri).IsValid){<a href="@Model.PhotoGoogleMapsUri" target="_blank" rel="noopener noreferrer">Foto original no Google Maps</a>}</figcaption></figure>}
-<p class="attribution"><img src="~/images/google-maps-attribution.svg" alt="Google Maps" width="100" height="18" /></p><p class="small">Detalhes consultados agora. Confirme horários, preços e acessibilidade com o local.</p></div>}
-@if(ViewData["Live"] is true && Model.WheelchairAccessible is { } accessible){<p>Acesso para cadeira de rodas: @(accessible ? "Informado como disponível pelo Google Maps" : "Informado como indisponível pelo Google Maps"). Confirme as condições com o estabelecimento.</p>}
-else{<p>Os detalhes do Google Maps estão indisponíveis neste momento. Use o link abaixo para consultar o local.</p>}
-<p><a href="https://www.google.com/maps/search/?api=1&amp;query=local&amp;query_place_id=@Uri.EscapeDataString(Model.GooglePlaceId)" target="_blank" rel="noopener noreferrer">Ver mapa e rota no Google Maps</a></p>
-@if(MinhaBelem.Core.Security.SafeUrl.Validate(Model.WebsiteUri).IsValid){<p><a href="@Model.WebsiteUri" target="_blank" rel="noopener noreferrer">Site do estabelecimento</a></p>}
-<p><a href="/guia">Voltar ao guia</a></p></article>
+
+@{ 
+    ViewData["Title"] = $"{Model.DisplayName} — {Loc["Nav_Guide"].Value}"; 
+}
+
+<article class="section article">
+    <p class="eyebrow">@Loc["Nav_Guide"].Value.ToUpperInvariant()</p>
+    <h1>@Model.DisplayName</h1>
+    <p class="lead">@Model.DisplayEditorialNote</p>
+
+    @if (!string.IsNullOrWhiteSpace(Model.CulturalNotes))
+    {
+        <div class="cultural-badge-box">
+            <h4>💡 @Loc["Glossary_Title"]</h4>
+            <p>@Model.CulturalNotes</p>
+        </div>
+    }
+
+    @if (ViewData["Live"] is true)
+    {
+        <div class="google-place-content">
+            <h2>@Model.Name</h2>
+            <p><strong>Endereço:</strong> @Model.FormattedAddress</p>
+            @if (!string.IsNullOrWhiteSpace(Model.Phone))
+            {
+                <p><strong>Telefone:</strong> @Model.Phone</p>
+            }
+            <p><strong>Preço informado:</strong> @(Model.PriceText ?? "Consulte o estabelecimento")</p>
+            
+            @if (Model.OpeningHours.Count > 0)
+            {
+                <h4>Horários de Funcionamento:</h4>
+                <ul>
+                    @foreach (var hours in Model.OpeningHours)
+                    {
+                        <li>@hours.Label</li>
+                    }
+                </ul>
+            }
+
+            @if (ViewData["Photo"] is string photo)
+            {
+                <figure>
+                    <img src="@photo" alt="Vista de @Model.Name, fornecida pelo Google Maps" loading="lazy" referrerpolicy="no-referrer" />
+                    <figcaption>
+                        @foreach (var author in Model.PhotoAuthors)
+                        {
+                            <span>
+                                Foto: 
+                                @if (author.PhotoUri is not null)
+                                {
+                                    <img class="author-avatar" src="@author.PhotoUri" alt="" />
+                                }
+                                <a href="@author.Uri" target="_blank" rel="noopener noreferrer">@author.Name</a> 
+                            </span>
+                        }
+                        @if (MinhaBelem.Core.Security.SafeUrl.Validate(Model.PhotoGoogleMapsUri).IsValid)
+                        {
+                            <a href="@Model.PhotoGoogleMapsUri" target="_blank" rel="noopener noreferrer">Foto original no Google Maps</a>
+                        }
+                    </figcaption>
+                </figure>
+            }
+
+            <p class="attribution">
+                <img src="~/images/google-maps-attribution.svg" alt="Google Maps" width="100" height="18" />
+            </p>
+            <p class="small">Detalhes consultados via Google Places API. Confirme horários, preços e acessibilidade com o local.</p>
+        </div>
+    }
+
+    @if (ViewData["Live"] is true && Model.WheelchairAccessible is { } accessible)
+    {
+        <p>
+            <strong>Acessibilidade para cadeira de rodas:</strong> 
+            @(accessible ? "✅ Informado como disponível pelo Google Maps" : "Informado como indisponível pelo Google Maps"). Confirme as condições com o estabelecimento.
+        </p>
+    }
+    else
+    {
+        <p class="small text-muted">Os detalhes em tempo real do Google Maps podem estar indisponíveis ou sujeitos a limitações de cota.</p>
+    }
+
+    <div class="actions">
+        @if (!string.IsNullOrWhiteSpace(Model.GooglePlaceId))
+        {
+            <a class="button" href="https://www.google.com/maps/search/?api=1&amp;query=local&amp;query_place_id=@Uri.EscapeDataString(Model.GooglePlaceId)" target="_blank" rel="noopener noreferrer">
+                🗺️ Ver no Google Maps
+            </a>
+        }
+        @if (MinhaBelem.Core.Security.SafeUrl.Validate(Model.WebsiteUri).IsValid)
+        {
+            <a class="button secondary" href="@Model.WebsiteUri" target="_blank" rel="noopener noreferrer">
+                🌐 Site do estabelecimento
+            </a>
+        }
+        <a class="button secondary" href="/guia">← Voltar ao guia</a>
+        <a class="button secondary" href="/explore">🌎 Explore Belém</a>
+    </div>
+</article>

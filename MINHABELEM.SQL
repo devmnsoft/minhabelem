@@ -955,3 +955,236 @@ SET @minhabelem_ddl = IF(EXISTS(SELECT 1 FROM information_schema.REFERENTIAL_CON
 PREPARE minhabelem_stmt FROM @minhabelem_ddl;
 EXECUTE minhabelem_stmt;
 DEALLOCATE PREPARE minhabelem_stmt;
+
+-- @migration 008_internacionalizacao_turismo
+CREATE TABLE IF NOT EXISTS mb_languages (
+    code                     VARCHAR(16)  NOT NULL PRIMARY KEY,
+    name                     VARCHAR(80)  NOT NULL,
+    native_name              VARCHAR(80)  NOT NULL,
+    flag_emoji               VARCHAR(16)  NOT NULL DEFAULT '',
+    is_enabled               TINYINT(1)   NOT NULL DEFAULT 1,
+    is_default               TINYINT(1)   NOT NULL DEFAULT 0,
+    requires_human_approval  TINYINT(1)   NOT NULL DEFAULT 1,
+    display_order            INT          NOT NULL DEFAULT 0,
+    created_at               DATETIME(6)  NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+    updated_at               DATETIME(6)  NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS mb_content_translations (
+    id                       BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    content_id               BIGINT UNSIGNED NOT NULL,
+    source_language          VARCHAR(16)  NOT NULL DEFAULT 'pt-BR',
+    target_language          VARCHAR(16)  NOT NULL,
+    title                    VARCHAR(500) NOT NULL,
+    summary                  VARCHAR(3000) NOT NULL DEFAULT '',
+    body                     MEDIUMTEXT   NULL,
+    cultural_notes           TEXT         NULL,
+    provider                 VARCHAR(60)  NOT NULL DEFAULT 'Manual',
+    model                    VARCHAR(100) NOT NULL DEFAULT '',
+    version                  INT          NOT NULL DEFAULT 1,
+    review_status            VARCHAR(24)  NOT NULL DEFAULT 'Pending',
+    reviewed_by_id           BIGINT UNSIGNED NULL,
+    reviewed_at              DATETIME(6)  NULL,
+    review_notes             VARCHAR(1000) NULL,
+    created_at               DATETIME(6)  NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+    updated_at               DATETIME(6)  NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
+    KEY idx_ct_content_lang (content_id, target_language, review_status),
+    KEY idx_ct_target_lang (target_language, review_status),
+    CONSTRAINT fk_ct_content FOREIGN KEY (content_id) REFERENCES mb_content_items(id) ON DELETE CASCADE,
+    CONSTRAINT fk_ct_reviewer FOREIGN KEY (reviewed_by_id) REFERENCES mb_users(id) ON DELETE SET NULL
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS mb_place_translations (
+    id                       BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    place_id                 BIGINT UNSIGNED NOT NULL,
+    source_language          VARCHAR(16)  NOT NULL DEFAULT 'pt-BR',
+    target_language          VARCHAR(16)  NOT NULL,
+    name                     VARCHAR(300) NOT NULL,
+    editorial_note           VARCHAR(2000) NULL,
+    cultural_notes           TEXT         NULL,
+    provider                 VARCHAR(60)  NOT NULL DEFAULT 'Manual',
+    model                    VARCHAR(100) NOT NULL DEFAULT '',
+    version                  INT          NOT NULL DEFAULT 1,
+    review_status            VARCHAR(24)  NOT NULL DEFAULT 'Pending',
+    reviewed_by_id           BIGINT UNSIGNED NULL,
+    reviewed_at              DATETIME(6)  NULL,
+    review_notes             VARCHAR(1000) NULL,
+    created_at               DATETIME(6)  NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+    updated_at               DATETIME(6)  NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
+    KEY idx_pt_place_lang (place_id, target_language, review_status),
+    CONSTRAINT fk_pt_place FOREIGN KEY (place_id) REFERENCES mb_places(id) ON DELETE CASCADE,
+    CONSTRAINT fk_pt_reviewer FOREIGN KEY (reviewed_by_id) REFERENCES mb_users(id) ON DELETE SET NULL
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS mb_cultural_glossary (
+    id                       BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    term                     VARCHAR(100) NOT NULL UNIQUE,
+    category                 VARCHAR(60)  NOT NULL,
+    explanation_pt           TEXT         NOT NULL,
+    explanation_en           TEXT         NOT NULL,
+    explanation_fr           TEXT         NOT NULL,
+    explanation_es           TEXT         NOT NULL,
+    explanation_ru           TEXT         NOT NULL,
+    explanation_zh           TEXT         NOT NULL,
+    explanation_ja           TEXT         NOT NULL,
+    created_at               DATETIME(6)  NOT NULL DEFAULT CURRENT_TIMESTAMP(6)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS mb_tourist_itineraries (
+    id                       BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    slug                     VARCHAR(120) NOT NULL UNIQUE,
+    days                     INT          NOT NULL,
+    theme                    VARCHAR(100) NOT NULL,
+    title_pt                 VARCHAR(200) NOT NULL,
+    title_en                 VARCHAR(200) NOT NULL,
+    title_fr                 VARCHAR(200) NOT NULL,
+    title_es                 VARCHAR(200) NOT NULL,
+    title_ru                 VARCHAR(200) NOT NULL,
+    title_zh                 VARCHAR(200) NOT NULL,
+    title_ja                 VARCHAR(200) NOT NULL,
+    summary_pt               VARCHAR(1000) NOT NULL,
+    summary_en               VARCHAR(1000) NOT NULL,
+    summary_fr               VARCHAR(1000) NOT NULL,
+    summary_es               VARCHAR(1000) NOT NULL,
+    summary_ru               VARCHAR(1000) NOT NULL,
+    summary_zh               VARCHAR(1000) NOT NULL,
+    summary_ja               VARCHAR(1000) NOT NULL,
+    description_pt           TEXT         NOT NULL,
+    description_en           TEXT         NOT NULL,
+    description_fr           TEXT         NOT NULL,
+    description_es           TEXT         NOT NULL,
+    description_ru           TEXT         NOT NULL,
+    description_zh           TEXT         NOT NULL,
+    description_ja           TEXT         NOT NULL,
+    display_order            INT          NOT NULL DEFAULT 0,
+    is_published             TINYINT(1)   NOT NULL DEFAULT 1,
+    created_at               DATETIME(6)  NOT NULL DEFAULT CURRENT_TIMESTAMP(6)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS mb_tourist_itinerary_stops (
+    id                       BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    itinerary_id             BIGINT UNSIGNED NOT NULL,
+    day_number               INT          NOT NULL DEFAULT 1,
+    stop_order               INT          NOT NULL DEFAULT 1,
+    place_id                 BIGINT UNSIGNED NULL,
+    title_pt                 VARCHAR(200) NOT NULL,
+    title_en                 VARCHAR(200) NOT NULL,
+    period_of_day            VARCHAR(30)  NOT NULL DEFAULT 'Manhã',
+    tip_pt                   VARCHAR(1000) NOT NULL,
+    tip_en                   VARCHAR(1000) NOT NULL,
+    tip_fr                   VARCHAR(1000) NOT NULL,
+    tip_es                   VARCHAR(1000) NOT NULL,
+    tip_ru                   VARCHAR(1000) NOT NULL,
+    tip_zh                   VARCHAR(1000) NOT NULL,
+    tip_ja                   VARCHAR(1000) NOT NULL,
+    estimated_duration       VARCHAR(50)  NOT NULL DEFAULT '2 horas',
+    CONSTRAINT fk_itinerary_stop_itin FOREIGN KEY (itinerary_id) REFERENCES mb_tourist_itineraries(id) ON DELETE CASCADE,
+    CONSTRAINT fk_itinerary_stop_place FOREIGN KEY (place_id) REFERENCES mb_places(id) ON DELETE SET NULL
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+
+-- Seeds de linguagens ativas
+INSERT IGNORE INTO mb_languages (code, name, native_name, flag_emoji, is_enabled, is_default, requires_human_approval, display_order) VALUES
+ ('pt-BR', 'Português (Brasil)', 'Português', '🇧🇷', 1, 1, 0, 1),
+ ('en', 'Inglês', 'English', '🇺🇸', 1, 0, 1, 2),
+ ('fr', 'Francês', 'Français', '🇫🇷', 1, 0, 1, 3),
+ ('es', 'Espanhol', 'Español', '🇪🇸', 1, 0, 1, 4),
+ ('ru', 'Russo', 'Русский', '🇷🇺', 1, 0, 1, 5),
+ ('zh-Hans', 'Chinês Simplificado', '简体中文', '🇨🇳', 1, 0, 1, 6),
+ ('ja', 'Japonês', '日本語', '🇯🇵', 1, 0, 1, 7);
+
+-- Seeds de permissoes de traducao
+INSERT IGNORE INTO mb_permissions (code, description) VALUES
+ ('translation.read', 'Ver idiomas, traduções e métricas de internacionalização'),
+ ('translation.manage', 'Gerenciar, solicitar IA e aprovar traduções de conteúdo');
+
+INSERT IGNORE INTO mb_role_permissions (role_id, permission_code)
+ SELECT id, 'translation.read' FROM mb_roles WHERE normalized_name = 'SUPERADMIN';
+INSERT IGNORE INTO mb_role_permissions (role_id, permission_code)
+ SELECT id, 'translation.manage' FROM mb_roles WHERE normalized_name = 'SUPERADMIN';
+
+INSERT IGNORE INTO mb_role_permissions (role_id, permission_code)
+ SELECT id, 'translation.read' FROM mb_roles WHERE normalized_name = 'EDITOR';
+INSERT IGNORE INTO mb_role_permissions (role_id, permission_code)
+ SELECT id, 'translation.manage' FROM mb_roles WHERE normalized_name = 'EDITOR';
+
+INSERT IGNORE INTO mb_role_permissions (role_id, permission_code)
+ SELECT id, 'translation.read' FROM mb_roles WHERE normalized_name = 'MODERATOR';
+
+-- Seeds do Glossario Cultural Paraense / Amazonense
+INSERT IGNORE INTO mb_cultural_glossary (term, category, explanation_pt, explanation_en, explanation_fr, explanation_es, explanation_ru, explanation_zh, explanation_ja) VALUES
+ ('Ver-o-Peso', 'Patrimônio', 'Maior feira aberta da América Latina, às margens da Baía do Guajará, fundada no século XVII.', 'Largest open-air market in Latin America, on the banks of Guajará Bay, founded in the 17th century.', 'Le plus grand marché à ciel ouvert d''Amérique latine, au bord de la baie de Guajará, fondé au XVIIe siècle.', 'El mercado al aire libre más grande de América Latina, a orillas de la bahía de Guajará, fundado en el siglo XVII.', 'Крупнейший рынок под открытым небом в Латинской Америке, на берегу залива Гуажара, основан в XVII веке.', '拉丁美洲最大的露天市场，位于瓜哈拉湾畔，建于17世纪。', '17世紀に設立されたグアジャラ湾のほとりにあるラテンアメリカ最大の青空市場。'),
+ ('Círio de Nazaré', 'Religião e Cultura', 'Uma das maiores manifestações religiosas e culturais do mundo, celebrada anualmente em outubro em Belém.', 'One of the world''s largest religious and cultural processions, celebrated every October in Belém.', 'L''une des plus grandes manifestations religieuses et culturelles au monde, célébrée chaque année en octobre à Belém.', 'Una de las mayores procesiones religiosas y culturales del mundo, celebrada cada octubre en Belém.', 'Одно из крупнейших религиозных и культурных шествий в мире, ежегодно отмечаемое в октябре в Белене.', '世界上规模最大的宗教文化盛会之一，每年十月在贝伦举行。', '世界最大級の宗教的・文化的な祝祭行列で、毎年10月にベレンで開催されます。'),
+ ('Tacacá', 'Gastronomia', 'Iguaria amazônica quente servida em cuias com tucupi, goma de tapioca, jambu e camarão seco.', 'Traditional hot Amazonian delicacy served in gourds (cuias) made with tucupi broth, tapioca gum, jambu leaves, and dried shrimp.', 'Mets chaud traditionnel amazonien servi dans des calebasses, à base de tucupi, gomme de tapioca, jambu et crevettes séchées.', 'Manjar amazónico caliente servido en calabazas con caldo tucupí, goma de tapioca, hojas de jambú y camarones secos.', 'Традиционное горячее амазонское блюдо, подаваемое в калебасах: бульон тукупи, крахмал тапиоки, листья жамбу и сушеные креветки.', '传统的亚马逊热汤美食，盛在葫芦碗中，由图库皮汁、木薯粉糊、金纽扣叶（麻舌草）和干虾制成。', 'ひょうたんの器（クイア）で供される伝統的な熱いアマゾン料理。ツクピスープ、タピオカ澱粉糊、ジャンブーの葉、干しエビで作られます。'),
+ ('Maniçoba', 'Gastronomia', 'Prato festivo feito com folhas de maniva moídas e cozidas por sete dias com carnes nobres de porco.', 'Festive ceremonial dish made with ground cassava leaves (maniva) boiled for seven days with smoked and cured meats.', 'Plat cérémoniel traditionnel préparé avec des feuilles de manioc cuites pendant sept jours et des viandes fumées.', 'Plato ceremonial festivo elaborado con hojas de yuca (maniva) cocidas durante siete días con carnes ahumadas.', 'Праздничное амазонское блюдо из листьев маниока (манива), которые варятся семь дней с копченым мясом.', '用磨碎的木薯叶（maniva）与熏肉连续熬煮七天制成的节庆传统名菜。', 'マニバ（キャッサバの葉）を7日間じっくり煮込み、燻製肉と合わせた祝祭の郷土料理。'),
+ ('Açaí', 'Gastronomia', 'Fruto amazônico consumido puro com farinha de tapioca ou de mandioca e acompanhado de peixe frito.', 'Amazonian superfruit traditionally enjoyed pure and fresh with tapioca/manioc flour and fried river fish.', 'Superfruit amazonien traditionnellement dégusté pur et frais avec de la farine de manioc et du poisson frit.', 'Superfruta amazónica consumida tradicionalmente pura y fresca con harina de tapioca y pescado frito.', 'Амазонская ягода асаи, традиционно употребляемая в чистом виде с мукой тапиоки и жареной речной рыбой.', '亚马逊超级水果巴西莓，传统上新鲜浓稠食用，搭配木薯粉和油炸河鱼。', '新鮮なアサイー果肉をタピオカ粉やキャッサバ粉、揚げた川魚と一緒に食事として味わうアマゾンの伝統食。'),
+ ('Carimbó', 'Música e Dança', 'Ritmo e dança folclórica de raízes indígenas e afro-brasileiras, Patrimônio Imaterial do Brasil.', 'Vibrant traditional rhythm and folk dance blending Indigenous Amazonian and Afro-Brazilian roots, Intangible Heritage of Brazil.', 'Rythme et danse folklorique dynamique aux racines indigènes et afro-brésiliennes, patrimoine immatériel du Brésil.', 'Ritmo y danza folclórica tradicional de raíces indígenas y afrobrasileñas, Patrimonio Cultural Inmaterial de Brasil.', 'Традиционный народный ритм и танец, объединяющий индейские амазонские и афробразильские корни.', '融合亚马逊原住民与非裔巴西传统的活力民俗节奏与舞蹈，巴西非物质文化遗产。', '先住民族とアフリカ系ブラジル人のルーツが融合した伝統舞踊・音楽で、ブラジルの無形文化遺産。'),
+ ('Jambu', 'Botânica e Gastronomia', 'Erva típica da Amazônia que provoca uma sensação única e vibrante de formigamento e dormência nos lábios.', 'Amazonian toothache plant leaves producing a pleasant, electrifying tingling and numbing sensation on the tongue.', 'Herbe amazonienne typique qui procure une sensation pétillante et légèrement anesthésiante sur les lèvres.', 'Hierba amazónica que provoca una sensación vibrante de hormigueo y suave adormecimiento en la boca.', 'Амазонская пряная трава, вызывающая приятное покалывание и легкое онемение губ и языка.', '亚马逊特产草本植物（金纽扣），在舌尖和唇部产生独特的酥麻微颤感。', '口の中で心地よいピリピリとした痺れ感をもたらすアマゾン特有のハーブ（ジャンブー）。'),
+ ('Tucupi', 'Gastronomia', 'Caldo amarelo brilhante extraído da raiz de mandioca-brava, fermentado e temperado com ervas da floresta.', 'Bright golden fermented broth extracted from wild manioc root, seasoned with chicória and alfavaca.', 'Bouillon doré fermenté extrait de la racine de manioc sauvage, aromatisé aux herbes de la forêt.', 'Caldo amarillo brillante fermentado extraído de la raíz de yuca brava, sazonado con hierbas amazónicas.', 'Ярко-желтый ферментированный бульон из корня дикого маниока, приправленный лесными травами.', '由野生木薯根榨汁发酵、配以雨林香草熬制而成的金黄色风味汤汁。', '野生キャッサバの搾り汁を発酵させ、アマゾンのハーブで煮込んだ黄金色の伝統スープ。');
+
+-- Seeds dos Roteiros Turisticos "Explore Belém"
+INSERT IGNORE INTO mb_tourist_itineraries (slug, days, theme, title_pt, title_en, title_fr, title_es, title_ru, title_zh, title_ja, summary_pt, summary_en, summary_fr, summary_es, summary_ru, summary_zh, summary_ja, description_pt, description_en, description_fr, description_es, description_ru, description_zh, description_ja, display_order) VALUES
+ ('belem-express-1-dia', 1, 'Express', 'Belém Express — O Essencial em 1 Dia', 'Belém Express — The Essentials in 1 Day', 'Belém Express — L''Essentiel en 1 Jour', 'Belém Express — Lo Esencial en 1 Día', 'Белен Экспресс — Главное за 1 день', '贝伦精粹 — 1日游', 'ベレン・エクスプレス — 1日凝縮プラン',
+ 'Para quem tem pouco tempo e quer vivenciar o coração histórico, gastronômico e cultural de Belém.',
+ 'For visitors with limited time wanting to experience the historic, culinary, and cultural heart of Belém.',
+ 'Pour les visiteurs disposant de peu de temps qui souhaitent découvrir le cœur historique et gastronomique de Belém.',
+ 'Para quienes disponen de poco tiempo y quieren vivir el corazón histórico y gastronómico de Belém.',
+ 'Для тех, у кого мало времени, но есть желание ощутить историческое и кулинарное сердце Белена.',
+ '适合时间紧凑、希望体验贝伦历史与美食核心的旅行者。',
+ '時間がない中でもベレンの歴史・グルメ・文化の核心を味わいたい方に最適。',
+ 'Comece o dia cedo no Ver-o-Peso assistindo à chegada das embarcações de açaí. Caminhe pelo Complexo Feliz Lusitânia e Forte do Presépio. Almoce no Mercado de Peixe ou na Estação das Docas. À tarde, encante-se com o Theatro da Paz e termine o pôr do sol no Mangal das Garças com a Revoada dos Guarás.',
+ 'Start early at Ver-o-Peso market watching açaí boats arrive. Walk to Feliz Lusitânia complex and Forte do Presépio. Enjoy lunch at the Fish Market or Estação das Docas. In the afternoon, tour Theatro da Paz and catch the sunset at Mangal das Garças watching the scarlet ibises return.',
+ 'Commencez tôt au marché Ver-o-Peso. Visitez le complexe historique Feliz Lusitânia et le Forte do Presépio. Déjeunez à Estação das Docas. L''après-midi, admirez le Theatro da Paz et terminez au coucher du soleil à Mangal das Garças.',
+ 'Comience temprano en el Ver-o-Peso. Recorra el complejo Feliz Lusitânia y el Forte do Presépio. Almuerce en Estação das Docas. Por la tarde, admire el Theatro da Paz y disfrute de la puesta de sol en Mangal das Garças.',
+ 'Начните утро на рынке Вер-о-Пезо. Прогуляйтесь по комплексу Фелиз Лузитания и форту Пресепио. Пообедайте на Эстасан-дас-Докас. Днем посетите Театро да Паз и встретьте закат в Мангал-дас-Гарсас.',
+ '清晨漫步韦尔奥佩索市场，游览费利斯卢西塔尼亚建筑群与堡垒，午餐享用码头港湾美食，下午探访和平剧院，傍晚在鹭鸟公园欣赏红鹮归巢与落日。',
+ '早朝のベル・オ・ペーゾ市場からスタートし、歴史地区フェリス・ルジタニア、午後は平和劇場、夕暮れはマンガル・ダス・ガルサスで緋色のショウジョウトキの帰巣を鑑賞します。',
+ 1),
+ ('belem-cultural-2-dias', 2, 'Cultural', 'Belém Cultural e Ilha do Combu — 2 Dias', 'Belém Cultural & Combu Island — 2 Days', 'Belém Culturelle & Île de Combu — 2 Jours', 'Belém Cultural e Isla de Combu — 2 Días', 'Культурный Белен и остров Комбу — 2 дня', '贝伦文化与孔布岛 — 2日游', '文化のベレンとコンブー島 — 2日間',
+ 'Dois dias combinando os monumentos urbanos e a rica experiência ribeirinha na Ilha do Combu.',
+ 'Two days combining urban architecture, museums, and an authentic Amazonian river island boat excursion.',
+ 'Deux jours alliant architecture urbaine, musées et une escapade authentique sur l''île fluviale de Combu.',
+ 'Dos días combinando arquitectura colonial, museos y una experiencia ribereña en la Isla de Combu.',
+ 'Два дня, сочетающие колониальные памятники, музеи и водную прогулку на речной остров Комбу.',
+ '两天时间融合城市古典建筑、生态博物馆与孔布岛雨林原生态水上风情。',
+ '都市の歴史的建造物と、川を渡るコンブー島の素朴なアマゾン島旅を満喫する2日間。',
+ 'O Dia 1 cobre o centro histórico, Basílica de Nazaré e Theatro da Paz. O Dia 2 convida você a cruzar o Rio Guamá de barco até a Ilha do Combu para saborear peixe assado na brasa, conhecer o cultivo orgânico de cacau artesanal e relaxar à beira do rio.',
+ 'Day 1 covers the historic center, Basilica of Our Lady of Nazareth, and Theatro da Paz. Day 2 invites you across Guamá river by wooden boat to Combu Island for grilled fresh fish, bean-to-bar artisanal Amazon chocolate, and river bathing.',
+ 'Jour 1: centre historique, Basilique de Nazareth et Theatro da Paz. Jour 2: traversée en bateau vers l''île de Combu, dégustation de poisson grillé et chocolat artisanal d''Amazonie.',
+ 'Día 1: centro histórico, Basílica de Nazaret y Theatro da Paz. Día 2: travesía en lancha a la Isla de Combu, pescado a la brasa y chocolate artesanal de cacao amazónico.',
+ 'День 1: исторический центр, Базилика Назаре и Театро да Паз. День 2: лодочная прогулка на остров Комбу, жареная речная рыба и ремесленный амазонский шоколад.',
+ '第一天探访历史街区、拿撒勒圣殿与大剧院；第二天乘木船横渡瓜玛河前往孔布岛，品尝炭烤河鱼与纯手工亚马逊黑巧。',
+ '1日目は歴史街区とナザレ聖堂・平和劇場。2日目はボートでコンブー島へ渡り、川魚の炭火焼きや職人カカオチョコを堪能します。',
+ 2),
+ ('belem-natureza-3-dias', 3, 'Natureza', 'Belém Natureza, Rios e Tradição — 3 Dias', 'Belém Nature, Rivers & Heritage — 3 Days', 'Belém Nature, Rivières & Patrimoine — 3 Jours', 'Belém Naturaleza, Ríos y Tradición — 3 Días', 'Природа Белена, реки и наследие — 3 дня', '贝伦自然生态、江流与传统 — 3日游', '自然と川と伝統のベレン — 3日間',
+ 'Três dias com trilhas na selva urbana do Utinga, orquídeas no Museu Goeldi e artesanato marajoara no Polo Joalheiro.',
+ 'Three days featuring trails at Utinga State Park, biodiversity at Emílio Goeldi Museum, and Marajoara ceramics at São José Liberto.',
+ 'Trois jours avec sentiers au parc d''Utinga, biodiversité au Musée Goeldi et artisanat marajoara au Polo Joalheiro.',
+ 'Tres días con senderos en el Parque Utinga, biodiversidad en el Museo Goeldi y cerámica marajoara en el Polo Joyero.',
+ 'Три дня с тропами в парке Утинга, фауной в Музее Эмилио Гоелди и маражоарской керамикой в Сан-Жозе-Либерто.',
+ '三天深度体验乌廷加雨林国家公园绿道骑行、戈埃尔迪百年自然博物馆与圣何塞珠宝工艺中心。',
+ 'ウチンガ州立公園のサイクリング、ゲウジ自然科学博物館、サン・ジョゼ・リベルトの宝石・マラジョ土器をめぐる3日間。',
+ 'Dias 1 e 2 com o melhor do centro histórico e Ilha do Combu. O Dia 3 começa pedalando nas trilhas do Parque Estadual do Utinga cercado pela floresta primária, segue com visita ao centenário Museu Paraense Emílio Goeldi e finaliza no Polo Joalheiro Espaço São José Liberto conhecendo a arte cerâmica marajoara e joias com gemas da Amazônia.',
+ 'Days 1 and 2 cover the highlights and Combu Island. Day 3 features cycling the protected trails of Utinga State Park surrounded by rainforest, visiting the famous 19th-century Emílio Goeldi Museum, and discovering ancient Marajoara ceramics at São José Liberto.',
+ 'Jours 1 et 2: les incontournables et l''île de Combu. Jour 3: randonnée ou vélo au Parc d''Utinga, visite du Musée Emílio Goeldi et découvertes d''artisanat au Polo Joalheiro.',
+ 'Días 1 y 2: lo mejor del centro e Isla de Combu. Día 3: ciclismo en el Parque Utinga, fauna amazónica en el Museo Goeldi y joyas y cerámica en San José Liberto.',
+ 'Дни 1 и 2: знаковые места и остров Комбу. День 3: прогулка по парку Утинга, старейший музей Эмилио Гоелди и керамика маражоара в Сан-Жозе-Либерто.',
+ '第1至2天囊括城市核心景点与孔布岛；第3天清晨前往乌廷加湿地雨林公园骑行，午后造访百年艾米利奥戈埃尔迪生态博物馆，傍晚前往圣何塞珠宝工坊欣赏古代马拉若陶艺。',
+ '1・2日目に加え、3日目はウチンガ州立公園の原生林トレイル、歴史あるエミリオ・ゲウジ博物館、サン・ジョゼ・リベルトでのマラジョ土器・宝石工芸鑑賞。',
+ 3),
+ ('belem-imersao-5-dias', 5, 'Completo', 'Imersão Amazônica Completa — 5 Dias', 'Complete Amazonian Immersion — 5 Days', 'Immersion Amazonienne Complète — 5 Jours', 'Inmersión Amazónica Completa — 5 Días', 'Полное погружение в Амазонию — 5 дней', '亚马逊全景深度体验 — 5日游', 'アマゾン完全周遊プラン — 5日間',
+ 'O roteiro definitivo: história, gastronomia, ilhas com praias de água doce com ondas, Icoaraci e florestas protegidas.',
+ 'The ultimate itinerary: history, cuisine, freshwater beach islands with river waves in Mosqueiro, pottery masters in Icoaraci, and deep rainforest immersion.',
+ 'L''itinéraire ultime: histoire, haute gastronomie, plages d''eau douce à vagues à Mosqueiro, maîtres potiers à Icoaraci et forêt préservée.',
+ 'El itinerario definitivo: patrimonio histórico, gastronomía, playas de agua dulce con olas en Mosqueiro y cerámica en Icoaraci.',
+ 'Самый полный маршрут: история, кухня, пресноводные пляжи Москейро с речными волнами, керамика Икоараси и дикая природа.',
+ '终极全景体验：历史古迹、舌尖美食、莫斯凯罗淡水浪涌海滩、伊科阿拉西古法马拉若陶工坊与原生雨林。',
+ '決定版プラン：歴史、郷土料理、モスケイロ島の淡水白砂ビーチ、イコアラシ陶芸の里、緑豊かな保護区を巡る完全旅程。',
+ 'Cinco dias para se apaixonar por Belém. Inclui todo o patrimônio histórico, gastronomia ribeirinha no Combu, natureza no Utinga e Bosque Rodrigues Alves, dia de praia doce de rio com ondas na bucólica Ilha de Mosqueiro, e vivência com mestres artesãos do barro em Icoaraci no Paracuri.',
+ 'Five days to fall in love with Belém. Includes all historical landmarks, riverside Combu food tour, Utinga rainforest trails, a full day at Mosqueiro Island relaxing on wide freshwater beaches with waves, and watching master ceramicists sculpt Marajoara urns in Icoaraci.',
+ 'Cinq jours pour aimer Belém: centre historique, île de Combu, parc d''Utinga, une journée sur les plages d''eau douce de l''île de Mosqueiro et ateliers de poterie marajoara à Icoaraci.',
+ 'Cinco días inolvidables: monumentos coloniales, Combu, parque Utinga, día de playa de río en la pintoresca Isla de Mosqueiro y visita a los talleres alfareros de Icoaraci.',
+ 'Пять незабываемых дней: памятники архитектуры, остров Комбу, парк Утинга, пляжи острова Москейро и традиционные гончарные мастерские Икоараси.',
+ '五天沉浸之旅：涵盖老城全部名胜、孔布岛河鲜之宴、乌廷加绿道、莫斯凯罗岛浩瀚淡水沙滩逐浪以及伊科阿拉西马拉若传统陶艺家工坊。',
+ '5日間のベレン満喫旅：歴史遺産、コンブー島、ウチンガ公園、川波の寄せるモスケイロ島の淡水ビーチ、イコアラシ陶芸村の職人技見学。',
+ 4);
+

@@ -1,3 +1,4 @@
+using System.Globalization;
 using Microsoft.AspNetCore.Mvc;
 using MinhaBelem.Core.Abstractions;
 using MinhaBelem.Core.Taxonomy;
@@ -5,14 +6,15 @@ using MinhaBelem.Web.Models;
 namespace MinhaBelem.Web.Controllers;
 public sealed class AgendaController(IContentRepository content) : Controller
 {
-    [HttpGet("agenda"), HttpGet("agenda/semana"), HttpGet("proximos-eventos"), HttpGet("programacao-infantil"), HttpGet("cinema-teatro"), HttpGet("esporte-lazer"), HttpGet("eventos-gratuitos"), HttpGet("meu-bairro"), HttpGet("fim-de-semana"), HttpGet("eventos-do-para"), HttpGet("feriados"), HttpGet("agora")]
+    [HttpGet("agenda"), HttpGet("{culture:regex(^(pt-BR|en|fr|es|ru|zh-Hans|ja)$)}/agenda"), HttpGet("agenda/semana"), HttpGet("proximos-eventos"), HttpGet("programacao-infantil"), HttpGet("cinema-teatro"), HttpGet("esporte-lazer"), HttpGet("eventos-gratuitos"), HttpGet("meu-bairro"), HttpGet("fim-de-semana"), HttpGet("eventos-do-para"), HttpGet("feriados"), HttpGet("agora")]
     public async Task<IActionResult> Index(int dias = 30, string? busca = null, string? bairro = null, string? municipio = null, string? categoria = null, Audience? publico = null, AccessibilityFeature? acessibilidade = null, int? idade = null, bool gratuito = false, CancellationToken ct = default)
     {
         if (!new[] { 0, 1, 7, 30, 90, 180, 365 }.Contains(dias) || busca?.Length > 120 || bairro?.Length > 120 || municipio?.Length > 120 || idade is < 0 or > 18 || publico is { } p && !Enum.IsDefined(p) || acessibilidade is { } a && !Enum.IsDefined(a)) return BadRequest();
         var today = PortalTime.Local(DateTime.UtcNow).Date;
         var from = today; var until = today.AddDays(dias == 0 ? 1 : dias == 1 ? 2 : dias + 1);
         if (dias == 1) from = today.AddDays(1);
-        var query = new ContentQuery { Search = busca, Neighborhood = bairro, Municipality = municipio, Category = Core.Taxonomy.Taxonomy.Resolve(categoria), Audience = publico, Accessibility = acessibilidade, AgeAtMost = idade, FreeOnly = gratuito, OnlyUpcomingEvents = true, StartsFromUtc = PortalTime.Utc(from), StartsBeforeUtc = PortalTime.Utc(until), PageSize = 100, Sort = ContentSort.Upcoming };
+        var currentCulture = CultureInfo.CurrentUICulture.Name;
+        var query = new ContentQuery { Search = busca, Neighborhood = bairro, Municipality = municipio, Category = Core.Taxonomy.Taxonomy.Resolve(categoria), Audience = publico, Accessibility = acessibilidade, AgeAtMost = idade, FreeOnly = gratuito, OnlyUpcomingEvents = true, StartsFromUtc = PortalTime.Utc(from), StartsBeforeUtc = PortalTime.Utc(until), PageSize = 100, Sort = ContentSort.Upcoming, Culture = currentCulture };
         var path = Request.Path.Value;
         var title = "Próximos eventos";
         if (path == "/agenda/semana") { title = "Agenda da semana"; query.StartsBeforeUtc = PortalTime.Utc(today.AddDays(7)); }

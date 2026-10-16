@@ -51,7 +51,7 @@ public sealed class ContentRepository(MySqlDataSource dataSource) : IContentRepo
 
         await using var connection = await OpenAsync(ct);
         var rows = (await connection.QueryAsync<ContentItem>(new CommandDefinition(sql, parameters, cancellationToken: ct))).AsList();
-        await LoadChildrenAsync(connection, rows, ct);
+        await LoadChildrenAsync(connection, rows, query.Culture, ct);
         return rows;
     }
 
@@ -132,7 +132,7 @@ public sealed class ContentRepository(MySqlDataSource dataSource) : IContentRepo
         {
             var term = query.Search.Trim();
             if (term.Length > 120) term = term[..120];
-            clauses.Add("(title LIKE @search OR summary LIKE @search OR neighborhood LIKE @search OR municipality LIKE @search OR subject LIKE @search)");
+            clauses.Add("(title LIKE @search OR summary LIKE @search OR neighborhood LIKE @search OR municipality LIKE @search OR subject LIKE @search OR EXISTS (SELECT 1 FROM mb_content_translations ct WHERE ct.content_id = mb_content_items.id AND (ct.title LIKE @search OR ct.summary LIKE @search)))");
             parameters.Add("search", $"%{EscapeLike(term)}%");
         }
 
@@ -149,7 +149,7 @@ public sealed class ContentRepository(MySqlDataSource dataSource) : IContentRepo
         await using var connection = await OpenAsync(ct);
         var item = await connection.QuerySingleOrDefaultAsync<ContentItem>(
             new CommandDefinition($"{Select} WHERE id = @id", new { id }, cancellationToken: ct));
-        if (item is not null) await LoadChildrenAsync(connection, [item], ct);
+        if (item is not null) await LoadChildrenAsync(connection, [item], null, ct);
         return item;
     }
 
@@ -158,11 +158,11 @@ public sealed class ContentRepository(MySqlDataSource dataSource) : IContentRepo
         await using var connection = await OpenAsync(ct);
         var item = await connection.QuerySingleOrDefaultAsync<ContentItem>(
             new CommandDefinition($"{Select} WHERE slug = @slug LIMIT 1", new { slug }, cancellationToken: ct));
-        if (item is not null) await LoadChildrenAsync(connection, [item], ct);
+        if (item is not null) await LoadChildrenAsync(connection, [item], null, ct);
         return item;
     }
 
-    private static async Task LoadChildrenAsync(MySqlConnector.MySqlConnection connection, IList<ContentItem> items, CancellationToken ct)
+    private static async Task LoadChildrenAsync(MySqlConnector.MySqlConnection connection, IList<ContentItem> items, string? culture, CancellationToken ct)
     {
         if (items.Count == 0) return;
         var ids = items.Select(i => i.Id).ToArray();
@@ -178,6 +178,31 @@ public sealed class ContentRepository(MySqlDataSource dataSource) : IContentRepo
         var byFeature = features.Where(a => Enum.TryParse<AccessibilityFeature>(a.Feature, true, out _))
                                  .GroupBy(a => a.ContentId)
                                  .ToDictionary(g => g.Key, g => (IReadOnlyList<AccessibilityFeature>)g.Select(x => Enum.Parse<AccessibilityFeature>(x.Feature, true)).ToArray());
+
+        if (!string.IsNullOrWhiteSpace(culture) && !culture.StartsWith("pt", StringComparison.OrdinalIgnoreCase))
+        {
+            var targetLang = culture.Trim();
+            var langPrefix = culture.Split('-')[0] + "%";
+            var translations = (await connection.QueryAsync<ContentTranslation>(new CommandDefinition("""
+                SELECT content_id AS ContentId, target_language AS TargetLanguage,
+                       title AS Title, summary AS Summary, body AS Body, cultural_notes AS CulturalNotes
+                FROM mb_content_translations
+                WHERE content_id IN @ids AND (target_language = @targetLang OR target_language LIKE @langPrefix) AND review_status = 'Approved'
+                ORDER BY version DESC
+                """, new { ids, targetLang, langPrefix }, cancellationToken: ct))).ToList();
+
+            var byContent = translations.GroupBy(t => t.ContentId).ToDictionary(g => g.Key, g => g.First());
+            foreach (var item in items)
+            {
+                if (byContent.TryGetValue(item.Id, out var trans))
+                {
+                    item.LocalizedTitle = trans.Title;
+                    item.LocalizedSummary = trans.Summary;
+                    item.LocalizedBody = trans.Body;
+                    item.CulturalNotes = trans.CulturalNotes;
+                }
+            }
+        }
 
         foreach (var item in items)
         {
@@ -407,7 +432,7 @@ public sealed class ContentRepository(MySqlDataSource dataSource) : IContentRepo
         await using var connection = await OpenAsync(ct);
         var expired = (await connection.QueryAsync<ContentItem>(new CommandDefinition(
             $"{Select} WHERE status IN ('Published','Cancelled') AND expires_at IS NOT NULL AND expires_at <= @now LIMIT 1000", new { now }, cancellationToken: ct))).AsList();
-        await LoadChildrenAsync(connection, expired, ct);
+        await LoadChildrenAsync(connection, expired, null, ct);
         var count = 0;
         foreach (var item in expired)
         {
