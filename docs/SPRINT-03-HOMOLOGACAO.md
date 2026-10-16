@@ -49,8 +49,8 @@ Há CLI explícita para schema, bootstrap e importação legada. Importação é
 | --- | --- |
 | `dotnet build MinhaBelem.sln -c Release` | Windows: sucesso, zero erros/avisos |
 | Build limpo da Solution na imagem .NET SDK 8 | Linux: sucesso |
-| Suite com MySQL 8.0.46 em Windows | 43 aprovados, 2 ignorados (Tesseract/FFmpeg ausentes), zero falhas |
-| Suite completa em Linux, MySQL real + Tesseract/FFmpeg reais | **45 aprovados, zero ignorados e zero falhas** |
+| Suite com MySQL 8.0.46 em Windows | 45 aprovados, 2 ignorados (Tesseract/FFmpeg ausentes), zero falhas |
+| Suite completa em Linux, MySQL real + Tesseract/FFmpeg reais | **47 aprovados, zero ignorados e zero falhas** |
 | Execução anterior isolada dos dois testes de mídia real | 2 aprovados, sem simular OCR/FFmpeg |
 | SQL inteiro executado duas vezes em banco descartável | Dados preservados, 45 tabelas, seeds sem duplicação |
 | Migrations/checksums e concorrência | Reexecução idempotente e atualização concorrente rejeitada |
@@ -60,7 +60,9 @@ Há CLI explícita para schema, bootstrap e importação legada. Importação é
 
 Testes HTTP usam `WebApplicationFactory` com cookies, TOTP, antiforgery e MySQL reais. IA/Google/conectores usam respostas simuladas. Cobrem bloqueio de rascunho, permissão sem MFA, publicação sensível, revisões, reimportação, cancelamento, agenda, quotas atômicas, host de credencial, menores, SSRF IPv6, truncamento e códigos recovery protegidos/uso único. Isso não é teste contra APIs reais, teste de carga ou pentest independente.
 
-`Dockerfile.homologacao` e [instruções reproduzíveis](OPERACAO.md) permitem repetir a suíte. Logs/TRX ficam ignorados pelo Git. GitHub Actions compila a Solution em Windows/Linux e tem job MySQL/HTTP com mídia real; o resultado remoto deve ser consultado na execução da PR, sem inferir aprovação a partir do teste local.
+`Dockerfile.homologacao` e [instruções reproduzíveis](OPERACAO.md) permitem repetir a suíte. Logs/TRX ficam ignorados pelo Git. GitHub Actions compila a Solution em Windows/Linux e tem job MySQL/HTTP com mídia real. O [primeiro ciclo remoto](https://github.com/devmnsoft/minhabelem/actions/runs/38963602410) passou nos três jobs no commit `b6f3816`; execuções dos commits seguintes estão na [PR #1](https://github.com/devmnsoft/minhabelem/pull/1).
+
+Na revisão final, foram acrescentadas regressões para arquivamento automático com revisão/auditoria, vínculo da fonte, preservação do primeiro horário de publicação e leitura do campo booleano de acessibilidade Places. O cliente Places também deixou de produzir prazo de cache fictício de 29 dias. Esses testes estão incluídos nos 47 acima.
 
 ## Segurança corrigida e limites
 
