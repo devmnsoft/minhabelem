@@ -1,0 +1,1 @@
+document.getElementById('share')?.addEventListener('click',async()=>{if(navigator.share){try{await navigator.share({title:document.title,url:location.href})}catch{}}else if(navigator.clipboard){await navigator.clipboard.writeText(location.href);alert('Link copiado!')}else{prompt('Copie o link:',location.href)}});
