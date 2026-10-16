@@ -26,6 +26,7 @@ public static class PublicationPolicy
         if (string.IsNullOrWhiteSpace(item.SourceUrl)) reasons.Add("URL da fonte obrigatória.");
         if (item.Summary.Length > 2500) reasons.Add("Resumo excede 2500 caracteres.");
         if (item.Title.Length > 300) reasons.Add("Título excede 300 caracteres.");
+        if (automated && item.RequiresHumanApproval) reasons.Add("Item aguarda aprovação humana.");
 
         if (item.Category == ContentCategory.Politica)
             reasons.Add("Notícia política exige aprovação editorial humana.");
@@ -45,7 +46,7 @@ public static class PublicationPolicy
         if (item.VerificationStatus == VerificationStatus.Outdated)
             reasons.Add("Verificação marcada como desatualizada.");
 
-        if (item.Kind == ContentKind.Event && item.EventStartAt.HasValue && item.EventStartAt.Value <= now)
+        if (item.Kind == ContentKind.Event && item.EventStartAt.HasValue && (item.EventEndAt ?? item.EventStartAt.Value) <= now)
             reasons.Add("Evento já realizado não pode ser publicado.");
 
         if (item.DuplicateOfId is > 0)

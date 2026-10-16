@@ -26,7 +26,8 @@ public static class StructuredEvents
         var name = String(value, "name");
         if (string.IsNullOrWhiteSpace(name)) return;
         var url = String(value, "url") ?? source;
-        result.Add(new(HtmlText.Clean(name, 300), HtmlText.ToPlainText(String(value, "description"), 1500), url, Name(value, "organizer"), null, Evidence(value, url)));
+        var image = value.TryGetProperty("image", out var imageValue) ? imageValue : default;
+        result.Add(new DiscoveredItem(HtmlText.Clean(name, 300), HtmlText.ToPlainText(String(value, "description"), 1500), url, Name(value, "organizer"), null, Evidence(value, url)) { MediaUrl = String(value, "image") ?? String(image, "contentUrl") ?? String(image, "url"), MediaCredit = String(image, "creditText") ?? String(value, "creditText"), MediaLicense = String(image, "license") ?? String(value, "license") });
     }
     public static EventEvidence Evidence(JsonElement value, string url)
     {
@@ -36,7 +37,7 @@ public static class StructuredEvents
         if (value.TryGetProperty("location", out var loc) && loc.ValueKind == JsonValueKind.Object && loc.TryGetProperty("address", out var address))
             location += " · " + (address.ValueKind == JsonValueKind.String ? address.GetString() : string.Join(", ", new[] { String(address, "streetAddress"), String(address, "addressLocality"), String(address, "addressRegion") }.Where(x => x is not null)));
         var price = value.TryGetProperty("offers", out var offer) && offer.ValueKind == JsonValueKind.Object && offer.TryGetProperty("price", out var p) ? p.ToString() : null;
-        return new(start, end, HtmlText.Clean(location, 500), Name(value, "organizer"), String(value, "eventStatus"), price, price == "0", String(value, "typicalAgeRange"), Name(value, "performer"), url, start is null);
+        return new(start, end, HtmlText.Clean(location, 500), Name(value, "organizer"), String(value, "eventStatus"), price, price == "0", String(value, "typicalAgeRange"), Name(value, "performer"), url, start is null) { Availability = offer.ValueKind == JsonValueKind.Object ? String(offer, "availability") : null };
     }
     private static DateTime? Date(string? value) => value is not null && Regex.IsMatch(value, @"(?:Z|[+-]\d{2}:\d{2})$", RegexOptions.IgnoreCase) && DateTimeOffset.TryParse(value, CultureInfo.InvariantCulture, DateTimeStyles.None, out var date) ? date.UtcDateTime : null;
     private static string? String(JsonElement value, string key) => value.ValueKind == JsonValueKind.Object && value.TryGetProperty(key, out var p) && p.ValueKind == JsonValueKind.String ? p.GetString() : null;
@@ -44,7 +45,7 @@ public static class StructuredEvents
 }
 public sealed class JsonLdConnector(ConnectorHttp http) : ISourceConnector
 {
-    public bool Supports(Core.Entities.FeedProtocol protocol) => protocol == Core.Entities.FeedProtocol.JsonLd;
+    public bool Supports(Core.Entities.FeedProtocol protocol) => protocol is Core.Entities.FeedProtocol.JsonLd or Core.Entities.FeedProtocol.Html;
     public string? ConfigurationIssue(SourceContext context) => null;
     public async Task<ConnectorResult> ReadAsync(SourceContext context, CancellationToken ct)
     {

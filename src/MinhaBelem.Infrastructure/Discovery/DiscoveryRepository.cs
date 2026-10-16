@@ -36,7 +36,7 @@ public sealed class DiscoveryRepository(MySqlDataSource data) : IDiscoveryReposi
     public async Task<(long Id, bool Changed)> StoreAsync(IngestionSource source, DiscoveredItem item, long runId, CancellationToken ct)
     {
         var snapshot = JsonSerializer.Serialize(item);
-        var fingerprint = Hashing.ContentFingerprint(item.Title, item.Summary + JsonSerializer.Serialize(item.Event));
+        var fingerprint = Hashing.ContentFingerprint(item.Title, item.Summary + JsonSerializer.Serialize(item.Event) + item.MediaUrl + item.MediaLicense + item.MediaCredit);
         await using var db = await data.OpenConnectionAsync(ct);
         await using var tx = await db.BeginTransactionAsync(ct);
         var hash = item.ExternalId is null ? Hashing.UrlHash(item.Url) : Hashing.Sha256(Hashing.NormalizeUrl(item.Url) + "|" + item.ExternalId);

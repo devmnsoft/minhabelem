@@ -3,6 +3,7 @@ using MinhaBelem.Core.Entities;
 using MinhaBelem.Core.Taxonomy;
 namespace MinhaBelem.Web.Models;
 public sealed record EditorialIndex(IReadOnlyList<IngestionCandidate> Candidates, IReadOnlyList<Core.Entities.ContentItem> Content);
+public sealed record ComparisonPage(IngestionCandidate Candidate, Core.Entities.ContentItem? Content, Core.Services.EventEvidence? Event);
 public sealed class ContentInput
 {
     public long Id { get; set; }
@@ -24,5 +25,13 @@ public sealed class ContentInput
     [Range(0, 999999999)] public decimal? TicketPrice { get; set; }
     public bool IsFree { get; set; }
     public bool Verified { get; set; }
+    public bool ResolveDuplicate { get; set; }
+    [StringLength(300)] public string? PublicUpdateNote { get; set; }
+    [StringLength(64)] public string? Subject { get; set; }
+    [Range(0, 18)] public int? MinimumAge { get; set; }
+    [StringLength(240)] public string? Organizer { get; set; }
+    [StringLength(500)] public string? Participants { get; set; }
+    public Audience[] Audiences { get; set; } = Array.Empty<Audience>();
+    public AccessibilityFeature[] Accessibility { get; set; } = Array.Empty<AccessibilityFeature>();
     [Required, StringLength(480)] public string ChangeSummary { get; set; } = "Revisão editorial";
 }

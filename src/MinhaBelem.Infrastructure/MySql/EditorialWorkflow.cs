@@ -21,7 +21,7 @@ public sealed class EditorialWorkflow(MySqlDataSource data) : IEditorialWorkflow
             ON DUPLICATE KEY UPDATE id=LAST_INSERT_ID(id);
             SELECT LAST_INSERT_ID();
             """, new { row.Title, row.Summary, row.SourceId, row.SourceName, row.SourceUrl, row.AuthorName, row.PublishedAt, actorId, slug = HtmlText.Slugify(row.Title)[..Math.Min(120, HtmlText.Slugify(row.Title).Length)] + "-" + candidateId, hash = row.SourceUrlHash, fingerprint = Hashing.ContentFingerprint(row.Title, row.Summary) }, tx, cancellationToken: ct));
-        await db.ExecuteAsync(new CommandDefinition("UPDATE mb_ingestion_candidates SET content_id=@id,status='Approved',review_notes='Importado para revisão humana' WHERE id=@candidateId", new { id, candidateId }, tx, cancellationToken: ct));
+        await db.ExecuteAsync(new CommandDefinition("UPDATE mb_ingestion_candidates SET content_id=@id,status=@status,review_notes='Importado para revisão humana' WHERE id=@candidateId", new { id, candidateId, status = actorId is null ? "InReview" : "Approved" }, tx, cancellationToken: ct));
         await db.ExecuteAsync(new CommandDefinition("INSERT IGNORE INTO mb_content_revisions (content_id,revision,change_summary,snapshot,changed_by_id) VALUES (@id,1,'Importação de candidato',@snapshot,@actorId)", new { id, actorId, snapshot = System.Text.Json.JsonSerializer.Serialize(row) }, tx, cancellationToken: ct));
         await db.ExecuteAsync(new CommandDefinition("INSERT INTO mb_audit_logs (actor_id,action,entity_type,entity_id,details) VALUES (@actorId,'candidate.imported','candidate',@candidateId,JSON_OBJECT('contentId',@id))", new { actorId, candidateId, id }, tx, cancellationToken: ct));
         await tx.CommitAsync(ct);

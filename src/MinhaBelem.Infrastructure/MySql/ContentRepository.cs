@@ -13,7 +13,7 @@ public sealed class ContentRepository(MySqlDataSource dataSource) : IContentRepo
         SELECT id AS Id, kind AS Kind, category AS Category, subject AS Subject, title AS Title, slug AS Slug,
                summary AS Summary, body AS Body, neighborhood AS Neighborhood, municipality AS Municipality,
                state AS State, address AS Address, latitude AS Latitude, longitude AS Longitude,
-               source_id AS SourceId, source_name AS SourceName, source_url AS SourceUrl,
+               source_id AS SourceId, source_name AS SourceName, source_url AS SourceUrl, source_url_hash AS SourceUrlHash,
                author_name AS AuthorName, source_published_at AS SourcePublishedAt,
                image_url AS ImageUrl, image_credit AS ImageCredit, image_license AS ImageLicense,
                event_start_at AS EventStartAt, event_end_at AS EventEndAt, ticket_price AS TicketPrice,
@@ -85,6 +85,7 @@ public sealed class ContentRepository(MySqlDataSource dataSource) : IContentRepo
             clauses.Add("subject = @subject");
             parameters.Add("subject", query.Subject.Trim());
         }
+        if (query.Subjects is { Count: > 0 }) { clauses.Add("subject IN @subjects"); parameters.Add("subjects", query.Subjects); }
         if (!string.IsNullOrWhiteSpace(query.Neighborhood))
         {
             clauses.Add("neighborhood = @neighborhood");
@@ -118,7 +119,14 @@ public sealed class ContentRepository(MySqlDataSource dataSource) : IContentRepo
             parameters.Add("dateTo", query.DateTo.Value.ToDateTime(TimeOnly.MinValue));
         }
         if (query.OnlyUpcomingEvents)
-            clauses.Add("event_start_at >= UTC_TIMESTAMP(6)");
+            clauses.Add("event_start_at IS NOT NULL AND COALESCE(event_end_at,event_start_at) >= UTC_TIMESTAMP(6)");
+        if (query.StartsFromUtc is { } from) { clauses.Add("event_start_at >= @startsFrom"); parameters.Add("startsFrom", from); }
+        if (query.StartsBeforeUtc is { } before) { clauses.Add("event_start_at < @startsBefore"); parameters.Add("startsBefore", before); }
+        if (query.AgeAtMost is { } age)
+        {
+            clauses.Add("EXISTS (SELECT 1 FROM mb_event_evidence ev WHERE ev.content_id=mb_content_items.id AND JSON_EXTRACT(ev.evidence,'$.AgeRating') IS NOT NULL AND CAST(JSON_UNQUOTE(JSON_EXTRACT(ev.evidence,'$.AgeRating')) AS UNSIGNED)<=@age)");
+            parameters.Add("age", age);
+        }
 
         if (!string.IsNullOrWhiteSpace(query.Search))
         {
@@ -233,7 +241,7 @@ public sealed class ContentRepository(MySqlDataSource dataSource) : IContentRepo
                 image_url = @ImageUrl, image_credit = @ImageCredit, image_license = @ImageLicense,
                 event_start_at = @EventStartAt, event_end_at = @EventEndAt, ticket_price = @TicketPrice,
                 ticket_price_text = @TicketPriceText, is_free = @IsFree, status = @Status,
-                verification_status = @VerificationStatus, flags = @Flags,
+                verification_status = @VerificationStatus, flags = @Flags, duplicate_of_id = @DuplicateOfId,
                 requires_human_approval = @RequiresHumanApproval, expires_at = @ExpiresAt,
                 published_at = @PublishedAt, last_verified_at = @LastVerifiedAt, reviewed_by_id = @ReviewedById,
                 revision = revision + 1, updated_at = UTC_TIMESTAMP(6)
@@ -314,6 +322,7 @@ public sealed class ContentRepository(MySqlDataSource dataSource) : IContentRepo
     {
         var item = await GetAsync(id, ct);
         if (item is null) return false;
+        if (status == ContentStatus.Cancelled && (item.Status != ContentStatus.Published || item.VerificationStatus != VerificationStatus.Verified)) return false;
         if (status == ContentStatus.Published)
         {
             if (item.Status != ContentStatus.InReview || item.VerificationStatus != VerificationStatus.Verified ||
@@ -322,7 +331,9 @@ public sealed class ContentRepository(MySqlDataSource dataSource) : IContentRepo
                 item.Flags.HasFlag(ModerationFlag.Outdated) || item.IsExpired(DateTime.UtcNow) ||
                 (item.Kind == ContentKind.Event && item.EventStartAt is null) ||
                 !PublicationPolicy.Evaluate(item, DateTime.UtcNow, automated: false).Allowed) return false;
-            item.PublishedAt = DateTime.UtcNow;
+            await using var historyConnection = await OpenAsync(ct);
+            var publishedBefore = await historyConnection.ExecuteScalarAsync<int>(new CommandDefinition("SELECT COUNT(*) FROM mb_content_revisions WHERE content_id=@id AND COALESCE(JSON_UNQUOTE(JSON_EXTRACT(snapshot,'$.Status')),JSON_UNQUOTE(JSON_EXTRACT(snapshot,'$.status'))) IN ('2','Published','published')", new { id }, cancellationToken: ct)) > 0;
+            if (!publishedBefore) item.PublishedAt = DateTime.UtcNow;
             item.RequiresHumanApproval = false;
         }
         item.Status = status;

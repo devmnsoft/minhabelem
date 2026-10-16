@@ -7,7 +7,7 @@ using MinhaBelem.Core.Text;
 using TaxonomyInfo = MinhaBelem.Core.Taxonomy.Taxonomy;
 namespace MinhaBelem.Web.Controllers;
 
-public sealed class HomeController(IContentRepository content, ICommunityRepository community) : Controller
+public sealed class HomeController(IContentRepository content, ICommunityRepository community, IPlaceRepository places) : Controller
 {
     public async Task<IActionResult> Index(string? categoria, string? busca, string? bairro, string? municipio, string? assunto, bool gratuito = false, DateOnly? de = null, DateOnly? ate = null, int pagina = 1, CancellationToken ct = default)
     {
@@ -20,12 +20,24 @@ public sealed class HomeController(IContentRepository content, ICommunityReposit
             category = subject?.Category; assunto = subject?.Key;
         }
         ViewData["Category"] = categoria; ViewData["Search"] = busca; ViewData["Page"] = pagina;
+        if (!string.IsNullOrWhiteSpace(busca)) ViewData["Places"] = await places.SearchAsync(new PlaceQuery { Search = busca, PageSize = 12 }, ct);
         return View(await content.SearchAsync(new ContentQuery { Category = category, Search = busca, Subject = assunto, Neighborhood = bairro, Municipality = municipio, FreeOnly = gratuito, DateFrom = de, DateTo = ate, OnlyUpcomingEvents = categoria == "eventos", Page = pagina }, ct));
     }
     public async Task<IActionResult> Detalhe(long id, CancellationToken ct)
     {
         var item = await content.GetAsync(id, ct);
-        return item is null || !item.IsVisibleToPublic(DateTime.UtcNow) ? NotFound() : View(item);
+        if (item is null || !item.IsVisibleToPublic(DateTime.UtcNow)) return NotFound();
+        var history = new List<(DateTime Date, string Note)>();
+        foreach (var revision in (await content.RevisionsAsync(id, ct)).Take(30))
+        {
+            using var snapshot = System.Text.Json.JsonDocument.Parse(revision.SnapshotJson);
+            var root = snapshot.RootElement;
+            if (!root.TryGetProperty("Status", out var status) || status.ToString() is not ("2" or "5" or "Published" or "Cancelled")) continue;
+            var note = root.TryGetProperty("EventDetails", out var details) && details.ValueKind == System.Text.Json.JsonValueKind.Object && details.TryGetProperty("PublicUpdateNote", out var publicNote) && publicNote.ValueKind == System.Text.Json.JsonValueKind.String ? publicNote.GetString() : null;
+            history.Add((revision.ChangedAt, string.IsNullOrWhiteSpace(note) ? status.ToString() is "5" or "Cancelled" ? "Cancelamento confirmado pela equipe." : "Publicação ou atualização após conferência editorial." : note));
+        }
+        ViewData["PublicHistory"] = history.Take(10).ToArray();
+        return View(item);
     }
     [HttpPost, EnableRateLimiting("submission")]
     public async Task<IActionResult> Colaborar(string nome, string mensagem, bool consentimento, CancellationToken ct)
@@ -41,4 +53,12 @@ public sealed class HomeController(IContentRepository content, ICommunityReposit
     [HttpGet("privacidade")] public IActionResult Privacidade() => View();
     [HttpGet("termos")] public IActionResult Termos() => View();
     [HttpGet("robots.txt")] public IActionResult Robots() => Content("User-agent: *\nDisallow: /admin\nDisallow: /conta\nDisallow: /editorial\n", "text/plain");
+    [HttpGet("sitemap.xml")]
+    public async Task<IActionResult> Sitemap(CancellationToken ct)
+    {
+        System.Xml.Linq.XNamespace ns = "http://www.sitemaps.org/schemas/sitemap/0.9";
+        var rows = await content.SearchAsync(new ContentQuery { PageSize = 1000 }, ct);
+        var root = new System.Xml.Linq.XElement(ns + "urlset", rows.Select(x => new System.Xml.Linq.XElement(ns + "url", new System.Xml.Linq.XElement(ns + "loc", "https://minhabelem.com.br/Home/Detalhe/" + x.Id), new System.Xml.Linq.XElement(ns + "lastmod", x.UpdatedAt.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture)))));
+        return Content(new System.Xml.Linq.XDocument(root).ToString(), "application/xml");
+    }
 }

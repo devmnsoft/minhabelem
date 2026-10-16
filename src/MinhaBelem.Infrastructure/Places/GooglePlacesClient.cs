@@ -172,17 +172,19 @@ public sealed class GooglePlacesClient(
         var openingHours = ReadOpeningHours(element);
 
         string? photoName = null, photoAttribution = null;
+        string? photoGoogleMapsUri = null;
         var authors = new List<PhotoAuthor>();
         if (element.TryGetProperty("photos", out var photos) && photos.ValueKind == JsonValueKind.Array && photos.GetArrayLength() > 0)
         {
             photoName = GetString(photos[0], "name");
+            photoGoogleMapsUri = GetString(photos[0], "googleMapsUri");
             if (photos[0].TryGetProperty("authorAttributions", out var attributions) && attributions.ValueKind == JsonValueKind.Array && attributions.GetArrayLength() > 0)
             {
                 foreach (var attribution in attributions.EnumerateArray())
                 {
                     var uri = GetString(attribution, "uri");
                     if (uri?.StartsWith("//", StringComparison.Ordinal) == true) uri = "https:" + uri;
-                    if (SafeUrl.Validate(uri).IsValid) authors.Add(new PhotoAuthor(GetString(attribution, "displayName") ?? "Autor", uri!));
+                    if (SafeUrl.Validate(uri).IsValid) authors.Add(new PhotoAuthor(GetString(attribution, "displayName") ?? "Autor", uri!) { PhotoUri = SafeUrl.Validate(GetString(attribution, "photoUri")).IsValid ? GetString(attribution, "photoUri") : null });
                 }
                 photoAttribution = string.Join(", ", authors.Select(x => x.Name));
             }
@@ -230,6 +232,7 @@ public sealed class GooglePlacesClient(
             PhotoName = photoName,
             PhotoAttribution = photoName is null ? null : photoAttribution,
             PhotoAuthors = authors,
+            PhotoGoogleMapsUri = photoGoogleMapsUri,
             IsPublished = true,
             CachedAt = now,
             PurgeAfter = purgeAfter,

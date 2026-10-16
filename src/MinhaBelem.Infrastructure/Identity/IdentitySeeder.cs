@@ -85,7 +85,7 @@ public sealed class IdentitySeeder(
             new { id = user.Id, name = user.DisplayName, details = "{\"source\":\"bootstrap\"}" },
             cancellationToken: ct));
 
-        logger.LogWarning("Superadministrador inicial criado para {Email}. Troque a senha e ative o MFA imediatamente.", normalized);
+        logger.LogWarning("Administrador inicial criado (ID {UserId}). Ative o autenticador no primeiro acesso.", user.Id);
     }
 
     private static async Task SeedLocalitiesAsync(MySqlConnection connection, CancellationToken ct)

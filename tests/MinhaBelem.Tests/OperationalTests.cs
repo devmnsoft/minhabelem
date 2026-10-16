@@ -17,7 +17,7 @@ namespace MinhaBelem.Tests;
 [Collection("MySql")]
 public sealed class OperationalTests(PortalFixture fixture)
 {
-    private async Task<(HttpClient Client, long Id)> Login(string role = Roles.SuperAdmin, bool setupMfa = true)
+    internal async Task<(HttpClient Client, long Id)> Login(string role = Roles.SuperAdmin, bool setupMfa = true)
     {
         var email = Guid.NewGuid().ToString("N") + "@example.com";
         var password = Guid.NewGuid().ToString("N") + "Aa1!";
@@ -51,7 +51,7 @@ public sealed class OperationalTests(PortalFixture fixture)
         var (client, id) = await Login();
         using (client)
         {
-            foreach (var path in new[] { "/admin", "/admin/fontes", "/admin/usuarios", "/admin/integracoes", "/admin/auditoria", "/admin/configuracoes", "/admin/colaboracoes", "/admin/lugares", "/conta/perfil", "/conta/sessoes", "/editorial" })
+            foreach (var path in new[] { "/admin", "/admin/fontes", "/admin/usuarios", "/admin/perfis", "/admin/integracoes", "/admin/auditoria", "/admin/configuracoes", "/admin/colaboracoes", "/admin/lugares", "/conta/perfil", "/conta/sessoes", "/editorial" })
             {
                 var page = await client.GetAsync(path);
                 Assert.True(page.StatusCode == HttpStatusCode.OK, path + " - " + (await page.Content.ReadAsStringAsync()).Split("HEADERS")[0]);

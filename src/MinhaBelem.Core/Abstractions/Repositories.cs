@@ -29,6 +29,7 @@ public sealed class ContentQuery
 {
     public ContentCategory? Category { get; set; }
     public string? Subject { get; set; }
+    public IReadOnlyList<string>? Subjects { get; set; }
     public string? Search { get; set; }
     public string? Neighborhood { get; set; }
     public string? Municipality { get; set; }
@@ -38,6 +39,9 @@ public sealed class ContentQuery
     public DateOnly? DateFrom { get; set; }
     public DateOnly? DateTo { get; set; }
     public bool OnlyUpcomingEvents { get; set; }
+    public DateTime? StartsFromUtc { get; set; }
+    public DateTime? StartsBeforeUtc { get; set; }
+    public int? AgeAtMost { get; set; }
     public ContentStatus? Status { get; set; }
     public int Page { get; set; } = 1;
     public int PageSize { get; set; } = 12;
@@ -65,6 +69,8 @@ public interface IIngestionRepository
 
 public sealed class CandidateQuery
 {
+    public bool OperationalOnly { get; set; }
+    public bool OnlyUnimported { get; set; }
     public CandidateStatus? Status { get; set; }
     public long? SourceId { get; set; }
     public string? Search { get; set; }

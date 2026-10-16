@@ -182,6 +182,8 @@ public sealed class IngestionRepository(MySqlDataSource dataSource) : IIngestion
     {
         var clauses = new List<string>();
         var parameters = new DynamicParameters();
+        if (query.OperationalOnly) clauses.Add("EXISTS (SELECT 1 FROM mb_ingestion_sources operational WHERE operational.id=mb_ingestion_candidates.source_id AND operational.enabled=1 AND operational.approved=1 AND TRIM(COALESCE(operational.license_note,''))<>'')");
+        if (query.OnlyUnimported) clauses.Add("content_id IS NULL");
         if (query.Status is not null)
         {
             clauses.Add("status = @status");

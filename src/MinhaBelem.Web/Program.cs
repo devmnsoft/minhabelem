@@ -5,12 +5,27 @@ using MinhaBelem.Core.Security;
 using MinhaBelem.Infrastructure.Identity;
 using MinhaBelem.Infrastructure.MySql;
 using MinhaBelem.Web.Security;
+using Microsoft.AspNetCore.DataProtection;
 
 var builder = WebApplication.CreateBuilder(args);
 CultureInfo.DefaultThreadCurrentCulture = CultureInfo.GetCultureInfo("pt-BR");
 CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.GetCultureInfo("pt-BR");
 builder.Services.AddControllersWithViews(o => o.Filters.Add(new Microsoft.AspNetCore.Mvc.AutoValidateAntiforgeryTokenAttribute()));
 builder.Services.AddMinhaBelemInfrastructure(builder.Configuration);
+var keyProtection = builder.Services.AddDataProtection().SetApplicationName("MinhaBelem");
+if (builder.Configuration["DataProtection:KeysPath"] is { Length: > 0 } keysPath)
+{
+    keyProtection.PersistKeysToFileSystem(new DirectoryInfo(keysPath));
+    if (builder.Configuration["DataProtection:CertificatePath"] is { Length: > 0 } certificatePath)
+        keyProtection.ProtectKeysWithCertificate(new System.Security.Cryptography.X509Certificates.X509Certificate2(certificatePath, builder.Configuration["DataProtection:CertificatePassword"]));
+    else if (OperatingSystem.IsWindows()) keyProtection.ProtectKeysWithDpapi();
+}
+builder.Services.Configure<ForwardedHeadersOptions>(o =>
+{
+    o.ForwardedHeaders = Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedFor | Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedProto;
+    foreach (var proxy in builder.Configuration.GetSection("ReverseProxy:KnownProxies").Get<string[]>() ?? Array.Empty<string>())
+        if (System.Net.IPAddress.TryParse(proxy, out var address)) o.KnownProxies.Add(address);
+});
 builder.Services.AddAuthentication(o =>
 {
     o.DefaultAuthenticateScheme = IdentityConstants.ApplicationScheme;
@@ -50,6 +65,7 @@ builder.Services.AddRateLimiter(o =>
     Add("public", 120); Add("login", 12); Add("submission", 3);
 });
 var app = builder.Build();
+app.UseForwardedHeaders();
 // Operacao explicita. Nunca aplicar SQL no startup ou publish normal.
 if (args.Contains("--initialize-database"))
 {

@@ -157,6 +157,11 @@ public sealed class AiRunLogger(MinhaBelem.Core.Abstractions.IAiRunRepository ru
             var completion = await client.CompleteAsync(AiPrompts.System, promptChars, ct);
             stopwatch.Stop();
             var responseJson = capture is null ? null : await capture(completion);
+            if (responseJson is not null)
+            {
+                try { using var json = JsonDocument.Parse(responseJson); }
+                catch (JsonException) { responseJson = JsonSerializer.Serialize(new { raw = responseJson }); }
+            }
 
             var run = new AiRun
             {
@@ -178,10 +183,11 @@ public sealed class AiRunLogger(MinhaBelem.Core.Abstractions.IAiRunRepository ru
             await runs.SaveAsync(run, ct);
             return run;
         }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested) { throw; }
         catch (Exception ex)
         {
             stopwatch.Stop();
-            logger.LogWarning(ex, "Falha na tarefa de IA {Task} via {Provider}", task, client.Provider);
+            logger.LogWarning("Falha na tarefa de IA {Task} via {Provider}: {ErrorType}", task, client.Provider, ex.GetType().Name);
             var run = new AiRun
             {
                 Provider = client.Provider,
@@ -193,7 +199,7 @@ public sealed class AiRunLogger(MinhaBelem.Core.Abstractions.IAiRunRepository ru
                 PromptChars = promptChars.Length,
                 LatencyMs = (int)stopwatch.ElapsedMilliseconds,
                 Success = false,
-                Error = ex.Message,
+                Error = ex is HttpRequestException http ? "HTTP " + http.StatusCode : ex.GetType().Name,
                 TriggeredByUserId = userId
             };
             await runs.SaveAsync(run, ct);

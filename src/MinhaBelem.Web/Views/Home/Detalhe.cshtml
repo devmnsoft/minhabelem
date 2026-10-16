@@ -1,3 +1,16 @@
 @model MinhaBelem.Core.Entities.ContentItem
-<p class="section small">Atualizado em @Model.UpdatedAt.ToString("g") UTC · Verificado em @Model.LastVerifiedAt.ToString("g") UTC · Responsável editorial #@Model.ReviewedById</p>
-<article class="section article"><p class="eyebrow">@Model.Category</p><h1>@Model.Title</h1><p>@Model.Summary</p><p>Fonte: <a href="@Model.SourceUrl" target="_blank" rel="noopener noreferrer">@Model.SourceName</a></p><p>Autoria: @(Model.AuthorName ?? "Não informada")</p><p>Publicado em: @Model.PublishedAt.ToString("dd/MM/yyyy HH:mm")</p>@if(Model.TicketPrice is not null){<p>Valor informado: @Model.TicketPrice.Value.ToString("C")</p>}<button id="share" type="button">Compartilhar</button></article>
+@using MinhaBelem.Web.Models
+@using MinhaBelem.Core.Entities
+@{ ViewData["Title"] = Model.Title + " | MinhaBelém"; }
+<article class="section article"><p class="eyebrow">@MinhaBelem.Core.Taxonomy.Taxonomy.Info(Model.Category).Label</p><h1>@Model.Title</h1>
+@if(Model.Status == ContentStatus.Cancelled){<p class="notice" role="status">Evento cancelado. Confira a fonte para orientações do organizador.</p>}
+<p class="lead">@Model.Summary</p>
+@if(Model.EventStartAt is { } start){<p><strong>Quando:</strong> @PortalTime.Local(start).ToString("dd/MM/yyyy HH:mm") @if(Model.EventEndAt is { } end){<span>até @PortalTime.Local(end).ToString("dd/MM/yyyy HH:mm")</span>} (Belém)</p>}
+@if(Model.Address is not null){<p><strong>Onde:</strong> @Model.Address · @Model.Neighborhood · @Model.Municipality</p>}
+@if(Model.Kind == ContentKind.Event){<p><strong>Ingresso:</strong> @(Model.IsFree ? "Gratuito" : Model.TicketPrice?.ToString("C") ?? "Consulte o organizador")</p>}
+@if(Model.EventDetails?.Availability?.EndsWith("SoldOut", StringComparison.OrdinalIgnoreCase) == true){<p class="notice">Ingressos esgotados conforme a fonte consultada. Confirme com o organizador.</p>}
+@if(Model.EventDetails is { } ev){<p><strong>Organização:</strong> @(ev.Organizer ?? "Consulte a fonte")</p><p><strong>Classificação:</strong> @(ev.AgeRating ?? "Não informada")</p>@if(ev.Participants is not null){<p>Participantes: @ev.Participants</p>}@if(!string.IsNullOrWhiteSpace(ev.PublicUpdateNote)){<aside class="notice"><strong>Atualização:</strong> @ev.PublicUpdateNote</aside>}}
+@if(!string.IsNullOrWhiteSpace(Model.Body)){<div class="article-body">@Model.Body</div>}
+<p>Fonte: @if(MinhaBelem.Core.Security.SafeUrl.Validate(Model.SourceUrl).IsValid){<a href="@Model.SourceUrl" target="_blank" rel="noopener noreferrer">@Model.SourceName</a>}else{<span>@Model.SourceName</span>}</p><p>Autoria: @(Model.AuthorName ?? "Não informada")</p><p class="small">Publicado em @PortalTime.Local(Model.PublishedAt).ToString("g") · Atualizado em @PortalTime.Local(Model.UpdatedAt).ToString("g") · Verificado em @PortalTime.Local(Model.LastVerifiedAt).ToString("g")</p><p class="small">Responsabilidade editorial: #@Model.ReviewedById</p><button id="share" type="button">Compartilhar</button><a href="https://wa.me/?text=@Uri.EscapeDataString(Model.Title + " https://minhabelem.com.br/Home/Detalhe/" + Model.Id)" target="_blank" rel="noopener noreferrer">Enviar pelo WhatsApp</a><p id="share-status" role="status" aria-live="polite"></p><p><a href="/agenda">Explorar a agenda</a></p></article>
+
+<section class="section article"><h2>Histórico de atualizações</h2><ul>@foreach(var entry in ViewData["PublicHistory"] as (DateTime Date,string Note)[] ?? Array.Empty<(DateTime Date,string Note)>()){<li>@PortalTime.Local(entry.Date).ToString("g") · @entry.Note</li>}</ul></section>

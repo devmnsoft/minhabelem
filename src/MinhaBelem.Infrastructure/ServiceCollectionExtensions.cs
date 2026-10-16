@@ -35,7 +35,15 @@ public static class InfrastructureServiceCollectionExtensions
             var builder = new MySqlDataSourceBuilder(connectionString);
             builder.ConnectionStringBuilder.DefaultCommandTimeout = 30;
             builder.ConnectionStringBuilder.ConnectionTimeout = 15;
+            builder.ConnectionStringBuilder.MaximumPoolSize = Math.Min(builder.ConnectionStringBuilder.MaximumPoolSize, 20);
+            builder.ConnectionStringBuilder.DateTimeKind = MySqlDateTimeKind.Utc;
             builder.ConnectionStringBuilder.AllowUserVariables = true;
+            builder.UseConnectionOpenedCallback(async (context, ct) =>
+            {
+                await using var command = context.Connection.CreateCommand();
+                command.CommandText = "SET SESSION time_zone = '+00:00'";
+                await command.ExecuteNonQueryAsync(ct);
+            });
             return builder.Build();
         });
 
@@ -56,13 +64,13 @@ public static class InfrastructureServiceCollectionExtensions
         {
             c.Timeout = TimeSpan.FromSeconds(60);
             c.DefaultRequestHeaders.UserAgent.ParseAdd("MinhaBelemBot/1.0");
-        });
+        }).ConfigurePrimaryHttpMessageHandler(PublicHttpTransport.Create);
 
         services.AddHttpClient("places", c =>
         {
             c.Timeout = TimeSpan.FromSeconds(20);
             c.DefaultRequestHeaders.UserAgent.ParseAdd("MinhaBelemBot/1.0");
-        });
+        }).ConfigurePrimaryHttpMessageHandler(PublicHttpTransport.Create);
 
         services.AddHttpClient("robots", c => c.Timeout = TimeSpan.FromSeconds(10))
                 .ConfigurePrimaryHttpMessageHandler(PublicHttpTransport.Create)
@@ -84,6 +92,7 @@ public static class InfrastructureServiceCollectionExtensions
         services.AddScoped<IEditorialWorkflow, EditorialWorkflow>();
         services.AddScoped<IDiscoveryRepository, DiscoveryRepository>();
         services.AddScoped<ConnectorHttp>();
+        services.AddScoped<IMediaAnalysis, TesseractMediaAnalysis>();
         services.AddScoped<ISourceConnector, RssAtomConnector>();
         services.AddScoped<ISourceConnector, CalendarConnector>();
         services.AddScoped<ISourceConnector, JsonLdConnector>();

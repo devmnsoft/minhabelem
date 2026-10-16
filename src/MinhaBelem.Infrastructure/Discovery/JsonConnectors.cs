@@ -7,12 +7,29 @@ namespace MinhaBelem.Infrastructure.Discovery;
 
 public abstract class JsonSourceConnector(ConnectorHttp http, FeedProtocol protocol, string? host, bool credentialRequired) : ISourceConnector
 {
-    public bool Supports(FeedProtocol candidate) => candidate == protocol;
-    public string? ConfigurationIssue(SourceContext context) => credentialRequired && !http.HasCredential(context.Profile) ? "Aguardando credencial e permissões da API oficial." :
-        host is not null && new Uri(context.Source.FeedUrl).Host != host ? "Cadastre o endpoint HTTPS da API oficial, sem credenciais na URL." : null;
+    public bool Supports(FeedProtocol candidate) => candidate == protocol || protocol == FeedProtocol.Custom && candidate == FeedProtocol.Json;
+    public string? ConfigurationIssue(SourceContext context) => http.CredentialIssue(context) ?? (credentialRequired && !http.HasCredential(context.Profile) ? "Aguardando credencial e permissões da API oficial." :
+        host is not null && new Uri(context.Source.FeedUrl).Host != host ? "Cadastre o endpoint HTTPS da API oficial, sem credenciais na URL." : null);
     public async Task<ConnectorResult> ReadAsync(SourceContext context, CancellationToken ct)
     {
-        var read = await http.ReadAsync(context, ct, host, protocol == FeedProtocol.TikTok);
+        var endpoint = context.Source.FeedUrl;
+        var existing = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(new Uri(endpoint).Query);
+        var parameters = new Dictionary<string,string?>();
+        if (protocol == FeedProtocol.Instagram && !existing.ContainsKey("fields")) parameters["fields"] = "id,caption,permalink,timestamp";
+        if (protocol == FeedProtocol.Facebook && !existing.ContainsKey("fields")) parameters["fields"] = "id,message,permalink_url,created_time";
+        if (protocol == FeedProtocol.TikTok && !existing.ContainsKey("fields")) parameters["fields"] = "id,title,video_description,share_url,create_time";
+        if (protocol == FeedProtocol.YouTube)
+        {
+            if (!existing.ContainsKey("part")) parameters["part"] = "snippet";
+            if (!existing.ContainsKey("type")) parameters["type"] = "video";
+            if (!existing.ContainsKey("order")) parameters["order"] = "date";
+            if (!existing.ContainsKey("maxResults")) parameters["maxResults"] = Math.Clamp(context.Profile.MaxItems,1,20).ToString(System.Globalization.CultureInfo.InvariantCulture);
+        }
+        if (protocol is FeedProtocol.YouTube or FeedProtocol.WebDiscovery && !existing.ContainsKey("q"))
+            parameters["q"] = context.Profile.Keywords + " " + context.Profile.Region + " Brasil -Portugal -Lisboa";
+        endpoint = Microsoft.AspNetCore.WebUtilities.QueryHelpers.AddQueryString(endpoint, parameters);
+        var requestContext = context with { Source = new IngestionSource { FeedUrl = endpoint, ETag = context.Source.ETag, LastModified = context.Source.LastModified } };
+        var read = await http.ReadAsync(requestContext, ct, host, protocol == FeedProtocol.TikTok);
         if (read.Body is null) return new(Array.Empty<DiscoveredItem>(), read.ETag, read.Modified);
         using var doc = JsonDocument.Parse(read.Body, new JsonDocumentOptions { MaxDepth = 32 });
         var root = doc.RootElement;
@@ -21,7 +38,7 @@ public abstract class JsonSourceConnector(ConnectorHttp http, FeedProtocol proto
         var result = new List<DiscoveredItem>();
         foreach (var row in list.EnumerateArray().Take(context.Profile.MaxItems))
         {
-            var snippet = row.TryGetProperty("snippet", out var sn) ? sn : row;
+            var snippet = row.TryGetProperty("snippet", out var sn) && sn.ValueKind == JsonValueKind.Object ? sn : row;
             var title = Text(snippet, "title") ?? Text(row, "caption") ?? Text(row, "message") ?? Text(row, "video_description");
             var link = Text(row, "url") ?? Text(row, "link") ?? Text(row, "permalink") ?? Text(row, "permalink_url") ?? Text(row, "share_url");
             if (protocol == FeedProtocol.YouTube && row.TryGetProperty("id", out var identifier) && identifier.TryGetProperty("videoId", out var videoId)) link = "https://www.youtube.com/watch?v=" + Uri.EscapeDataString(videoId.GetString()!);

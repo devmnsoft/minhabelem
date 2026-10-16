@@ -56,7 +56,7 @@ public sealed class SchemaMigrator(MySqlDataSource dataSource, ILogger<SchemaMig
 
                 var migrationStart = DateTime.UtcNow;
                 // MySQL faz commit implicito em DDL; nao ha rollback transacional do esquema.
-                await connection.ExecuteAsync(new CommandDefinition(script, cancellationToken: ct));
+                await connection.ExecuteAsync(new CommandDefinition(script, commandTimeout: 180, cancellationToken: ct));
                 await connection.ExecuteAsync(new CommandDefinition(
                     "INSERT INTO schema_migrations (version, checksum, duration_ms) VALUES (@version, @checksum, @ms);",
                     new { version, checksum, ms = (int)(DateTime.UtcNow - migrationStart).TotalMilliseconds },
@@ -68,7 +68,7 @@ public sealed class SchemaMigrator(MySqlDataSource dataSource, ILogger<SchemaMig
         }
         finally
         {
-            await lockConn.ExecuteAsync(new CommandDefinition("SELECT RELEASE_LOCK(@name);", new { name = LockName }, cancellationToken: ct));
+            await lockConn.ExecuteAsync(new CommandDefinition("SELECT RELEASE_LOCK(@name);", new { name = LockName }, cancellationToken: CancellationToken.None));
         }
 
         return new MigrationResult(applied, skipped, DateTime.UtcNow - started);

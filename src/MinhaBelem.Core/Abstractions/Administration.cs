@@ -28,4 +28,8 @@ public interface IAdministrationRepository
     Task<IReadOnlyDictionary<string, string>> SettingsAsync(CancellationToken ct);
     Task SetSettingAsync(string key, string value, long actorId, CancellationToken ct);
     Task<IReadOnlyList<IngestionRun>> RunsAsync(CancellationToken ct);
+    Task SetMediaPermissionAsync(long sourceId, bool allowed, string license, long actorId, CancellationToken ct);
+    Task<IReadOnlyList<string>> PermissionsAsync(long userId, CancellationToken ct);
+    Task<IReadOnlyDictionary<string, string[]>> RolePermissionsAsync(CancellationToken ct);
+    Task SetRolePermissionsAsync(string role, string[] permissions, long actorId, CancellationToken ct);
 }

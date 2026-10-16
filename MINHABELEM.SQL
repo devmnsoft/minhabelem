@@ -674,3 +674,284 @@ CREATE TABLE IF NOT EXISTS mb_api_usage (
     requests INT NOT NULL DEFAULT 0,
     PRIMARY KEY(service,day)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- @migration 005_localidades
+-- Municipios: API IBGE UF 15, consulta 16/10/2026. Bairros: catalogo CODEM de referencia.
+INSERT IGNORE INTO mb_localities (name,slug,kind) VALUES
+('Abaetetuba','abaetetuba','municipality'),
+('Abel Figueiredo','abel-figueiredo','municipality'),
+('Acará','acara','municipality'),
+('Afuá','afua','municipality'),
+('Água Azul do Norte','agua-azul-do-norte','municipality'),
+('Alenquer','alenquer','municipality'),
+('Almeirim','almeirim','municipality'),
+('Altamira','altamira','municipality'),
+('Anajás','anajas','municipality'),
+('Ananindeua','ananindeua','municipality'),
+('Anapu','anapu','municipality'),
+('Augusto Corrêa','augusto-correa','municipality'),
+('Aurora do Pará','aurora-do-para','municipality'),
+('Aveiro','aveiro','municipality'),
+('Bagre','bagre','municipality'),
+('Baião','baiao','municipality'),
+('Bannach','bannach','municipality'),
+('Barcarena','barcarena','municipality'),
+('Belém','belem','municipality'),
+('Belterra','belterra','municipality'),
+('Benevides','benevides','municipality'),
+('Bom Jesus do Tocantins','bom-jesus-do-tocantins','municipality'),
+('Bonito','bonito','municipality'),
+('Bragança','braganca','municipality'),
+('Brasil Novo','brasil-novo','municipality'),
+('Brejo Grande do Araguaia','brejo-grande-do-araguaia','municipality'),
+('Breu Branco','breu-branco','municipality'),
+('Breves','breves','municipality'),
+('Bujaru','bujaru','municipality'),
+('Cachoeira do Arari','cachoeira-do-arari','municipality'),
+('Cachoeira do Piriá','cachoeira-do-piria','municipality'),
+('Cametá','cameta','municipality'),
+('Canaã dos Carajás','canaa-dos-carajas','municipality'),
+('Capanema','capanema','municipality'),
+('Capitão Poço','capitao-poco','municipality'),
+('Castanhal','castanhal','municipality'),
+('Chaves','chaves','municipality'),
+('Colares','colares','municipality'),
+('Conceição do Araguaia','conceicao-do-araguaia','municipality'),
+('Concórdia do Pará','concordia-do-para','municipality'),
+('Cumaru do Norte','cumaru-do-norte','municipality'),
+('Curionópolis','curionopolis','municipality'),
+('Curralinho','curralinho','municipality'),
+('Curuá','curua','municipality'),
+('Curuçá','curuca','municipality'),
+('Dom Eliseu','dom-eliseu','municipality'),
+('Eldorado do Carajás','eldorado-do-carajas','municipality'),
+('Faro','faro','municipality'),
+('Floresta do Araguaia','floresta-do-araguaia','municipality'),
+('Garrafão do Norte','garrafao-do-norte','municipality'),
+('Goianésia do Pará','goianesia-do-para','municipality'),
+('Gurupá','gurupa','municipality'),
+('Igarapé-Açu','igarape-acu','municipality'),
+('Igarapé-Miri','igarape-miri','municipality'),
+('Inhangapi','inhangapi','municipality'),
+('Ipixuna do Pará','ipixuna-do-para','municipality'),
+('Irituia','irituia','municipality'),
+('Itaituba','itaituba','municipality'),
+('Itupiranga','itupiranga','municipality'),
+('Jacareacanga','jacareacanga','municipality'),
+('Jacundá','jacunda','municipality'),
+('Juruti','juruti','municipality'),
+('Limoeiro do Ajuru','limoeiro-do-ajuru','municipality'),
+('Mãe do Rio','mae-do-rio','municipality'),
+('Magalhães Barata','magalhaes-barata','municipality'),
+('Marabá','maraba','municipality'),
+('Maracanã','maracana','municipality'),
+('Marapanim','marapanim','municipality'),
+('Marituba','marituba','municipality'),
+('Medicilândia','medicilandia','municipality'),
+('Melgaço','melgaco','municipality'),
+('Mocajuba','mocajuba','municipality'),
+('Moju','moju','municipality'),
+('Mojuí dos Campos','mojui-dos-campos','municipality'),
+('Monte Alegre','monte-alegre','municipality'),
+('Muaná','muana','municipality'),
+('Nova Esperança do Piriá','nova-esperanca-do-piria','municipality'),
+('Nova Ipixuna','nova-ipixuna','municipality'),
+('Nova Timboteua','nova-timboteua','municipality'),
+('Novo Progresso','novo-progresso','municipality'),
+('Novo Repartimento','novo-repartimento','municipality'),
+('Óbidos','obidos','municipality'),
+('Oeiras do Pará','oeiras-do-para','municipality'),
+('Oriximiná','oriximina','municipality'),
+('Ourém','ourem','municipality'),
+('Ourilândia do Norte','ourilandia-do-norte','municipality'),
+('Pacajá','pacaja','municipality'),
+('Palestina do Pará','palestina-do-para','municipality'),
+('Paragominas','paragominas','municipality'),
+('Parauapebas','parauapebas','municipality'),
+('Pau D''Arco','pau-d-arco','municipality'),
+('Peixe-Boi','peixe-boi','municipality'),
+('Piçarra','picarra','municipality'),
+('Placas','placas','municipality'),
+('Ponta de Pedras','ponta-de-pedras','municipality'),
+('Portel','portel','municipality'),
+('Porto de Moz','porto-de-moz','municipality'),
+('Prainha','prainha','municipality'),
+('Primavera','primavera','municipality'),
+('Quatipuru','quatipuru','municipality'),
+('Redenção','redencao','municipality'),
+('Rio Maria','rio-maria','municipality'),
+('Rondon do Pará','rondon-do-para','municipality'),
+('Rurópolis','ruropolis','municipality'),
+('Salinópolis','salinopolis','municipality'),
+('Salvaterra','salvaterra','municipality'),
+('Santa Bárbara do Pará','santa-barbara-do-para','municipality'),
+('Santa Cruz do Arari','santa-cruz-do-arari','municipality'),
+('Santa Izabel do Pará','santa-izabel-do-para','municipality'),
+('Santa Luzia do Pará','santa-luzia-do-para','municipality'),
+('Santa Maria das Barreiras','santa-maria-das-barreiras','municipality'),
+('Santa Maria do Pará','santa-maria-do-para','municipality'),
+('Santana do Araguaia','santana-do-araguaia','municipality'),
+('Santarém','santarem','municipality'),
+('Santarém Novo','santarem-novo','municipality'),
+('Santo Antônio do Tauá','santo-antonio-do-taua','municipality'),
+('São Caetano de Odivelas','sao-caetano-de-odivelas','municipality'),
+('São Domingos do Araguaia','sao-domingos-do-araguaia','municipality'),
+('São Domingos do Capim','sao-domingos-do-capim','municipality'),
+('São Félix do Xingu','sao-felix-do-xingu','municipality'),
+('São Francisco do Pará','sao-francisco-do-para','municipality'),
+('São Geraldo do Araguaia','sao-geraldo-do-araguaia','municipality'),
+('São João da Ponta','sao-joao-da-ponta','municipality'),
+('São João de Pirabas','sao-joao-de-pirabas','municipality'),
+('São João do Araguaia','sao-joao-do-araguaia','municipality'),
+('São Miguel do Guamá','sao-miguel-do-guama','municipality'),
+('São Sebastião da Boa Vista','sao-sebastiao-da-boa-vista','municipality'),
+('Sapucaia','sapucaia','municipality'),
+('Senador José Porfírio','senador-jose-porfirio','municipality'),
+('Soure','soure','municipality'),
+('Tailândia','tailandia','municipality'),
+('Terra Alta','terra-alta','municipality'),
+('Terra Santa','terra-santa','municipality'),
+('Tomé-Açu','tome-acu','municipality'),
+('Tracuateua','tracuateua','municipality'),
+('Trairão','trairao','municipality'),
+('Tucumã','tucuma','municipality'),
+('Tucuruí','tucurui','municipality'),
+('Ulianópolis','ulianopolis','municipality'),
+('Uruará','uruara','municipality'),
+('Vigia','vigia','municipality'),
+('Viseu','viseu','municipality'),
+('Vitória do Xingu','vitoria-do-xingu','municipality'),
+('Xinguara','xinguara','municipality'),
+('Cidade Velha','cidade-velha','neighborhood'),
+('Campina','campina','neighborhood'),
+('Reduto','reduto','neighborhood'),
+('Umarizal','umarizal','neighborhood'),
+('Telegrafo','telegrafo','neighborhood'),
+('Sacramenta','sacramenta','neighborhood'),
+('Pedreira','pedreira','neighborhood'),
+('Marco','marco','neighborhood'),
+('Souza','souza','neighborhood'),
+('Marambaia','marambaia','neighborhood'),
+('Canudos','canudos','neighborhood'),
+('Fátima','fatima','neighborhood'),
+('São Brás','sao-bras','neighborhood'),
+('Nazaré','nazare','neighborhood'),
+('Batista Campos','batista-campos','neighborhood'),
+('Jurunas','jurunas','neighborhood'),
+('Condor','condor','neighborhood'),
+('Guamá','guama','neighborhood'),
+('Terra Firme','terra-firme','neighborhood'),
+('Cremação','cremacao','neighborhood'),
+('Val-de-Cães','val-de-caes','neighborhood'),
+('Miramar','miramar','neighborhood'),
+('Pratinha','pratinha','neighborhood'),
+('Tapanã','tapana','neighborhood'),
+('Bengui','bengui','neighborhood'),
+('Maracangalha','maracangalha','neighborhood'),
+('Barreiro','barreiro','neighborhood'),
+('Universitário','universitario','neighborhood'),
+('Curió-Utinga','curio-utinga','neighborhood'),
+('Aurá','aura','neighborhood'),
+('Castanheira','castanheira','neighborhood'),
+('Águas Lindas','aguas-lindas','neighborhood'),
+('Guanabara','guanabara','neighborhood'),
+('São Clemente','sao-clemente','neighborhood'),
+('Parque Guajará','parque-guajara','neighborhood'),
+('Tenoné','tenone','neighborhood'),
+('Águas Negras','aguas-negras','neighborhood'),
+('Maracacuera','maracacuera','neighborhood'),
+('Parque Verde','parque-verde','neighborhood'),
+('Cruzeiro','cruzeiro','neighborhood'),
+('Ponta Grossa','ponta-grossa','neighborhood'),
+('Mangueirão','mangueirao','neighborhood'),
+('Cabanagem','cabanagem','neighborhood'),
+('Campina de Icoaraci','campina-de-icoaraci','neighborhood'),
+('Paracuri','paracuri','neighborhood'),
+('Agulha','agulha','neighborhood'),
+('Una','una','neighborhood'),
+('Coqueiro','coqueiro','neighborhood'),
+('Brasília','brasilia','neighborhood'),
+('São João do Outeiro','sao-joao-do-outeiro','neighborhood'),
+('Itaiteua','itaiteua','neighborhood'),
+('Água Negra','agua-negra','neighborhood'),
+('Maracajá','maracaja','neighborhood'),
+('Vila','vila','neighborhood'),
+('Praia Grande','praia-grande','neighborhood'),
+('Farol','farol','neighborhood'),
+('Mangueiras','mangueiras','neighborhood'),
+('São Francisco','sao-francisco','neighborhood'),
+('Caranamduba','caranamduba','neighborhood'),
+('Marahu','marahu','neighborhood'),
+('Paraíso','paraiso','neighborhood'),
+('Baia do Sol','baia-do-sol','neighborhood'),
+('Sucurijuquara','sucurijuquara','neighborhood'),
+('Caruara','caruara','neighborhood'),
+('Bonfim','bonfim','neighborhood'),
+('Ariramba','ariramba','neighborhood'),
+('Porto Arthur','porto-arthur','neighborhood'),
+('Murubira','murubira','neighborhood'),
+('Chapéu Virado','chapeu-virado','neighborhood'),
+('Aeroporto','aeroporto','neighborhood');
+
+-- @migration 006_midia
+CREATE TABLE IF NOT EXISTS mb_media_permissions (
+ source_id BIGINT UNSIGNED NOT NULL PRIMARY KEY,
+ allow_analysis TINYINT(1) NOT NULL DEFAULT 0,
+ license_note VARCHAR(1000) NOT NULL,
+ CONSTRAINT fk_media_permission_source FOREIGN KEY(source_id) REFERENCES mb_ingestion_sources(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+CREATE TABLE IF NOT EXISTS mb_media_analysis (
+ id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+ candidate_id BIGINT UNSIGNED NOT NULL,
+ actor_id BIGINT UNSIGNED NOT NULL,
+ engine VARCHAR(80) NOT NULL,
+ extracted_text TEXT NOT NULL,
+ credit VARCHAR(500) NOT NULL,
+ license_note VARCHAR(1000) NOT NULL,
+ created_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+ KEY idx_media_candidate(candidate_id,created_at),
+ CONSTRAINT fk_media_candidate FOREIGN KEY(candidate_id) REFERENCES mb_ingestion_candidates(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- @migration 007_relacionamentos
+-- Validacao aditiva: dados orfaos fazem a operacao parar; nenhum registro e apagado.
+
+SET @minhabelem_ddl = IF(EXISTS(SELECT 1 FROM information_schema.REFERENTIAL_CONSTRAINTS WHERE CONSTRAINT_SCHEMA=DATABASE() AND CONSTRAINT_NAME='fk_mb_content_source'),'SELECT 1','ALTER TABLE mb_content_items ADD CONSTRAINT fk_mb_content_source FOREIGN KEY (source_id) REFERENCES mb_ingestion_sources(id) ON DELETE SET NULL');
+PREPARE minhabelem_stmt FROM @minhabelem_ddl;
+EXECUTE minhabelem_stmt;
+DEALLOCATE PREPARE minhabelem_stmt;
+
+SET @minhabelem_ddl = IF(EXISTS(SELECT 1 FROM information_schema.REFERENTIAL_CONSTRAINTS WHERE CONSTRAINT_SCHEMA=DATABASE() AND CONSTRAINT_NAME='fk_mb_content_reviewer'),'SELECT 1','ALTER TABLE mb_content_items ADD CONSTRAINT fk_mb_content_reviewer FOREIGN KEY (reviewed_by_id) REFERENCES mb_users(id) ON DELETE SET NULL');
+PREPARE minhabelem_stmt FROM @minhabelem_ddl;
+EXECUTE minhabelem_stmt;
+DEALLOCATE PREPARE minhabelem_stmt;
+
+SET @minhabelem_ddl = IF(EXISTS(SELECT 1 FROM information_schema.REFERENTIAL_CONSTRAINTS WHERE CONSTRAINT_SCHEMA=DATABASE() AND CONSTRAINT_NAME='fk_mb_content_author'),'SELECT 1','ALTER TABLE mb_content_items ADD CONSTRAINT fk_mb_content_author FOREIGN KEY (created_by_id) REFERENCES mb_users(id) ON DELETE SET NULL');
+PREPARE minhabelem_stmt FROM @minhabelem_ddl;
+EXECUTE minhabelem_stmt;
+DEALLOCATE PREPARE minhabelem_stmt;
+
+SET @minhabelem_ddl = IF(EXISTS(SELECT 1 FROM information_schema.REFERENTIAL_CONSTRAINTS WHERE CONSTRAINT_SCHEMA=DATABASE() AND CONSTRAINT_NAME='fk_mb_revision_actor'),'SELECT 1','ALTER TABLE mb_content_revisions ADD CONSTRAINT fk_mb_revision_actor FOREIGN KEY (changed_by_id) REFERENCES mb_users(id) ON DELETE SET NULL');
+PREPARE minhabelem_stmt FROM @minhabelem_ddl;
+EXECUTE minhabelem_stmt;
+DEALLOCATE PREPARE minhabelem_stmt;
+
+SET @minhabelem_ddl = IF(EXISTS(SELECT 1 FROM information_schema.REFERENTIAL_CONSTRAINTS WHERE CONSTRAINT_SCHEMA=DATABASE() AND CONSTRAINT_NAME='fk_mb_candidate_content'),'SELECT 1','ALTER TABLE mb_ingestion_candidates ADD CONSTRAINT fk_mb_candidate_content FOREIGN KEY (content_id) REFERENCES mb_content_items(id) ON DELETE SET NULL');
+PREPARE minhabelem_stmt FROM @minhabelem_ddl;
+EXECUTE minhabelem_stmt;
+DEALLOCATE PREPARE minhabelem_stmt;
+
+SET @minhabelem_ddl = IF(EXISTS(SELECT 1 FROM information_schema.REFERENTIAL_CONSTRAINTS WHERE CONSTRAINT_SCHEMA=DATABASE() AND CONSTRAINT_NAME='fk_mb_audit_actor'),'SELECT 1','ALTER TABLE mb_audit_logs ADD CONSTRAINT fk_mb_audit_actor FOREIGN KEY (actor_id) REFERENCES mb_users(id) ON DELETE SET NULL');
+PREPARE minhabelem_stmt FROM @minhabelem_ddl;
+EXECUTE minhabelem_stmt;
+DEALLOCATE PREPARE minhabelem_stmt;
+
+SET @minhabelem_ddl = IF(EXISTS(SELECT 1 FROM information_schema.REFERENTIAL_CONSTRAINTS WHERE CONSTRAINT_SCHEMA=DATABASE() AND CONSTRAINT_NAME='fk_mb_ai_actor'),'SELECT 1','ALTER TABLE mb_ai_runs ADD CONSTRAINT fk_mb_ai_actor FOREIGN KEY (triggered_by_user_id) REFERENCES mb_users(id) ON DELETE SET NULL');
+PREPARE minhabelem_stmt FROM @minhabelem_ddl;
+EXECUTE minhabelem_stmt;
+DEALLOCATE PREPARE minhabelem_stmt;
+
+SET @minhabelem_ddl = IF(EXISTS(SELECT 1 FROM information_schema.REFERENTIAL_CONSTRAINTS WHERE CONSTRAINT_SCHEMA=DATABASE() AND CONSTRAINT_NAME='fk_mb_media_actor'),'SELECT 1','ALTER TABLE mb_media_analysis ADD CONSTRAINT fk_mb_media_actor FOREIGN KEY (actor_id) REFERENCES mb_users(id) ON DELETE RESTRICT');
+PREPARE minhabelem_stmt FROM @minhabelem_ddl;
+EXECUTE minhabelem_stmt;
+DEALLOCATE PREPARE minhabelem_stmt;

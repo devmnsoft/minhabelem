@@ -202,7 +202,8 @@ public sealed class PlaceRepository(MySqlDataSource dataSource) : IPlaceReposito
               price_level = VALUES(price_level), price_text = VALUES(price_text),
               wheelchair_accessible = VALUES(wheelchair_accessible),
               photo_name = VALUES(photo_name), photo_attribution = VALUES(photo_attribution),
-              cached_at = VALUES(cached_at), purge_after = VALUES(purge_after)
+              cached_at = VALUES(cached_at), purge_after = VALUES(purge_after),
+              editorial_note = VALUES(editorial_note), editorial_note_source = VALUES(editorial_note_source)
             """, new
             {
                 place.GooglePlaceId, place.Slug, place.Name, place.FormattedAddress,

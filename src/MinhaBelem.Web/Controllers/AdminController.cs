@@ -14,14 +14,24 @@ using MinhaBelem.Infrastructure.Identity;
 using MinhaBelem.Web.Models;
 namespace MinhaBelem.Web.Controllers;
 
-[Route("admin"), Authorize(Policy = Permissions.DashboardRead)]
+[Route("admin"), Authorize]
 public sealed class AdminController(IAdministrationRepository admin, IDashboardRepository dashboard, IIngestionRepository ingestion, IAuditRepository audit,
     IAiRunRepository aiRuns, UserManager<ApplicationUser> users, ICommunityRepository community, IPlaceRepository places, IPlacesClient google, IOptions<AiOptions> aiOptions,
     IDiscoveryRepository discovery, ISourceCollection collector) : Controller
 {
     private long Actor => long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
     private Task Audit(string action, string type, long? id, CancellationToken ct) => audit.WriteAsync(new AuditEntry { ActorId = Actor, Action = action, EntityType = type, EntityId = id }, ct);
-    [HttpGet("")] public async Task<IActionResult> Index(CancellationToken ct) => View(await dashboard.BuildAsync(ct));
+    [HttpGet(""), Authorize(Policy = Permissions.DashboardRead)] public async Task<IActionResult> Index(CancellationToken ct) => View(await dashboard.BuildAsync(ct));
+    [HttpGet("perfis"), Authorize(Policy = Permissions.UserManage)]
+    public async Task<IActionResult> Perfis(CancellationToken ct) => View(await admin.RolePermissionsAsync(ct));
+    [HttpPost("perfis"), Authorize(Policy = Permissions.UserManage)]
+    public async Task<IActionResult> SalvarPerfil(string role, string[] permissions, CancellationToken ct)
+    {
+        if (role == Roles.SuperAdmin || !Roles.All.Contains(role) || permissions.Any(x => !Permissions.All.Contains(x))) return BadRequest();
+        await admin.SetRolePermissionsAsync(role, permissions, Actor, ct);
+        TempData["Notice"] = "Permissões salvas. As sessões dos usuários deste perfil foram invalidadas.";
+        return RedirectToAction(nameof(Perfis));
+    }
     [HttpGet("usuarios"), Authorize(Policy = Permissions.UserManage)]
     public async Task<IActionResult> Usuarios(CancellationToken ct) => View(await admin.UsersAsync(ct));
     [HttpPost("usuarios"), Authorize(Policy = Permissions.UserManage)]
@@ -98,15 +108,23 @@ public sealed class AdminController(IAdministrationRepository admin, IDashboardR
         source.Enabled = false; await ingestion.UpsertSourceAsync(source, ct); await Audit("source.suspended", "source", id, ct);
         return RedirectToAction(nameof(Fontes));
     }
+    [HttpPost("fontes/{id:long}/midia"), Authorize(Policy = Permissions.SourceManage)]
+    public async Task<IActionResult> PermitirMidia(long id, bool allowed, string license, CancellationToken ct)
+    {
+        if (await ingestion.SourceAsync(id, ct) is null || string.IsNullOrWhiteSpace(license) || license.Length > 1000) return BadRequest();
+        await admin.SetMediaPermissionAsync(id, allowed, license, Actor, ct);
+        TempData["Notice"] = "Permissão de mídia registrada. OCR ainda depende de licença por imagem e configuração no servidor.";
+        return RedirectToAction(nameof(Fontes));
+    }
     [HttpGet("integracoes"), Authorize(Policy = Permissions.SettingsManage)]
     public async Task<IActionResult> Integracoes(CancellationToken ct)
     {
         ViewData["AiRuns"] = await aiRuns.RecentAsync(30, ct);
         return View(new[] {
             new IntegrationStatus("Google Places", google.IsConfigured, google.IsConfigured ? "Configurada; verificar cotas e autorização no provedor" : "Chave ausente"),
-            new IntegrationStatus("Groq", !string.IsNullOrWhiteSpace(aiOptions.Value.Groq.ApiKey), "A execução real aparece no histórico abaixo"),
-            new IntegrationStatus("Gemini", !string.IsNullOrWhiteSpace(aiOptions.Value.Gemini.ApiKey), "A execução real aparece no histórico abaixo"),
-            new IntegrationStatus("DeepSeek", !string.IsNullOrWhiteSpace(aiOptions.Value.DeepSeek.ApiKey), "A execução real aparece no histórico abaixo") });
+            new IntegrationStatus("Groq", aiOptions.Value.Enabled && !string.IsNullOrWhiteSpace(aiOptions.Value.Groq.ApiKey) && !string.IsNullOrWhiteSpace(aiOptions.Value.Groq.Model), "A execução real aparece no histórico abaixo"),
+            new IntegrationStatus("Gemini", aiOptions.Value.Enabled && !string.IsNullOrWhiteSpace(aiOptions.Value.Gemini.ApiKey) && !string.IsNullOrWhiteSpace(aiOptions.Value.Gemini.Model), "A execução real aparece no histórico abaixo"),
+            new IntegrationStatus("DeepSeek", aiOptions.Value.Enabled && !string.IsNullOrWhiteSpace(aiOptions.Value.DeepSeek.ApiKey) && !string.IsNullOrWhiteSpace(aiOptions.Value.DeepSeek.Model), "A execução real aparece no histórico abaixo") });
     }
     [HttpGet("auditoria"), Authorize(Policy = Permissions.AuditRead)] public async Task<IActionResult> Auditoria(CancellationToken ct) => View(await audit.RecentAsync(100, ct));
     [HttpGet("configuracoes"), Authorize(Policy = Permissions.SettingsManage)] public async Task<IActionResult> Configuracoes(CancellationToken ct) => View(await admin.SettingsAsync(ct));
@@ -128,11 +146,11 @@ public sealed class AdminController(IAdministrationRepository admin, IDashboardR
     }
     [HttpGet("lugares"), Authorize(Policy = Permissions.PlaceManage)] public async Task<IActionResult> Lugares(CancellationToken ct) => View(await places.SearchAsync(new PlaceQuery { PublishedOnly = false }, ct));
     [HttpPost("lugares"), Authorize(Policy = Permissions.PlaceManage)]
-    public async Task<IActionResult> SalvarLugar(string googlePlaceId, string name, string note, string? bairro, string? municipio, CancellationToken ct)
+    public async Task<IActionResult> SalvarLugar(PlaceInput model, CancellationToken ct)
     {
-        if (string.IsNullOrWhiteSpace(googlePlaceId) || googlePlaceId.Length > 255 || string.IsNullOrWhiteSpace(name) || name.Length > 300 || note?.Length > 1000 || bairro?.Length > 120 || municipio?.Length > 120) return BadRequest();
+        if (!ModelState.IsValid || model.Category is not null && !MinhaBelem.Infrastructure.Places.PlacesCatalog.IsAllowedType(model.Category) || model.Audiences.Any(x => !Enum.IsDefined(x)) || model.Accessibility.Any(x => !Enum.IsDefined(x))) return BadRequest();
         // Apenas identificador Google e informacoes editoriais proprias. Sem persistir resposta Places.
-        var id = await places.UpsertAsync(new Place { GooglePlaceId = googlePlaceId.Trim(), Name = HtmlText.Clean(name, 300), EditorialNote = HtmlText.Clean(note, 1000), Neighborhood = HtmlText.Clean(bairro, 120), Municipality = HtmlText.Clean(municipio, 120), Slug = "local-" + Hashing.UrlHashHex(googlePlaceId)[..24], IsPublished = true, CachedAt = DateTime.UtcNow, PurgeAfter = DateTime.UtcNow.AddYears(10) }, ct);
+        var id = await places.UpsertAsync(new Place { GooglePlaceId = model.GooglePlaceId.Trim(), Name = HtmlText.Clean(model.Name, 300), EditorialNote = HtmlText.Clean(model.Note, 1000), Neighborhood = HtmlText.Clean(model.Bairro, 120), Municipality = HtmlText.Clean(model.Municipio, 120), PrimaryType = model.Category, Audiences = model.Audiences, Accessibility = model.Accessibility, Slug = "local-" + Hashing.UrlHashHex(model.GooglePlaceId)[..24], IsPublished = true, CachedAt = DateTime.UtcNow, PurgeAfter = DateTime.UtcNow.AddYears(10) }, ct);
         await Audit("place.curated", "place", id, ct); return RedirectToAction(nameof(Lugares));
     }
 }

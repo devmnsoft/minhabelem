@@ -7,8 +7,8 @@ using MinhaBelem.Core.Text;
 namespace MinhaBelem.Infrastructure.Ai;
 
 /// <summary>
-/// Serviço editorial de IA. Executa no máximo duas chamadas por análise (triagem completa e
-/// checagem de duplicidade), registra cada uma em <c>mb_ai_runs</c> e devolve resultado parcial
+/// Serviço editorial de IA. Tenta no máximo tres provedores na triagem e uma verificacao de
+/// duplicidade, registra cada tentativa em <c>mb_ai_runs</c> e devolve resultado parcial
 /// quando o provedor falha — a edição manual sempre permanece disponível.
 /// </summary>
 public sealed class AiAnalysisService(
@@ -20,13 +20,18 @@ public sealed class AiAnalysisService(
     public async Task<AiAnalysisResult> AnalyzeAsync(AiAnalysisInput input, CancellationToken ct)
     {
         var runs = new List<AiRun>();
+        if (System.Text.RegularExpressions.Regex.IsMatch(input.Title + " " + input.Summary, @"(?i)\b(cpf|rg)\s*[:\d]|\b\d{3}\.\d{3}\.\d{3}-\d{2}\b|crian[çc]a\s+(desaparecida|v[ií]tima)|adolescente\s+v[ií]tima", System.Text.RegularExpressions.RegexOptions.CultureInvariant, TimeSpan.FromMilliseconds(100)))
+        {
+            var reasons = new[] { "Possível dado pessoal ou caso envolvendo menor: revisão humana antes de processamento externo." };
+            return new AiAnalysisResult(new AiClassification(ContentCategory.Cidades, null, null, null, Array.Empty<Audience>(), false, false, ModerationFlag.Sensitive, reasons), null, new AiSafetyVerdict(false, true, false, false, reasons), false, null, 0, false, runs);
+        }
         AiClassification? classification = null;
         AiLocality? locality = null;
         AiSafetyVerdict? safety = null;
         Core.Services.EventEvidence? eventEvidence = null;
 
-        var client = resolver.Resolve(options);
-        if (client is null || !client.IsConfigured)
+        var clients = resolver.Candidates(options).Where(c => c.IsConfigured).Take(3).ToArray();
+        if (clients.Length == 0)
         {
             logger.LogInformation("Nenhum provedor de IA configurado; análise ignorada.");
             return new AiAnalysisResult(null, null, null, false, null, 0, false, runs);
@@ -41,11 +46,17 @@ public sealed class AiAnalysisService(
             Enum.GetNames<Audience>());
 
         var raw = new Dictionary<string, string?>();
-        var analysisRun = await runLogger.RecordAsync(client, AiTask.PublishPackage, "content", input.TargetId,
-            analysisPrompt, input.ActorId, async completion =>
+        var client = clients[0];
+        foreach (var candidate in clients)
+        {
+            client = candidate;
+            var analysisRun = await runLogger.RecordAsync(client, AiTask.PublishPackage, "content", input.TargetId,
+            analysisPrompt, input.ActorId, completion =>
             {
-                raw["analysis"] = completion.Text;
-                return completion.Text;
+                using var parsed = TryParseObject(completion.Text);
+                if (parsed is null || parsed.RootElement.ValueKind != JsonValueKind.Object) throw new InvalidOperationException("Resposta editorial de IA inválida.");
+                raw["analysis"] = parsed.RootElement.GetRawText();
+                return Task.FromResult<string?>(raw["analysis"]);
             }, ct);
         runs.Add(analysisRun);
 
@@ -55,6 +66,8 @@ public sealed class AiAnalysisService(
             using var eventDoc = TryParseObject(analysisText);
             if (eventDoc?.RootElement.TryGetProperty("evento", out var eventValue) == true && eventValue.ValueKind == JsonValueKind.Object)
                 eventEvidence = Discovery.StructuredEvents.Evidence(eventValue, input.SourceUrl ?? "");
+            break;
+        }
         }
 
         var isDuplicate = false;
@@ -96,7 +109,7 @@ public sealed class AiAnalysisService(
         score = root.TryGetProperty("confianca", out var confidence) && confidence.ValueKind == JsonValueKind.Number
             ? confidence.GetDouble() : 1;
         return root.TryGetProperty("indice_duplicado", out var index) && index.ValueKind == JsonValueKind.Number
-            ? index.GetInt32() - 1
+            && index.TryGetInt32(out var number) ? number - 1
             : null;
     }
 
@@ -187,6 +200,7 @@ public sealed class AiAnalysisService(
 public interface IAiClientResolver
 {
     IAiCompletionClient? Resolve(AiOptions options);
+    IReadOnlyList<IAiCompletionClient> Candidates(AiOptions options) => Resolve(options) is { } client ? new[] { client } : Array.Empty<IAiCompletionClient>();
 }
 
 public sealed class AiClientResolver : IAiClientResolver
@@ -216,6 +230,14 @@ public sealed class AiClientResolver : IAiClientResolver
                 return Create(provider, options);
         }
         return null;
+    }
+    public IReadOnlyList<IAiCompletionClient> Candidates(AiOptions options)
+    {
+        if (!options.Enabled) return Array.Empty<IAiCompletionClient>();
+        var preferred = Enum.TryParse<AiProvider>(options.DefaultProvider, true, out var parsed) && Enum.IsDefined(parsed) ? parsed : AiProvider.Groq;
+        return new[] { preferred, AiProvider.Groq, AiProvider.Gemini, AiProvider.DeepSeek }.Distinct()
+            .Where(p => !string.IsNullOrWhiteSpace(options.For(p).ApiKey) && !string.IsNullOrWhiteSpace(options.For(p).Model))
+            .Select(p => Create(p, options)).ToArray();
     }
 
     private IAiCompletionClient Create(AiProvider provider, AiOptions options) =>

@@ -30,6 +30,13 @@ public sealed class LegacyDataImporter(MySqlDataSource data)
             FROM ingestion_candidates old JOIN ingestion_sources os ON os.id=old.source_id JOIN mb_ingestion_sources ns ON ns.feed_url_hash=os.feed_url_hash
             LEFT JOIN mb_content_items content ON content.source_url_hash=old.source_url_hash
             WHERE NOT EXISTS (SELECT 1 FROM mb_ingestion_candidates current WHERE current.source_url_hash=old.source_url_hash);
+            INSERT INTO mb_community_submissions (display_name,message,status,created_at)
+            SELECT old.display_name,old.message,CASE old.status WHEN 'approved' THEN 'Approved' WHEN 'rejected' THEN 'Rejected' ELSE 'Pending' END,old.created_at
+            FROM community_submissions old WHERE NOT EXISTS (SELECT 1 FROM mb_community_submissions current WHERE current.display_name=old.display_name AND current.message=old.message AND current.created_at=old.created_at);
+            INSERT INTO mb_audit_logs (actor_name,action,entity_type,details,created_at)
+            SELECT users.display_name,'legacy.audit',old.entity_type,JSON_OBJECT('legacyAuditId',old.id,'originalAction',old.action,'originalEntityId',old.entity_id,'originalDetails',old.details),old.created_at
+            FROM audit_logs old LEFT JOIN editorial_users users ON users.id=old.actor_id
+            WHERE NOT EXISTS (SELECT 1 FROM mb_audit_logs current WHERE current.action='legacy.audit' AND JSON_EXTRACT(current.details,'$.legacyAuditId')=old.id);
             INSERT INTO mb_audit_logs (action,entity_type,details) VALUES ('legacy.imported','database',JSON_OBJECT('mode','additive','originalTablesPreserved',true));
             """, transaction: tx, cancellationToken: ct));
         await tx.CommitAsync(ct);

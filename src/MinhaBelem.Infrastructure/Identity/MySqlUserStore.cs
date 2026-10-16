@@ -279,9 +279,6 @@ public sealed class MySqlUserStore(MySqlDataSource dataSource, IDataProtectionPr
         return Task.CompletedTask;
     }
 
-    public async Task<bool> IsLockedOutAsync(ApplicationUser user, CancellationToken cancellationToken) =>
-        user.LockoutEnabled && user.LockoutEnd is not null && user.LockoutEnd > DateTimeOffset.UtcNow;
-
     public Task<bool> GetTwoFactorEnabledAsync(ApplicationUser user, CancellationToken cancellationToken) => Task.FromResult(user.TwoFactorEnabled);
     public Task SetTwoFactorEnabledAsync(ApplicationUser user, bool enabled, CancellationToken cancellationToken)
     {

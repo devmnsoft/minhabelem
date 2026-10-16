@@ -28,6 +28,9 @@ public sealed class FeedCollectorWorker(IServiceScopeFactory scopes, IOptions<Co
     }
     public async Task CollectOnceAsync(CancellationToken ct)
     {
+        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        timeout.CancelAfter(TimeSpan.FromMinutes(9));
+        ct = timeout.Token;
         await using var lease = await data.OpenConnectionAsync(ct);
         if (await lease.ExecuteScalarAsync<int>(new CommandDefinition("SELECT GET_LOCK('minhabelem_collector',0)", cancellationToken: ct)) != 1) return;
         try
@@ -44,12 +47,42 @@ public sealed class FeedCollectorWorker(IServiceScopeFactory scopes, IOptions<Co
                     await using var isolated = scopes.CreateAsyncScope();
                     await ProcessAsync(isolated.ServiceProvider, source, run, token);
                 });
+                await ProcessPendingAsync(scope.ServiceProvider, ct);
                 run.Status = run.SourcesFailed == 0 ? RunStatus.Success : run.SourcesFailed == run.SourcesChecked ? RunStatus.Failed : RunStatus.Partial;
             }
             catch (OperationCanceledException) { run.Status = RunStatus.Failed; run.Error = "Execução interrompida; itens persistidos serão deduplicados na retomada."; throw; }
+            catch (Exception ex) { run.Status = RunStatus.Failed; run.Error = "Falha na preparação editorial: " + ex.GetType().Name; throw; }
             finally { run.FinishedAt = DateTime.UtcNow; await repository.FinishRunAsync(run, CancellationToken.None); }
         }
         finally { await lease.ExecuteAsync("SELECT RELEASE_LOCK('minhabelem_collector')"); }
+    }
+    private static async Task ProcessPendingAsync(IServiceProvider services, CancellationToken ct)
+    {
+        var ingestion = services.GetRequiredService<IIngestionRepository>();
+        var discovery = services.GetRequiredService<IDiscoveryRepository>();
+        var pending = (await ingestion.CandidatesAsync(new CandidateQuery { Status = CandidateStatus.Pending, PageSize = 100, OperationalOnly = true, OnlyUnimported = true }, ct))
+            .Concat(await ingestion.CandidatesAsync(new CandidateQuery { Status = CandidateStatus.InReview, PageSize = 100, OperationalOnly = true }, ct));
+        foreach (var candidate in pending.Take(100))
+        {
+            // Uma alteracao em item ja publicado fica na comparacao, sem substituir a versao publica.
+            if (candidate.ContentId is not null && candidate.Status == CandidateStatus.Pending) continue;
+            var source = await ingestion.SourceAsync(candidate.SourceId, ct);
+            if (source is null || !source.IsOperational || string.IsNullOrWhiteSpace(source.LicenseNote) || source.Protocol == FeedProtocol.GooglePlaces) continue;
+            var id = await services.GetRequiredService<IEditorialWorkflow>().ImportAsync(candidate.Id, null, ct);
+            if (id is null) continue;
+            var content = services.GetRequiredService<IContentRepository>();
+            var draft = (await content.GetAsync(id.Value, ct))!;
+            if (draft.Status != ContentStatus.InReview) continue;
+            var comparisons = (await content.SearchForDuplicatesAsync(draft.Title, draft.Summary, 8, ct)).Where(x => x.Id != id).ToArray();
+            var analysis = await services.GetRequiredService<IAiAnalysisService>().AnalyzeAsync(new(draft.Title, draft.Summary, draft.SourceUrl, comparisons) { TargetId = id }, ct);
+            if (analysis.Classification is { } classification) { draft.Category = classification.Category; draft.Subject = classification.Subject; draft.Neighborhood = classification.Neighborhood; draft.Municipality = classification.Municipality; draft.Audiences = classification.Audiences; draft.Flags |= classification.Flags; }
+            if (analysis.IsDuplicate) { draft.Flags |= ModerationFlag.PossibleDuplicate; draft.DuplicateOfId = analysis.DuplicateOfId; }
+            draft.EventDetails = await discovery.EvidenceAsync(candidate.Id, ct) ?? analysis.Event;
+            if (draft.EventDetails is { } ev) { draft.Kind = ContentKind.Event; draft.EventStartAt = ev.StartUtc; draft.EventEndAt = ev.EndUtc; draft.Address = ev.Location; draft.IsFree = ev.IsFree; if (ev.Uncertain) draft.Flags |= ModerationFlag.Sensitive; }
+            draft.RequiresHumanApproval = true;
+            if (await content.UpdateAsync(draft, null, "Descoberta e análise automática; aguarda revisão humana", ct))
+                await ingestion.SetCandidateStatusAsync(candidate.Id, CandidateStatus.Approved, null, "Preparado para revisão editorial humana", ct);
+        }
     }
     private async Task ProcessAsync(IServiceProvider services, IngestionSource source, IngestionRun run, CancellationToken ct)
     {
@@ -67,6 +100,7 @@ public sealed class FeedCollectorWorker(IServiceScopeFactory scopes, IOptions<Co
         {
             if (string.IsNullOrWhiteSpace(source.LicenseNote)) { status = "Unauthorized"; throw new InvalidOperationException("Fonte sem autorização documentada."); }
             if (!SafeUrl.Validate(source.FeedUrl).IsValid) throw new InvalidOperationException("URL não autorizada.");
+            if (Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(new Uri(source.FeedUrl).Query).Keys.Any(key => key.ToLowerInvariant() is "key" or "token" or "access_token" or "api_key" or "password")) throw new InvalidOperationException("Credenciais devem ser configuradas por referência segura, fora da URL.");
             var issue = connector?.ConfigurationIssue(context) ?? (connector is null ? "Conector não implementado para este formato." : null);
             if (issue is not null) { status = "AwaitingConfiguration"; throw new InvalidOperationException(issue); }
             if (source.RespectRobots && !(await services.GetRequiredService<IRobotsGate>().IsAllowedAsync(new Uri(source.FeedUrl), ct)).Allowed)
@@ -87,25 +121,6 @@ public sealed class FeedCollectorWorker(IServiceScopeFactory scopes, IOptions<Co
                 if (stored.Changed)
                 {
                     records++; lock (run) run.ItemsInserted++;
-                    var candidate = await ingestion.CandidateAsync(stored.Id, ct);
-                    if (candidate is { ContentId: null, Status: CandidateStatus.Pending } && source.Protocol != FeedProtocol.GooglePlaces)
-                    {
-                        var contentId = await services.GetRequiredService<IEditorialWorkflow>().ImportAsync(stored.Id, null, ct);
-                        if (contentId is { } id)
-                        {
-                            var content = services.GetRequiredService<IContentRepository>();
-                            var draft = (await content.GetAsync(id, ct))!;
-                            var comparisons = (await content.SearchForDuplicatesAsync(draft.Title, draft.Summary, 8, ct)).Where(x => x.Id != id).ToArray();
-                            var analysis = await services.GetRequiredService<IAiAnalysisService>().AnalyzeAsync(new(draft.Title, draft.Summary, draft.SourceUrl, comparisons) { TargetId = id }, ct);
-                            if (analysis.Classification is { } classification) { draft.Category = classification.Category; draft.Subject = classification.Subject; draft.Neighborhood = classification.Neighborhood; draft.Municipality = classification.Municipality; draft.Audiences = classification.Audiences; draft.Flags |= classification.Flags; }
-                            if (analysis.IsDuplicate) draft.Flags |= ModerationFlag.PossibleDuplicate;
-                            draft.EventDetails = item.Event ?? analysis.Event;
-                            if (draft.EventDetails is { } ev) { draft.Kind = ContentKind.Event; draft.EventStartAt = ev.StartUtc; draft.EventEndAt = ev.EndUtc; draft.Address = ev.Location; draft.IsFree = ev.IsFree; if (ev.Uncertain) draft.Flags |= ModerationFlag.Sensitive; }
-                            draft.Status = ContentStatus.InReview;
-                            draft.RequiresHumanApproval = true;
-                            await content.UpdateAsync(draft, null, "Descoberta e análise automática; aguarda revisão humana", ct);
-                        }
-                    }
                 }
                 else { lock (run) run.ItemsDuplicate++; }
             }

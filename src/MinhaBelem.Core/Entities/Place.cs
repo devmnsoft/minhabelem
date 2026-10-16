@@ -33,6 +33,7 @@ public class Place
     public bool? WheelchairAccessible { get; set; }
     public string? PhotoName { get; set; }
     public string? PhotoAttribution { get; set; }
+    public string? PhotoGoogleMapsUri { get; set; }
     public IReadOnlyList<PhotoAuthor> PhotoAuthors { get; set; } = Array.Empty<PhotoAuthor>();
     public bool IsPublished { get; set; }
     public string? EditorialNote { get; set; }
@@ -49,7 +50,10 @@ public class Place
 }
 
 public sealed record OpeningHours(int DayOfWeek, string Label, string OpenTime, string CloseTime, bool Closed);
-public sealed record PhotoAuthor(string Name, string Uri);
+public sealed record PhotoAuthor(string Name, string Uri)
+{
+    public string? PhotoUri { get; init; }
+}
 
 /// <summary>Filtro do guia combinando conteúdo editorial e lugares do Google Places.</summary>
 public sealed class GuideFilter

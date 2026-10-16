@@ -22,13 +22,14 @@ public sealed partial class RobotsGate(HttpClient client, IMemoryCache cache, IL
         var rules = await LoadAsync(origin, ct);
 
         // "*" é o grupo padrão; grupos específicos têm prioridade sobre ele.
-        if (!rules.Any(r => r.Agent == "*")) return new RobotsDecision(true, "Sem regras aplicáveis.");
+        var specific = rules.Where(r => r.Agent != "*" && "MinhaBelemBot".Contains(r.Agent, StringComparison.OrdinalIgnoreCase)).ToArray();
+        var selected = specific.Length == 0 ? rules.Where(r => r.Agent == "*") : specific.Where(r => r.Agent.Length == specific.Max(x => x.Agent.Length));
 
         var path = target.PathAndQuery;
-        var best = rules
-            .Where(r => r.Agent == "*" && r.Path.Length > 0)
-            .Where(r => path.StartsWith(r.Path, StringComparison.Ordinal))
-            .OrderBy(r => r.Path.Length)
+        var best = selected
+            .Where(r => r.Path.Length > 0)
+            .Where(r => Matches(path, r.Path))
+            .OrderBy(r => r.Path.Replace("*", "", StringComparison.Ordinal).TrimEnd('$').Length)
             .ThenBy(r => r.Allow ? 1 : 0)
             .LastOrDefault();
 
@@ -45,10 +46,15 @@ public sealed partial class RobotsGate(HttpClient client, IMemoryCache cache, IL
         var rules = new List<RobotsRule>();
         try
         {
-            using var response = await client.GetAsync(new Uri(origin + "/robots.txt"), ct);
+            using var response = await client.GetAsync(new Uri(origin + "/robots.txt"), HttpCompletionOption.ResponseHeadersRead, ct);
             if (response.IsSuccessStatusCode)
             {
-                var body = await response.Content.ReadAsStringAsync(ct);
+                if (response.Content.Headers.ContentLength is > 512000) throw new InvalidOperationException("robots.txt excede o limite.");
+                await using var stream = await response.Content.ReadAsStreamAsync(ct);
+                using var reader = new StreamReader(stream);
+                var buffer = new char[512001]; var count = await reader.ReadBlockAsync(buffer.AsMemory(), ct);
+                if (count > 512000) throw new InvalidOperationException("robots.txt excede o limite.");
+                var body = new string(buffer, 0, count);
                 rules.AddRange(Parse(body));
             }
             else if (response.StatusCode != System.Net.HttpStatusCode.NotFound)
@@ -70,7 +76,8 @@ public sealed partial class RobotsGate(HttpClient client, IMemoryCache cache, IL
     internal static IReadOnlyList<RobotsRule> Parse(string content)
     {
         var rules = new List<RobotsRule>();
-        var appliesTo = "*";
+        var agents = new List<string>();
+        var hasRules = false;
         var lines = content.Split('\n');
 
         for (var i = 0; i < lines.Length; i++)
@@ -82,19 +89,22 @@ public sealed partial class RobotsGate(HttpClient client, IMemoryCache cache, IL
             var match = RuleLine().Match(line);
             if (!match.Success) continue;
             var key = match.Groups["path"].Value.Trim().ToLowerInvariant();
-            var value = match.Groups["value"].Value.Trim();
+            var value = match.Groups["value"].Value.Split('#')[0].Trim();
 
             switch (key)
             {
                 case "user-agent":
-                    appliesTo = value;
+                    if (hasRules) { agents.Clear(); hasRules = false; }
+                    if (value.Length > 0) agents.Add(value);
                     break;
                 case "disallow":
                     // "Disallow:" vazio significa "permitir tudo".
-                    rules.Add(new RobotsRule(appliesTo, value, Allow: false));
+                    hasRules = true;
+                    rules.AddRange(agents.Select(agent => new RobotsRule(agent, value, Allow: false)));
                     break;
                 case "allow":
-                    rules.Add(new RobotsRule(appliesTo, value, Allow: true));
+                    hasRules = true;
+                    rules.AddRange(agents.Select(agent => new RobotsRule(agent, value, Allow: true)));
                     break;
             }
         }
@@ -102,6 +112,12 @@ public sealed partial class RobotsGate(HttpClient client, IMemoryCache cache, IL
     }
 
     internal sealed record RobotsRule(string Agent, string Path, bool Allow);
+    private static bool Matches(string path, string rule)
+    {
+        var end = rule.EndsWith('$');
+        var pattern = Regex.Escape(end ? rule[..^1] : rule).Replace("\\*", ".*", StringComparison.Ordinal);
+        return Regex.IsMatch(path, "^" + pattern + (end ? "$" : ""), RegexOptions.CultureInvariant, TimeSpan.FromMilliseconds(100));
+    }
 }
 
 public static class SafeUrlExtensions
