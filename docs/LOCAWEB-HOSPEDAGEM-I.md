@@ -12,12 +12,12 @@ Não alterar DNS ou apontar IP até verificar a instalação destino.
 Não publicar scripts .NET como se fossem executados por hospedagem PHP.
 
 ## MySQL
-O esquema equivalente está em MINHABELEM.SQL, criado para MySQL 8.0+ no banco previamente provisionado. Antes de rodar: backup, verificar versão do MySQL, credenciais, host, SSL e permissões via painel Locaweb; não assumir host localhost.
+O esquema único está em MINHABELEM.SQL, criado para MySQL 8.0+ no banco previamente provisionado. Antes de rodar: backup, verificar versão, host, SSL e permissões via painel Locaweb; não assumir host localhost. Consulte [operação atual](OPERACAO.md).
 A aplicação utiliza Dapper + MySqlConnector. O script inclui as tabelas atuais e as tabelas mb_ da infraestrutura em integração; os dados não são transferidos automaticamente entre elas.
 Restrições compartilhadas incluem limite de 30 conexões simultâneas; usar pool pequeno e índices, não manter conexões abertas em coleta prolongada.
 
 ## Segurança operacional
-API Google Places, tokens editoriais e senhas sempre em variáveis de ambiente/secret manager, jamais em repositório público ou páginas JS. Configurar cotas e restrições da API.
+Chaves Google Places/IA, tokens de fontes e senhas sempre em variáveis protegidas/cofre, jamais em repositório ou JavaScript. Identity/TOTP substitui o token editorial. Configure cotas e restrições das APIs.
 Para publicar no novo destino: HTTPS, reverse proxy, headers, backups testados, logging, política de privacidade, proteção de menores, sessões protegidas e MFA de administradores.
 O coletor depende de fontes oficialmente permitidas, listas de hosts de saída, defesa contra SSRF/redirect e workers supervisionados.
 Verificar titularidade e licença das fotos e fontes dos dados. Nenhuma localização de ônibus deve ser apresentada como ao vivo sem GTFS-RT/SIRI ou endpoint autorizado.

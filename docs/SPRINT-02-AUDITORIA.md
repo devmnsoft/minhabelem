@@ -1,5 +1,7 @@
 # Sprint 02 — Auditoria inicial (linha de base)
 
+> Registro histórico da situação anterior à integração. Para o estado atual, testes e pendências, consulte [Sprints 03 e 03B](SPRINT-03-HOMOLOGACAO.md).
+
 Data da auditoria: 16/10/2026
 Commit auditado: `8d787cb`
 
