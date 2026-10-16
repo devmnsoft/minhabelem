@@ -12,6 +12,8 @@ builder.Services.AddScoped<ContentRepository>();
 builder.Services.AddScoped<EditorialRepository>();
 builder.Services.AddHttpClient("ai",c=>c.Timeout=TimeSpan.FromSeconds(25));
 builder.Services.AddScoped<AiAssistant>();
+builder.Services.AddHttpClient("places",c=>c.Timeout=TimeSpan.FromSeconds(12));
+builder.Services.AddScoped<PlacesService>();
 builder.Services.AddHostedService<FeedCollector>();
 builder.Services.AddHealthChecks();
 builder.Services.AddRateLimiter(o=>{o.RejectionStatusCode=429;o.AddPolicy("public",ctx=>RateLimitPartition.GetFixedWindowLimiter(ctx.Connection.RemoteIpAddress?.ToString()??"unknown",_=>new FixedWindowRateLimiterOptions{PermitLimit=60,Window=TimeSpan.FromMinutes(1),QueueLimit=0}));});
