@@ -1,0 +1,2 @@
+@model MinhaBelem.Web.Models.ContentItem
+<article class="section article"><p class="eyebrow">@Model.Category</p><h1>@Model.Title</h1><p>@Model.Summary</p><p>Fonte: <a href="@Model.SourceUrl" target="_blank" rel="noopener noreferrer">@Model.SourceName</a></p><p>Autoria: @(Model.AuthorName ?? "Não informada")</p><p>Publicado em: @Model.PublishedAt.ToString("dd/MM/yyyy HH:mm")</p>@if(Model.TicketPrice is not null){<p>Valor informado: @Model.TicketPrice.Value.ToString("C")</p>}<button id="share" type="button">Compartilhar</button></article>
