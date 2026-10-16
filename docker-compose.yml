@@ -1,29 +1,30 @@
 services:
-  postgres:
-    image: postgres:16-alpine
+  mysql:
+    image: mysql:8.0
     restart: unless-stopped
     environment:
-      POSTGRES_DB: minhabelem
-      POSTGRES_USER: minhabelem
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
+      MYSQL_DATABASE: minhabelem
+      MYSQL_USER: minhabelem
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:?Set MYSQL_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?Set MYSQL_ROOT_PASSWORD}
     volumes:
-      - pgdata:/var/lib/postgresql/data
-      - ./database/001_schema.sql:/docker-entrypoint-initdb.d/001_schema.sql:ro
+      - mysqldata:/var/lib/mysql
+      - ./MINHABELEM.SQL:/docker-entrypoint-initdb.d/001_minhabelem.sql:ro
     healthcheck:
-      test: ["CMD-SHELL","pg_isready -U minhabelem"]
+      test: ["CMD-SHELL", "MYSQL_PWD=$$MYSQL_PASSWORD mysql -h 127.0.0.1 -u minhabelem -D minhabelem -e 'SELECT 1'"]
       interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 10
   web:
     build: .
     restart: unless-stopped
     ports: ["127.0.0.1:8080:8080"]
     depends_on:
-      postgres:
+      mysql:
         condition: service_healthy
     environment:
       ASPNETCORE_URLS: http://+:8080
-      ConnectionStrings__Default: Host=postgres;Port=5432;Database=minhabelem;Username=minhabelem;Password=${POSTGRES_PASSWORD}
+      ConnectionStrings__Default: Server=mysql;Port=3306;Database=minhabelem;User ID=minhabelem;Password=${MYSQL_PASSWORD}
       Collector__Enabled: "false"
 volumes:
-  pgdata:
+  mysqldata:

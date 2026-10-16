@@ -1,6 +1,6 @@
 # Configurar MySQL no Visual Studio Community 2026
 
-A aplicação utiliza **MySqlConnector + Dapper**, não Npgsql. Execute primeiro o script `database/mysql/001_schema.sql` no banco MySQL `minhabelem` usando uma conta autorizada pela Locaweb e verifique a política de acesso externo.
+A aplicação utiliza **MySqlConnector + Dapper**, não Npgsql. Execute primeiro o script `MINHABELEM.SQL` no banco MySQL `minhabelem` usando uma conta autorizada pela Locaweb e verifique a política de acesso externo.
 
 ## No Visual Studio (máquina de desenvolvimento)
 
@@ -24,7 +24,7 @@ Não envie senha por chat e não grave credenciais no `appsettings.json` version
 - **Connection string ausente:** a aplicação orientará a configurar `ConnectionStrings:Default`.
 - **Unable to connect / timeout:** confirme liberação de acesso externo à Locaweb e regras de firewall.
 - **Access denied:** confira credenciais e permissões do usuário MySQL.
-- **Table doesn't exist:** execute `database/mysql/001_schema.sql` após backup e validação de compatibilidade de versão.
+- **Table doesn't exist:** execute `MINHABELEM.SQL` após backup e validação de compatibilidade de versão.
 - **Certificado / TLS:** valide política de certificado e cadeia de confiança. Nunca use `SslMode=None` como solução de produção.
 
 ## Produção

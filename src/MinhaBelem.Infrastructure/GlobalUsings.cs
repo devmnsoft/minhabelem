@@ -1,0 +1,12 @@
+global using Microsoft.AspNetCore.Identity;
+global using Microsoft.Extensions.Configuration;
+global using Microsoft.Extensions.DependencyInjection;
+global using Microsoft.Extensions.Hosting;
+global using Microsoft.Extensions.Logging;
+global using Microsoft.Extensions.Options;
+global using MySqlConnector;
+global using MinhaBelem.Core.Services;
+global using System.Reflection;
+global using System.Security.Claims;
+global using MinhaBelem.Core.Taxonomy;
+global using TaxonomyInfo = MinhaBelem.Core.Taxonomy.Taxonomy;
