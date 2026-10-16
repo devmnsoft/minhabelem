@@ -13,7 +13,6 @@ namespace MinhaBelem.Infrastructure.Places;
 public sealed class GooglePlacesOptions
 {
     public string ApiKey { get; set; } = string.Empty;
-    public int CacheDays { get; set; } = 29;
     public int MaxResults { get; set; } = 20;
     public int DailyRequestLimit { get; set; } = 50;
 }
@@ -26,9 +25,8 @@ public sealed record PlaceQueryOptions(
     int MaxResults);
 
 /// <summary>
-/// Cliente do Google Places (New). Conformidade com a política de armazenamento: guardamos o
-/// place_id e os dados retornados com prazo de expurgo; nada é enviado para Models.
-/// O preenchimento do cache é responsabilidade do serviço de guia.
+/// Cliente Google Places (New). Dados retornados sao transitorios por requisicao;
+/// o guia persiste apenas identificadores e informacoes editoriais proprias.
 /// </summary>
 public sealed class GooglePlacesClient(
     IHttpClientFactory httpClientFactory,
@@ -107,7 +105,7 @@ public sealed class GooglePlacesClient(
             using var document = JsonDocument.Parse(await response.Content.ReadAsStringAsync(ct));
             var root = document.RootElement;
             var now = DateTime.UtcNow;
-            var purgeAfter = now.AddDays(Math.Clamp(options.CacheDays, 1, 29));
+            var purgeAfter = now;
 
             if (single)
             {
@@ -199,10 +197,8 @@ public sealed class GooglePlacesClient(
         bool? wheelchair = null;
         if (element.TryGetProperty("accessibilityOptions", out var access) && access.ValueKind == JsonValueKind.Object)
         {
-            if (access.TryGetProperty("wheelchairAccessible", out var wc) && wc.ValueKind == JsonValueKind.String)
-                wheelchair = wc.GetString() is "ACCESSIBLE" or "TRUE";
-            else if (access.TryGetProperty("wheelchairAccessibleEntrance", out var wcEnt) && wcEnt.ValueKind == JsonValueKind.String)
-                wheelchair = wcEnt.GetString() is "ACCESSIBLE" or "TRUE";
+            if (access.TryGetProperty("wheelchairAccessibleEntrance", out var entrance) && entrance.ValueKind is JsonValueKind.True or JsonValueKind.False)
+                wheelchair = entrance.GetBoolean();
         }
 
         var formattedAddress = GetString(element, "formattedAddress") ?? string.Join(", ", addressParts.Distinct());

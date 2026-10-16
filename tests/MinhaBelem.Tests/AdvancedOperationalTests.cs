@@ -17,6 +17,39 @@ namespace MinhaBelem.Tests;
 public sealed class AdvancedOperationalTests(PortalFixture fixture)
 {
     [MySqlFact]
+    public async Task ExpirationPreservesSourceAndWritesRevisionAndAudit()
+    {
+        using var scope = fixture.Factory.Services.CreateScope();
+        var sourceId = await scope.ServiceProvider.GetRequiredService<IIngestionRepository>().UpsertSourceAsync(new IngestionSource { Name = "Fonte de validade", FeedUrl = "https://example.com/" + Guid.NewGuid().ToString("N") }, default);
+        var repo = scope.ServiceProvider.GetRequiredService<IContentRepository>();
+        var item = new ContentItem { Title = "Aviso expirado", Summary = "Informação com validade explícita", SourceId = sourceId, SourceName = "Fonte de validade", SourceUrl = "https://example.com/" + Guid.NewGuid().ToString("N"), Slug = Guid.NewGuid().ToString("N"), Status = ContentStatus.Published, VerificationStatus = VerificationStatus.Verified, ExpiresAt = DateTime.UtcNow.AddMinutes(-1) };
+        var id = await repo.InsertAsync(item, null, "Fixture de expiração", default);
+        Assert.Equal(sourceId, (await repo.GetAsync(id, default))!.SourceId);
+        Assert.True(await repo.ExpireOldContentAsync(DateTime.UtcNow, default) >= 1);
+        var archived = (await repo.GetAsync(id, default))!;
+        Assert.Equal(ContentStatus.Archived, archived.Status);
+        Assert.Equal(sourceId, archived.SourceId);
+        Assert.Equal(2, archived.Revision);
+        Assert.Contains(await repo.RevisionsAsync(id, default), x => x.ChangeSummary!.Contains("validade encerrado"));
+        Assert.Contains(await scope.ServiceProvider.GetRequiredService<IAuditRepository>().RecentAsync(100, default), x => x.EntityId == id && x.Action == "content.revised" && x.ActorId is null);
+        using var client = fixture.Client();
+        Assert.Equal(HttpStatusCode.NotFound, (await client.GetAsync($"/Home/Detalhe/{id}")).StatusCode);
+    }
+
+    [MySqlFact]
+    public async Task PlacesReadsBooleanAccessibilityWithoutCreatingAPersistentCache()
+    {
+        using var scope = fixture.Factory.Services.CreateScope();
+        var handler = new DiscoveryTests.JsonHandler("""{"id":"place-accessibility","displayName":{"text":"Local acessível"},"accessibilityOptions":{"wheelchairAccessibleEntrance":true}}""");
+        var client = new MinhaBelem.Infrastructure.Places.GooglePlacesClient(new DiscoveryTests.Factory(handler), new() { ApiKey = "fixture-only", DailyRequestLimit = 100 }, NullLogger<MinhaBelem.Infrastructure.Places.GooglePlacesClient>.Instance, scope.ServiceProvider.GetRequiredService<ApiBudget>());
+        var result = await client.GetDetailsAsync("place-accessibility", default);
+        Assert.NotNull(result);
+        Assert.True(result.WheelchairAccessible);
+        Assert.Equal(result.CachedAt, result.PurgeAfter);
+        Assert.DoesNotContain("fixture-only", handler.Url);
+    }
+
+    [MySqlFact]
     public async Task RoleRevocationsSurviveInstallerReexecutionAndInvalidateSessions()
     {
         var (moderator, moderatorId) = await new OperationalTests(fixture).Login(MinhaBelem.Core.Security.Roles.Moderator); using var target = moderator;

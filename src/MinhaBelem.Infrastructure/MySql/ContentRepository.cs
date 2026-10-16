@@ -202,14 +202,14 @@ public sealed class ContentRepository(MySqlDataSource dataSource) : IContentRepo
             """
             INSERT INTO mb_content_items
               (kind, category, subject, title, slug, summary, body, neighborhood, municipality, state,
-               address, latitude, longitude, source_name, source_url, source_url_hash, fingerprint,
+               address, latitude, longitude, source_id, source_name, source_url, source_url_hash, fingerprint,
                author_name, source_published_at, image_url, image_credit, image_license,
                event_start_at, event_end_at, ticket_price, ticket_price_text, is_free, status,
                verification_status, flags, duplicate_of_id, requires_human_approval, published_at,
                expires_at, last_verified_at, reviewed_by_id, created_by_id, revision)
             VALUES
               (@Kind, @Category, @Subject, @Title, @Slug, @Summary, @Body, @Neighborhood, @Municipality, @State,
-               @Address, @Latitude, @Longitude, @SourceName, @SourceUrl, @SourceUrlHash, @Fingerprint,
+               @Address, @Latitude, @Longitude, @SourceId, @SourceName, @SourceUrl, @SourceUrlHash, @Fingerprint,
                @AuthorName, @SourcePublishedAt, @ImageUrl, @ImageCredit, @ImageLicense,
                @EventStartAt, @EventEndAt, @TicketPrice, @TicketPriceText, @IsFree, @Status,
                @VerificationStatus, @Flags, @DuplicateOfId, @RequiresHumanApproval, @PublishedAt,
@@ -236,7 +236,7 @@ public sealed class ContentRepository(MySqlDataSource dataSource) : IContentRepo
                 kind = @Kind, category = @Category, subject = @Subject, title = @Title, slug = @Slug,
                 summary = @Summary, body = @Body, neighborhood = @Neighborhood, municipality = @Municipality,
                 address = @Address, latitude = @Latitude, longitude = @Longitude,
-                source_name = @SourceName, source_url = @SourceUrl, source_url_hash = @SourceUrlHash,
+                source_id = @SourceId, source_name = @SourceName, source_url = @SourceUrl, source_url_hash = @SourceUrlHash,
                 fingerprint = @Fingerprint, author_name = @AuthorName, source_published_at = @SourcePublishedAt,
                 image_url = @ImageUrl, image_credit = @ImageCredit, image_license = @ImageLicense,
                 event_start_at = @EventStartAt, event_end_at = @EventEndAt, ticket_price = @TicketPrice,
@@ -302,7 +302,7 @@ public sealed class ContentRepository(MySqlDataSource dataSource) : IContentRepo
         item.Subject, item.Title, item.Slug, item.Summary, item.Body,
         item.Neighborhood, item.Municipality, State = item.State,
         item.Address, item.Latitude, item.Longitude,
-        item.SourceName, item.SourceUrl,
+        item.SourceId, item.SourceName, item.SourceUrl,
         SourceUrlHash = item.SourceUrlHash ?? Hashing.UrlHash(item.SourceUrl),
         Fingerprint = Hashing.ContentFingerprint(item.Title, item.Summary),
         item.AuthorName, SourcePublishedAt = item.SourcePublishedAt,
@@ -405,11 +405,15 @@ public sealed class ContentRepository(MySqlDataSource dataSource) : IContentRepo
     public async Task<int> ExpireOldContentAsync(DateTime now, CancellationToken ct)
     {
         await using var connection = await OpenAsync(ct);
-        return await connection.ExecuteAsync(new CommandDefinition(
-            """
-            UPDATE mb_content_items
-            SET status = 'Archived', updated_at = UTC_TIMESTAMP(6)
-            WHERE status = 'Published' AND expires_at IS NOT NULL AND expires_at <= @now
-            """, new { now }, cancellationToken: ct));
+        var expired = (await connection.QueryAsync<ContentItem>(new CommandDefinition(
+            $"{Select} WHERE status IN ('Published','Cancelled') AND expires_at IS NOT NULL AND expires_at <= @now LIMIT 1000", new { now }, cancellationToken: ct))).AsList();
+        await LoadChildrenAsync(connection, expired, ct);
+        var count = 0;
+        foreach (var item in expired)
+        {
+            item.Status = ContentStatus.Archived;
+            if (await UpdateAsync(item, null, "Arquivamento por prazo de validade encerrado", ct)) count++;
+        }
+        return count;
     }
 }
