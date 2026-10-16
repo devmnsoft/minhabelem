@@ -1,13 +1,17 @@
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Npgsql;
+using MySqlConnector;
 using MinhaBelem.Web.Services;
 var builder=WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(o=>{o.Cookie.Name="MinhaBelem.Editor";o.Cookie.HttpOnly=true;o.Cookie.SecurePolicy=CookieSecurePolicy.Always;o.Cookie.SameSite=SameSiteMode.Strict;o.LoginPath="/editorial/login";o.ExpireTimeSpan=TimeSpan.FromHours(2);o.SlidingExpiration=false;});
 builder.Services.AddAuthorization();
 builder.Services.AddHttpClient("feed",c=>{c.Timeout=TimeSpan.FromSeconds(12);c.DefaultRequestHeaders.UserAgent.ParseAdd("MinhaBelemBot/1.0");});
-builder.Services.AddSingleton<NpgsqlDataSource>(_=>NpgsqlDataSource.Create(builder.Configuration.GetConnectionString("Default")??throw new InvalidOperationException("Connection string required")));
+builder.Services.AddSingleton<MySqlDataSource>(_ => {
+ var connection=builder.Configuration.GetConnectionString("Default");
+ if(string.IsNullOrWhiteSpace(connection))throw new InvalidOperationException("Configure ConnectionStrings:Default com a conexão MySQL no User Secrets ou nas variáveis de ambiente. Nunca armazene senhas no GitHub.");
+ return new MySqlDataSourceBuilder(connection).Build();
+});
 builder.Services.AddScoped<ContentRepository>();
 builder.Services.AddScoped<EditorialRepository>();
 builder.Services.AddHttpClient("ai",c=>c.Timeout=TimeSpan.FromSeconds(25));
