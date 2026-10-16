@@ -1,0 +1,5 @@
+-- Configure manualmente apenas RSS autorizado e verificado para sua região.
+-- Exemplo ilustrativo, desativado:
+-- INSERT INTO ingestion_sources(source_name,feed_url,protocol,enabled,approved)
+-- VALUES ('Fonte Autorizada','https://example.org/feed.xml','rss',false,false)
+-- ON CONFLICT (feed_url) DO NOTHING;
