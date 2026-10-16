@@ -23,6 +23,7 @@ public sealed class AiAnalysisService(
         AiClassification? classification = null;
         AiLocality? locality = null;
         AiSafetyVerdict? safety = null;
+        Core.Services.EventEvidence? eventEvidence = null;
 
         var client = resolver.Resolve(options);
         if (client is null || !client.IsConfigured)
@@ -40,8 +41,8 @@ public sealed class AiAnalysisService(
             Enum.GetNames<Audience>());
 
         var raw = new Dictionary<string, string?>();
-        var analysisRun = await runLogger.RecordAsync(client, AiTask.PublishPackage, "candidate", null,
-            analysisPrompt, null, async completion =>
+        var analysisRun = await runLogger.RecordAsync(client, AiTask.PublishPackage, "content", input.TargetId,
+            analysisPrompt, input.ActorId, async completion =>
             {
                 raw["analysis"] = completion.Text;
                 return completion.Text;
@@ -51,6 +52,9 @@ public sealed class AiAnalysisService(
         if (analysisRun.Success && raw.TryGetValue("analysis", out var analysisText))
         {
             ParseAnalysis(analysisText ?? string.Empty, input, out classification, out locality, out safety);
+            using var eventDoc = TryParseObject(analysisText);
+            if (eventDoc?.RootElement.TryGetProperty("evento", out var eventValue) == true && eventValue.ValueKind == JsonValueKind.Object)
+                eventEvidence = Discovery.StructuredEvents.Evidence(eventValue, input.SourceUrl ?? "");
         }
 
         var isDuplicate = false;
@@ -63,8 +67,8 @@ public sealed class AiAnalysisService(
                 input.Title, input.Summary,
                 input.ComparisonItems.Select(c => (c.Id, c.Title)).ToArray());
 
-            var duplicateRun = await runLogger.RecordAsync(client, AiTask.DuplicateCheck, "candidate", null,
-                duplicatePrompt, null, completion => Task.FromResult<string?>(completion.Text), ct);
+            var duplicateRun = await runLogger.RecordAsync(client, AiTask.DuplicateCheck, "content", input.TargetId,
+                duplicatePrompt, input.ActorId, completion => Task.FromResult<string?>(completion.Text), ct);
             runs.Add(duplicateRun);
 
             if (duplicateRun.Success)
@@ -79,7 +83,7 @@ public sealed class AiAnalysisService(
             }
         }
 
-        return new AiAnalysisResult(classification, locality, safety, isDuplicate, duplicateOfId, duplicateScore, classification?.Flags.HasFlag(ModerationFlag.Outdated) == true, runs);
+        return new AiAnalysisResult(classification, locality, safety, isDuplicate, duplicateOfId, duplicateScore, classification?.Flags.HasFlag(ModerationFlag.Outdated) == true, runs) { Event = eventEvidence };
     }
 
     private static int? ExtractDuplicate(string? json, out double score)
@@ -187,13 +191,15 @@ public interface IAiClientResolver
 
 public sealed class AiClientResolver : IAiClientResolver
 {
+    private readonly Networking.ApiBudget budget;
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly ILoggerFactory _loggerFactory;
 
-    public AiClientResolver(IHttpClientFactory httpClientFactory, ILoggerFactory loggerFactory)
+    public AiClientResolver(IHttpClientFactory httpClientFactory, ILoggerFactory loggerFactory, Networking.ApiBudget budget)
     {
         _httpClientFactory = httpClientFactory;
         _loggerFactory = loggerFactory;
+        this.budget = budget;
     }
 
     public IAiCompletionClient? Resolve(AiOptions options)
@@ -215,5 +221,5 @@ public sealed class AiClientResolver : IAiClientResolver
     private IAiCompletionClient Create(AiProvider provider, AiOptions options) =>
         new OpenAiCompatibleClient(
             _httpClientFactory, options,
-            _loggerFactory.CreateLogger<OpenAiCompatibleClient>(), provider);
+            _loggerFactory.CreateLogger<OpenAiCompatibleClient>(), budget, provider);
 }

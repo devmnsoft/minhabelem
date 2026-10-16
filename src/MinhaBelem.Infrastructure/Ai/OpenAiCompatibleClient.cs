@@ -4,6 +4,7 @@ using System.Text;
 using System.Text.Json;
 using MinhaBelem.Core.Abstractions;
 using MinhaBelem.Core.Entities;
+using MinhaBelem.Infrastructure.Networking;
 
 namespace MinhaBelem.Infrastructure.Ai;
 
@@ -19,6 +20,7 @@ public sealed class AiProviderOptions
 public sealed class AiOptions
 {
     public bool Enabled { get; set; } = true;
+    public int MaxDailyRequests { get; set; } = 50;
     public string DefaultProvider { get; set; } = nameof(AiProvider.Groq);
     public AiProviderOptions Groq { get; set; } = new();
     public AiProviderOptions Gemini { get; set; } = new();
@@ -49,13 +51,15 @@ public sealed class OpenAiCompatibleClient : IAiCompletionClient
     private readonly IHttpClientFactory httpClientFactory;
     private readonly AiOptions options;
     private readonly ILogger<OpenAiCompatibleClient> logger;
+    private readonly ApiBudget budget;
     public AiProvider Provider { get; }
 
-    public OpenAiCompatibleClient(IHttpClientFactory httpClientFactory, AiOptions options, ILogger<OpenAiCompatibleClient> logger, AiProvider provider = AiProvider.Groq)
+    public OpenAiCompatibleClient(IHttpClientFactory httpClientFactory, AiOptions options, ILogger<OpenAiCompatibleClient> logger, ApiBudget budget, AiProvider provider = AiProvider.Groq)
     {
         this.httpClientFactory = httpClientFactory;
         this.options = options;
         this.logger = logger;
+        this.budget = budget;
         Provider = provider;
     }
 
@@ -68,6 +72,7 @@ public sealed class OpenAiCompatibleClient : IAiCompletionClient
     public async Task<AiCompletion> CompleteAsync(string systemPrompt, string userPrompt, CancellationToken ct)
     {
         if (!IsConfigured) throw new InvalidOperationException($"Provedor {Provider} sem credencial configurada.");
+        if (!await budget.ReserveAsync("ai-" + Provider, options.MaxDailyRequests, ct)) throw new InvalidOperationException("Limite diário de IA atingido.");
 
         var endpoint = Provider switch
         {
@@ -100,8 +105,7 @@ public sealed class OpenAiCompatibleClient : IAiCompletionClient
 
         if (!response.IsSuccessStatusCode)
         {
-            var body = await response.Content.ReadAsStringAsync(ct);
-            logger.LogWarning("{Provider} respondeu {Status}: {Body}", Provider, (int)response.StatusCode, body[..Math.Min(400, body.Length)]);
+            logger.LogWarning("{Provider} respondeu {Status}", Provider, (int)response.StatusCode);
             throw new HttpRequestException($"{Provider} respondeu {(int)response.StatusCode}.");
         }
 

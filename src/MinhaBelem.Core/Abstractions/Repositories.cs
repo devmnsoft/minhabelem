@@ -5,6 +5,7 @@ namespace MinhaBelem.Core.Abstractions;
 
 public interface IContentRepository
 {
+    Task<IReadOnlyList<ContentItem>> EditorialAsync(ContentQuery query, CancellationToken ct);
     Task<IReadOnlyList<ContentItem>> SearchAsync(ContentQuery query, CancellationToken ct);
     Task<int> CountAsync(ContentQuery query, CancellationToken ct);
     Task<ContentItem?> GetAsync(long id, CancellationToken ct);
@@ -17,6 +18,11 @@ public interface IContentRepository
     Task<IReadOnlyDictionary<long, string>> FingerprintsAsync(IEnumerable<long> ids, CancellationToken ct);
     Task<IReadOnlyList<ContentItem>> SearchForDuplicatesAsync(string title, string summary, int limit, CancellationToken ct);
     Task<int> ExpireOldContentAsync(DateTime now, CancellationToken ct);
+}
+
+public interface IEditorialWorkflow
+{
+    Task<long?> ImportAsync(long candidateId, long? actorId, CancellationToken ct);
 }
 
 public sealed class ContentQuery

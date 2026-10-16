@@ -1,0 +1,6 @@
+@model MinhaBelem.Web.Models.LoginInput
+<section class="section article"><p class="eyebrow">ÁREA RESTRITA</p><h1>Entre na sua conta</h1><p>Use seu e-mail e senha. A central editorial exige um aplicativo autenticador.</p>
+<div asp-validation-summary="All" role="alert"></div><form method="post" asp-action="Login">
+<label asp-for="Email">E-mail</label><input asp-for="Email" autocomplete="username" type="email" required />
+<label asp-for="Password">Senha</label><input asp-for="Password" autocomplete="current-password" type="password" required />
+<button type="submit">Entrar</button></form></section>

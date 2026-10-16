@@ -29,7 +29,11 @@ public sealed record AiAnalysisInput(
     string Title,
     string Summary,
     string? SourceUrl,
-    IReadOnlyList<ContentItem> ComparisonItems);
+    IReadOnlyList<ContentItem> ComparisonItems)
+{
+    public long? TargetId { get; init; }
+    public long? ActorId { get; init; }
+}
 
 /// <summary>Serviço editorial de IA: classifica, geolocaliza, resume, detecta duplicidade e sinaliza risco.</summary>
 public interface IAiAnalysisService
@@ -57,6 +61,7 @@ public interface IPlacesClient
     bool IsConfigured { get; }
     Task<IReadOnlyList<Place>> SearchAsync(string placeType, double latitude, double longitude, double radiusMeters, int maxResults, CancellationToken ct);
     Task<Place?> GetDetailsAsync(string placeId, CancellationToken ct);
+    Task<string?> GetPhotoUriAsync(string? photoName, CancellationToken ct);
 }
 
 public interface ICurrentUserAccessor

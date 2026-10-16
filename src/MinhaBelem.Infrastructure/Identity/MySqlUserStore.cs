@@ -3,6 +3,7 @@ using System.Security.Cryptography;
 using Dapper;
 using Microsoft.AspNetCore.Identity;
 using MySqlConnector;
+using Microsoft.AspNetCore.DataProtection;
 
 namespace MinhaBelem.Infrastructure.Identity;
 
@@ -33,11 +34,13 @@ internal sealed class UserRow
     public DateTime CreatedAt { get; set; }
 }
 
-public sealed class MySqlUserStore(MySqlDataSource dataSource)
+public sealed class MySqlUserStore(MySqlDataSource dataSource, IDataProtectionProvider protection)
     : IUserPasswordStore<ApplicationUser>, IUserEmailStore<ApplicationUser>, IUserSecurityStampStore<ApplicationUser>,
       IUserLockoutStore<ApplicationUser>, IUserTwoFactorStore<ApplicationUser>, IUserPhoneNumberStore<ApplicationUser>,
-      IUserClaimStore<ApplicationUser>, IUserRoleStore<ApplicationUser>, IUserLoginStore<ApplicationUser>, IUserAuthenticationTokenStore<ApplicationUser>
+      IUserClaimStore<ApplicationUser>, IUserRoleStore<ApplicationUser>, IUserLoginStore<ApplicationUser>, IUserAuthenticationTokenStore<ApplicationUser>,
+      IUserAuthenticatorKeyStore<ApplicationUser>, IUserTwoFactorRecoveryCodeStore<ApplicationUser>
 {
+    private readonly IDataProtector protector = protection.CreateProtector("MinhaBelem.Identity.Tokens.v1");
     private const string SelectColumns = """
         id AS Id, user_name AS UserName, normalized_user_name AS NormalizedUserName, email AS Email,
         normalized_email AS NormalizedEmail, email_confirmed AS EmailConfirmed, password_hash AS PasswordHash,
@@ -87,7 +90,7 @@ public sealed class MySqlUserStore(MySqlDataSource dataSource)
     public async Task<IdentityResult> CreateAsync(ApplicationUser user, CancellationToken cancellationToken)
     {
         user.SecurityStamp ??= NewStamp();
-        user.ConcurrencyStamp ??= NewStamp();
+        user.ConcurrencyStamp = NewStamp();
         user.CreatedAt = user.CreatedAt == default ? DateTime.UtcNow : user.CreatedAt;
 
         await using var connection = await OpenAsync(cancellationToken);
@@ -430,7 +433,7 @@ public sealed class MySqlUserStore(MySqlDataSource dataSource)
             INSERT INTO mb_user_tokens (user_id, login_provider, name, value_cipher)
             VALUES (@userId, @loginProvider, @name, @value)
             ON DUPLICATE KEY UPDATE value_cipher = VALUES(value_cipher)
-            """, new { userId = user.Id, loginProvider, name, value }, cancellationToken: cancellationToken));
+            """, new { userId = user.Id, loginProvider, name, value = protector.Protect(value ?? string.Empty) }, cancellationToken: cancellationToken));
     }
 
     public async Task RemoveTokenAsync(ApplicationUser user, string loginProvider, string name, CancellationToken cancellationToken)
@@ -444,9 +447,28 @@ public sealed class MySqlUserStore(MySqlDataSource dataSource)
     public async Task<string?> GetTokenAsync(ApplicationUser user, string loginProvider, string name, CancellationToken cancellationToken)
     {
         await using var connection = await OpenAsync(cancellationToken);
-        return await connection.ExecuteScalarAsync<string?>(new CommandDefinition(
+        var encrypted = await connection.ExecuteScalarAsync<string?>(new CommandDefinition(
             "SELECT value_cipher FROM mb_user_tokens WHERE user_id = @userId AND login_provider = @loginProvider AND name = @name",
             new { userId = user.Id, loginProvider, name }, cancellationToken: cancellationToken));
+        return encrypted is null ? null : protector.Unprotect(encrypted);
+    }
+
+    public Task SetAuthenticatorKeyAsync(ApplicationUser user, string key, CancellationToken ct) => SetTokenAsync(user, "Identity", "AuthenticatorKey", key, ct);
+    public Task<string?> GetAuthenticatorKeyAsync(ApplicationUser user, CancellationToken ct) => GetTokenAsync(user, "Identity", "AuthenticatorKey", ct);
+    public Task ReplaceCodesAsync(ApplicationUser user, IEnumerable<string> codes, CancellationToken ct) => SetTokenAsync(user, "Identity", "RecoveryCodes", string.Join(';', codes), ct);
+    public async Task<int> CountCodesAsync(ApplicationUser user, CancellationToken ct) =>
+        (await GetTokenAsync(user, "Identity", "RecoveryCodes", ct))?.Split(';', StringSplitOptions.RemoveEmptyEntries).Length ?? 0;
+    public async Task<bool> RedeemCodeAsync(ApplicationUser user, string code, CancellationToken ct)
+    {
+        await using var db = await OpenAsync(ct);
+        await using var tx = await db.BeginTransactionAsync(ct);
+        var encrypted = await db.ExecuteScalarAsync<string?>(new CommandDefinition("SELECT value_cipher FROM mb_user_tokens WHERE user_id=@id AND login_provider='Identity' AND name='RecoveryCodes' FOR UPDATE", new { id = user.Id }, tx, cancellationToken: ct));
+        if (encrypted is null) return false;
+        var codes = protector.Unprotect(encrypted).Split(';', StringSplitOptions.RemoveEmptyEntries).ToList();
+        if (!codes.Remove(code)) return false;
+        await db.ExecuteAsync(new CommandDefinition("UPDATE mb_user_tokens SET value_cipher=@value WHERE user_id=@id AND login_provider='Identity' AND name='RecoveryCodes'", new { id = user.Id, value = protector.Protect(string.Join(';', codes)) }, tx, cancellationToken: ct));
+        await tx.CommitAsync(ct);
+        return true;
     }
 
 

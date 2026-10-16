@@ -76,4 +76,7 @@ public sealed record AiAnalysisResult(
     long? DuplicateOfId,
     double DuplicateScore,
     bool LooksOutdated,
-    IReadOnlyList<AiRun> Runs);
+    IReadOnlyList<AiRun> Runs)
+{
+    public Services.EventEvidence? Event { get; init; }
+}

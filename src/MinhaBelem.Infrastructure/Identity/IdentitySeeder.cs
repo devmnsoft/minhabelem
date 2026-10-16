@@ -54,8 +54,7 @@ public sealed class IdentitySeeder(
         var existing = await users.FindByEmailAsync(normalized);
         if (existing is not null)
         {
-            if (!existing.Enabled) { existing.Enabled = true; await users.UpdateAsync(existing); }
-            return;
+            throw new InvalidOperationException("O usuário já existe. Bootstrap não altera nem reativa contas existentes.");
         }
 
         var user = new ApplicationUser
@@ -76,7 +75,8 @@ public sealed class IdentitySeeder(
                 "Não foi possível criar o superadministrador inicial: " + string.Join(" ", result.Errors.Select(e => e.Description)));
         }
 
-        await users.AddToRolesAsync(user, [Roles.SuperAdmin]);
+        var rolesResult = await users.AddToRolesAsync(user, [Roles.SuperAdmin]);
+        if (!rolesResult.Succeeded) throw new InvalidOperationException("Não foi possível atribuir o perfil inicial.");
         await connection.ExecuteAsync(new CommandDefinition(
             """
             INSERT INTO mb_audit_logs (actor_id, actor_name, action, entity_type, details)

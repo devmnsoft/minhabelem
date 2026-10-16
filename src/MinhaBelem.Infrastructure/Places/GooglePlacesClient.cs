@@ -6,6 +6,7 @@ using MinhaBelem.Core.Entities;
 using MinhaBelem.Core.Security;
 using MinhaBelem.Core.Text;
 using MinhaBelem.Core.Taxonomy;
+using MinhaBelem.Infrastructure.Networking;
 
 namespace MinhaBelem.Infrastructure.Places;
 
@@ -14,6 +15,7 @@ public sealed class GooglePlacesOptions
     public string ApiKey { get; set; } = string.Empty;
     public int CacheDays { get; set; } = 29;
     public int MaxResults { get; set; } = 20;
+    public int DailyRequestLimit { get; set; } = 50;
 }
 
 public sealed record PlaceQueryOptions(
@@ -31,9 +33,23 @@ public sealed record PlaceQueryOptions(
 public sealed class GooglePlacesClient(
     IHttpClientFactory httpClientFactory,
     GooglePlacesOptions options,
-    ILogger<GooglePlacesClient> logger) : IPlacesClient
+    ILogger<GooglePlacesClient> logger, ApiBudget budget) : IPlacesClient
 {
     public bool IsConfigured => !string.IsNullOrWhiteSpace(options.ApiKey);
+
+    public async Task<string?> GetPhotoUriAsync(string? photoName, CancellationToken ct)
+    {
+        if (!IsConfigured || photoName is null || !System.Text.RegularExpressions.Regex.IsMatch(photoName, @"^places/[A-Za-z0-9_-]+/photos/[A-Za-z0-9_-]+$")) return null;
+        if (!await budget.ReserveAsync("google-places", options.DailyRequestLimit, ct)) return null;
+        using var request = new HttpRequestMessage(HttpMethod.Get, $"https://places.googleapis.com/v1/{photoName}/media?maxWidthPx=800&skipHttpRedirect=true");
+        request.Headers.Add("X-Goog-Api-Key", options.ApiKey);
+        using var response = await httpClientFactory.CreateClient("places").SendAsync(request, ct);
+        if (!response.IsSuccessStatusCode) return null;
+        using var doc = JsonDocument.Parse(await response.Content.ReadAsStringAsync(ct));
+        var url = doc.RootElement.TryGetProperty("photoUri", out var value) ? value.GetString() : null;
+        var validation = SafeUrl.Validate(url);
+        return validation.IsValid && validation.Uri!.DnsSafeHost.EndsWith(".googleusercontent.com", StringComparison.OrdinalIgnoreCase) ? url : null;
+    }
 
     public async Task<IReadOnlyList<Place>> SearchAsync(string placeType, double latitude, double longitude, double radiusMeters, int maxResults, CancellationToken ct)
     {
@@ -79,6 +95,7 @@ public sealed class GooglePlacesClient(
     {
         try
         {
+            if (!await budget.ReserveAsync("google-places", options.DailyRequestLimit, ct)) return Array.Empty<Place>();
             var client = httpClientFactory.CreateClient("places");
             using var response = await client.SendAsync(request, ct);
             if (!response.IsSuccessStatusCode)
@@ -155,11 +172,20 @@ public sealed class GooglePlacesClient(
         var openingHours = ReadOpeningHours(element);
 
         string? photoName = null, photoAttribution = null;
+        var authors = new List<PhotoAuthor>();
         if (element.TryGetProperty("photos", out var photos) && photos.ValueKind == JsonValueKind.Array && photos.GetArrayLength() > 0)
         {
             photoName = GetString(photos[0], "name");
             if (photos[0].TryGetProperty("authorAttributions", out var attributions) && attributions.ValueKind == JsonValueKind.Array && attributions.GetArrayLength() > 0)
-                photoAttribution = GetString(attributions[0], "displayName");
+            {
+                foreach (var attribution in attributions.EnumerateArray())
+                {
+                    var uri = GetString(attribution, "uri");
+                    if (uri?.StartsWith("//", StringComparison.Ordinal) == true) uri = "https:" + uri;
+                    if (SafeUrl.Validate(uri).IsValid) authors.Add(new PhotoAuthor(GetString(attribution, "displayName") ?? "Autor", uri!));
+                }
+                photoAttribution = string.Join(", ", authors.Select(x => x.Name));
+            }
         }
 
         double? rating = element.TryGetProperty("rating", out var r) ? r.GetDouble() : null;
@@ -203,6 +229,7 @@ public sealed class GooglePlacesClient(
             WheelchairAccessible = wheelchair,
             PhotoName = photoName,
             PhotoAttribution = photoName is null ? null : photoAttribution,
+            PhotoAuthors = authors,
             IsPublished = true,
             CachedAt = now,
             PurgeAfter = purgeAfter,

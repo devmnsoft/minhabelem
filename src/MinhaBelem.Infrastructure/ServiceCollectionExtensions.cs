@@ -11,6 +11,7 @@ using MinhaBelem.Infrastructure.Identity;
 using MinhaBelem.Infrastructure.MySql;
 using MinhaBelem.Infrastructure.Networking;
 using MinhaBelem.Infrastructure.Places;
+using MinhaBelem.Infrastructure.Discovery;
 using MySqlConnector;
 
 namespace Microsoft.Extensions.DependencyInjection;
@@ -27,14 +28,10 @@ public static class InfrastructureServiceCollectionExtensions
 
 
 
-        var connectionString = configuration.GetConnectionString("Default");
-        if (string.IsNullOrWhiteSpace(connectionString))
-            throw new InvalidOperationException(
-                "ConnectionStrings:Default não configurada. Use User Secrets, variável de ambiente ou appsettings do servidor. " +
-                "Nunca versione credenciais.");
-
-        services.AddSingleton(_ =>
+        services.AddSingleton(sp =>
         {
+            var connectionString = sp.GetRequiredService<IConfiguration>().GetConnectionString("Default");
+            if (string.IsNullOrWhiteSpace(connectionString)) throw new InvalidOperationException("Configure ConnectionStrings:Default nos segredos do servidor.");
             var builder = new MySqlDataSourceBuilder(connectionString);
             builder.ConnectionStringBuilder.DefaultCommandTimeout = 30;
             builder.ConnectionStringBuilder.ConnectionTimeout = 15;
@@ -43,6 +40,8 @@ public static class InfrastructureServiceCollectionExtensions
         });
 
         services.AddSingleton<SchemaMigrator>();
+        services.AddSingleton<ApiBudget>();
+        services.AddScoped<LegacyDataImporter>();
         services.TryAddSingleton<IFeedClient>(sp => new HttpFeedClient(sp.GetRequiredService<IHttpClientFactory>().CreateClient("feed")));
 
         // Rede: todo cliente externo passa pela proteção SSRF.
@@ -50,7 +49,7 @@ public static class InfrastructureServiceCollectionExtensions
         {
             c.Timeout = TimeSpan.FromSeconds(25);
             c.DefaultRequestHeaders.UserAgent.ParseAdd("MinhaBelemBot/1.0");
-        }).ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler { AllowAutoRedirect = false })
+        }).ConfigurePrimaryHttpMessageHandler(PublicHttpTransport.Create)
           .AddHttpMessageHandler<SsrfGuardHandler>();
 
         services.AddHttpClient("ai", c =>
@@ -66,7 +65,7 @@ public static class InfrastructureServiceCollectionExtensions
         });
 
         services.AddHttpClient("robots", c => c.Timeout = TimeSpan.FromSeconds(10))
-                .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler { AllowAutoRedirect = false })
+                .ConfigurePrimaryHttpMessageHandler(PublicHttpTransport.Create)
                 .AddHttpMessageHandler<SsrfGuardHandler>();
 
         services.AddMemoryCache();
@@ -81,6 +80,21 @@ public static class InfrastructureServiceCollectionExtensions
         services.AddScoped<IFeedReader, FeedReader>();
 
         services.AddScoped<IContentRepository, ContentRepository>();
+        services.AddScoped<IAdministrationRepository, AdministrationRepository>();
+        services.AddScoped<IEditorialWorkflow, EditorialWorkflow>();
+        services.AddScoped<IDiscoveryRepository, DiscoveryRepository>();
+        services.AddScoped<ConnectorHttp>();
+        services.AddScoped<ISourceConnector, RssAtomConnector>();
+        services.AddScoped<ISourceConnector, CalendarConnector>();
+        services.AddScoped<ISourceConnector, JsonLdConnector>();
+        services.AddScoped<ISourceConnector, InstagramConnector>();
+        services.AddScoped<ISourceConnector, FacebookConnector>();
+        services.AddScoped<ISourceConnector, TikTokConnector>();
+        services.AddScoped<ISourceConnector, YouTubeConnector>();
+        services.AddScoped<ISourceConnector, WebDiscoveryConnector>();
+        services.AddScoped<ISourceConnector, GovernmentDataConnector>();
+        services.AddScoped<ISourceConnector, CustomJsonConnector>();
+        services.AddScoped<ISourceConnector, GooglePlacesConnector>();
         services.AddScoped<IIngestionRepository, IngestionRepository>();
         services.AddScoped<IPlaceRepository, PlaceRepository>();
         services.AddScoped<IAuditRepository, AuditRepository>();
@@ -96,6 +110,7 @@ public static class InfrastructureServiceCollectionExtensions
 
         services.AddIdentityCore<ApplicationUser>()
             .AddRoles<IdentityRole<long>>()
+            .AddSignInManager()
             .AddClaimsPrincipalFactory<PermissionClaimsPrincipalFactory>()
             .AddDefaultTokenProviders();
         services.AddScoped<IUserStore<ApplicationUser>, MySqlUserStore>();
@@ -103,7 +118,9 @@ public static class InfrastructureServiceCollectionExtensions
 
         services.AddScoped<IdentitySeeder>();
 
-        services.AddHostedService<FeedCollectorWorker>();
+        services.AddSingleton<FeedCollectorWorker>();
+        services.AddSingleton<ISourceCollection>(sp => sp.GetRequiredService<FeedCollectorWorker>());
+        services.AddHostedService(sp => sp.GetRequiredService<FeedCollectorWorker>());
         services.AddHostedService<MaintenanceWorker>();
 
         return services;

@@ -1,0 +1,9 @@
+@model MinhaBelem.Core.Entities.Place
+<article class="section article"><p class="eyebrow">GUIA DA CIDADE</p><h1>@Model.Name</h1><p>@Model.EditorialNote</p>
+@if(ViewData["Live"] is true){<p>@Model.FormattedAddress</p><p>@Model.Phone</p><p>Preço informado: @(Model.PriceText ?? "Consulte o estabelecimento")</p><ul>@foreach(var hours in Model.OpeningHours){<li>@hours.Label</li>}</ul>
+@if(ViewData["Photo"] is string photo){<figure><img src="@photo" alt="Vista de @Model.Name, fornecida pelo Google Maps" loading="lazy" referrerpolicy="no-referrer" /><figcaption>@foreach(var author in Model.PhotoAuthors){<span>Foto: <a href="@author.Uri" target="_blank" rel="noopener noreferrer">@author.Name</a> </span>}</figcaption></figure>}
+<p class="attribution">Google Maps</p><p class="small">Detalhes consultados agora. Confirme horários, preços e acessibilidade com o local.</p>}
+else{<p>Os detalhes do Google Maps estão indisponíveis neste momento. Use o link abaixo para consultar o local.</p>}
+<p><a href="https://www.google.com/maps/search/?api=1&amp;query=local&amp;query_place_id=@Uri.EscapeDataString(Model.GooglePlaceId)" target="_blank" rel="noopener noreferrer">Ver mapa e rota no Google Maps</a></p>
+@if(MinhaBelem.Core.Security.SafeUrl.Validate(Model.WebsiteUri).IsValid){<p><a href="@Model.WebsiteUri" target="_blank" rel="noopener noreferrer">Site do estabelecimento</a></p>}
+<p><a href="/guia">Voltar ao guia</a></p></article>

@@ -1,0 +1,6 @@
+@model MinhaBelem.Web.Models.MfaModel
+<section class="section article"><h1>Autenticação em duas etapas</h1>
+@if(Model.Enabled){<p>Seu autenticador está ativo.</p><a href="/editorial">Ir para a central editorial</a>}
+else if(Model.Secret is null){<p>Adicione sua conta a um aplicativo autenticador para acessar a central.</p><form method="post" asp-action="IniciarMfa"><button type="submit">Preparar autenticador</button></form>}
+else{<p>No aplicativo, adicione uma chave de configuração do tipo TOTP. Guarde esta chave em local privado.</p><p><strong>Conta:</strong> MinhaBelém</p><p><strong>Chave:</strong> <code>@Model.Secret</code></p><p><a href="@Model.Uri">Abrir no aplicativo autenticador</a></p><form method="post" asp-action="ConfirmarMfa"><label for="code">Código de seis números</label><input id="code" name="code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required /><button type="submit">Ativar e obter códigos de recuperação</button></form>}
+</section>

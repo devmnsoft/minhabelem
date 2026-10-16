@@ -5,7 +5,7 @@ namespace MinhaBelem.Core.Entities;
 
 public enum ContentKind { News, Event, Service, Alert, Guide }
 
-public enum ContentStatus { Draft, InReview, Published, Archived, Rejected }
+public enum ContentStatus { Draft, InReview, Published, Archived, Rejected, Cancelled, Postponed, UncertainDate, AwaitingOrganizer, Completed }
 
 public enum VerificationStatus { Pending, Verified, Outdated }
 
@@ -71,6 +71,7 @@ public sealed class ContentItem
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
     public int Revision { get; set; } = 1;
+    public Services.EventEvidence? EventDetails { get; set; }
 
     public IReadOnlyList<Audience> Audiences { get; set; } = Array.Empty<Audience>();
     public IReadOnlyList<AccessibilityFeature> Accessibility { get; set; } = Array.Empty<AccessibilityFeature>();
@@ -78,7 +79,7 @@ public sealed class ContentItem
     public bool IsExpired(DateTime now) => ExpiresAt.HasValue && ExpiresAt.Value <= now;
 
     public bool IsVisibleToPublic(DateTime now) =>
-        Status == ContentStatus.Published && !IsExpired(now) && VerificationStatus != VerificationStatus.Outdated;
+        (Status is ContentStatus.Published or ContentStatus.Cancelled) && !IsExpired(now) && VerificationStatus != VerificationStatus.Outdated;
 }
 
 public sealed class ContentRevision

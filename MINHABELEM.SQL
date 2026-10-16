@@ -614,3 +614,63 @@ INSERT IGNORE INTO mb_role_permissions (role_id, permission_code)
  SELECT id, 'advertiser.manage' FROM mb_roles WHERE normalized_name = 'ADVERTISER';
 
 -- Fim do script. Fontes e usuarios devem ser cadastrados pela aplicacao.
+
+-- @migration 003_operacao
+-- Sprint 03: incremento aditivo. Preserva dados e tabelas anteriores.
+CREATE TABLE IF NOT EXISTS mb_user_sessions (
+    id CHAR(32) NOT NULL PRIMARY KEY,
+    user_id BIGINT UNSIGNED NOT NULL,
+    created_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+    expires_at DATETIME(6) NOT NULL,
+    revoked_at DATETIME(6) NULL,
+    KEY idx_session_user (user_id, expires_at),
+    CONSTRAINT fk_session_user FOREIGN KEY (user_id) REFERENCES mb_users(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- @migration 004_descoberta
+-- Sprint 03B: configuracao, limites e evidencias de descoberta.
+CREATE TABLE IF NOT EXISTS mb_source_profiles (
+    source_id BIGINT UNSIGNED NOT NULL PRIMARY KEY,
+    owner_name VARCHAR(180) NOT NULL DEFAULT '',
+    organization VARCHAR(200) NOT NULL DEFAULT '',
+    region VARCHAR(120) NOT NULL DEFAULT 'Pará',
+    keywords VARCHAR(500) NOT NULL DEFAULT '',
+    frequency_minutes INT NOT NULL DEFAULT 10,
+    daily_request_limit INT NOT NULL DEFAULT 24,
+    max_items INT NOT NULL DEFAULT 20,
+    credential_reference VARCHAR(80) NULL,
+    checkpoint VARCHAR(1000) NULL,
+    status VARCHAR(40) NOT NULL DEFAULT 'AwaitingConfiguration',
+    next_due_at DATETIME(6) NULL,
+    records_found BIGINT NOT NULL DEFAULT 0,
+    CONSTRAINT fk_profile_source FOREIGN KEY (source_id) REFERENCES mb_ingestion_sources(id) ON DELETE CASCADE,
+    CONSTRAINT chk_source_frequency CHECK (frequency_minutes BETWEEN 10 AND 1440),
+    CONSTRAINT chk_source_requests CHECK (daily_request_limit BETWEEN 1 AND 1000)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+CREATE TABLE IF NOT EXISTS mb_source_requests (
+    source_id BIGINT UNSIGNED NOT NULL,
+    day DATE NOT NULL,
+    requests INT NOT NULL DEFAULT 0,
+    PRIMARY KEY(source_id,day),
+    CONSTRAINT fk_request_source FOREIGN KEY (source_id) REFERENCES mb_ingestion_sources(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+CREATE TABLE IF NOT EXISTS mb_discovery_versions (
+    id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    candidate_id BIGINT UNSIGNED NOT NULL,
+    fingerprint CHAR(64) NOT NULL,
+    snapshot JSON NOT NULL,
+    discovered_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+    UNIQUE KEY uq_discovery_version(candidate_id,fingerprint),
+    CONSTRAINT fk_discovery_candidate FOREIGN KEY(candidate_id) REFERENCES mb_ingestion_candidates(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+CREATE TABLE IF NOT EXISTS mb_event_evidence (
+    content_id BIGINT UNSIGNED NOT NULL PRIMARY KEY,
+    evidence JSON NOT NULL,
+    CONSTRAINT fk_event_evidence FOREIGN KEY(content_id) REFERENCES mb_content_items(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+CREATE TABLE IF NOT EXISTS mb_api_usage (
+    service VARCHAR(64) NOT NULL,
+    day DATE NOT NULL,
+    requests INT NOT NULL DEFAULT 0,
+    PRIMARY KEY(service,day)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

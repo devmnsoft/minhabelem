@@ -11,5 +11,32 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 8.0.x
-      - run: dotnet restore src/MinhaBelem.Web/MinhaBelem.Web.csproj
-      - run: dotnet build src/MinhaBelem.Web/MinhaBelem.Web.csproj --no-restore --configuration Release
+      - run: dotnet restore MinhaBelem.sln
+      - run: dotnet build MinhaBelem.sln --no-restore --configuration Release
+      - run: dotnet test MinhaBelem.sln --no-build --configuration Release --logger trx --results-directory TestResults
+  mysql-http:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+          MYSQL_ROOT_HOST: "%"
+        ports: ["3306:3306"]
+        options: >-
+          --health-cmd="mysqladmin ping --silent"
+          --health-interval=10s --health-timeout=5s --health-retries=15
+    env:
+      MINHABELEM_TEST_MYSQL: Server=127.0.0.1;Port=3306;User ID=root;SslMode=None
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+      - run: dotnet restore MinhaBelem.sln
+      - run: dotnet test MinhaBelem.sln --configuration Release --logger trx --results-directory TestResults
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mysql-http-test-results
+          path: TestResults/*.trx

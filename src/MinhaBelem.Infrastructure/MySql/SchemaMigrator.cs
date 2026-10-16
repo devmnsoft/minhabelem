@@ -87,6 +87,9 @@ public sealed class SchemaMigrator(MySqlDataSource dataSource, ILogger<SchemaMig
         using var stream = assembly.GetManifestResourceStream("MinhaBelem.Infrastructure.MINHABELEM.SQL")
             ?? throw new InvalidOperationException("Recurso MINHABELEM.SQL nao encontrado.");
         using var reader = new StreamReader(stream);
-        return new[] { ("MINHABELEM", reader.ReadToEnd()) };
+        var parts = System.Text.RegularExpressions.Regex.Split(reader.ReadToEnd(), @"(?m)^-- @migration ([a-zA-Z0-9_]+)[ \t]*\r?$");
+        var scripts = new List<(string Version, string Script)> { ("MINHABELEM", parts[0]) };
+        for (var i = 1; i < parts.Length; i += 2) scripts.Add((parts[i], parts[i + 1]));
+        return scripts;
     }
 }
