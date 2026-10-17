@@ -27,7 +27,7 @@ builder.Services.AddControllersWithViews(o => o.Filters.Add(new Microsoft.AspNet
         o.DataAnnotationLocalizerProvider = (_, factory) => factory.Create(typeof(SharedResource));
     });
 
-builder.Services.AddMinhaBelemInfrastructure(builder.Configuration);
+builder.Services.AddMinhaBelemInfrastructure(builder.Configuration, registerWorkers: false);
 var keyProtection = builder.Services.AddDataProtection().SetApplicationName("MinhaBelem");
 if (builder.Configuration["DataProtection:KeysPath"] is { Length: > 0 } keysPath)
 {
