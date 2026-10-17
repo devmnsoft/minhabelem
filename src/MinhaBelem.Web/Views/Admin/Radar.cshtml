@@ -2,17 +2,27 @@
 @{
     ViewData["Title"] = "MinhaBelém Radar — Robô Autônomo de Descoberta";
     Layout = "_AdminLayout";
+
+    var hb = Model.Stats?.Heartbeat;
+    var statusText = hb?.StatusText ?? "Sem Informação";
+    var statusBadgeBg = hb?.StatusBadgeColor ?? "#f5f5f5";
+    var statusBadgeColor = hb?.Status == MinhaBelem.Core.Entities.WorkerStatus.Active ? "#2e7d32" :
+                           hb?.Status == MinhaBelem.Core.Entities.WorkerStatus.Running ? "#0284c7" :
+                           hb?.Status == MinhaBelem.Core.Entities.WorkerStatus.Delayed ? "#d97706" :
+                           hb?.Status == MinhaBelem.Core.Entities.WorkerStatus.Error ? "#dc2626" : "#475569";
 }
 
 <div class="admin-content-header" style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:24px; flex-wrap:wrap; gap:16px;">
     <div>
-        <div style="display:flex; align-items:center; gap:8px;">
+        <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
             <span style="font-size:1.6rem;">🧭</span>
             <h1 style="font-size:1.8rem; font-weight:800; color:var(--text-primary); margin:0;">MinhaBelém Radar</h1>
-            <span class="badge" style="background:rgba(46,125,50,0.15); color:#2e7d32; border:1px solid rgba(46,125,50,0.3); font-size:0.75rem; padding:3px 8px; border-radius:12px; font-weight:700;">Worker Ativo (10m)</span>
+            <span class="badge" style="background:@statusBadgeBg; color:@statusBadgeColor; border:1px solid @statusBadgeColor; font-size:0.8rem; padding:4px 10px; border-radius:12px; font-weight:800; letter-spacing:0.3px;">
+                ● Worker: @statusText
+            </span>
         </div>
-        <p style="color:var(--text-muted); margin:4px 0 0; font-size:0.95rem;">
-            Robô autônomo de monitoramento contínuo de fontes públicas autorizadas sobre Belém e o Pará (cultura, eventos, lazer, trânsito e serviços).
+        <p style="color:var(--text-muted); margin:6px 0 0; font-size:0.95rem;">
+            Robô autônomo com ciclo nominal de 10 minutos para fontes públicas autorizadas sobre Belém e o Pará (cultura, eventos, lazer, trânsito e serviços).
         </p>
     </div>
 
@@ -34,12 +44,86 @@
     </div>
 }
 
+<!-- TELEMETRIA DO WORKER & HEARTBEAT PERSISTIDO -->
+<div class="card" style="padding:18px 20px; border-radius:12px; margin-bottom:24px; background:linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color:#f8fafc; border:1px solid #334155; box-shadow:0 4px 16px rgba(0,0,0,0.15);">
+    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:12px; margin-bottom:14px;">
+        <div style="display:flex; align-items:center; gap:10px;">
+            <span style="font-size:1.3rem;">💓</span>
+            <div>
+                <div style="font-size:1rem; font-weight:800; letter-spacing:0.3px; color:#38bdf8;">TELEMETRIA EM TEMPO REAL DO WORKER</div>
+                <div style="font-size:0.8rem; color:#94a3b8;">Heartbeat persistido em banco de dados com monitoramento de atrasos e erros</div>
+            </div>
+        </div>
+        <div>
+            <span style="display:inline-block; padding:4px 12px; border-radius:20px; font-size:0.8rem; font-weight:800; background:@statusBadgeBg; color:@statusBadgeColor; border:1px solid @statusBadgeColor;">
+                Status Atual: @statusText.ToUpperInvariant()
+            </span>
+        </div>
+    </div>
+
+    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:16px; font-size:0.85rem;">
+        <div>
+            <div style="color:#94a3b8; font-size:0.75rem; text-transform:uppercase; font-weight:700;">Último Batimento</div>
+            <div style="font-size:1.05rem; font-weight:700; color:#f1f5f9; margin-top:2px;">
+                @(hb != null && hb.LastHeartbeatAt > DateTime.MinValue ? hb.LastHeartbeatAt.ToLocalTime().ToString("dd/MM HH:mm:ss") : "Sem registro")
+            </div>
+            <div style="color:#64748b; font-size:0.75rem;">Fuso Belém (UTC-3)</div>
+        </div>
+
+        <div>
+            <div style="color:#94a3b8; font-size:0.75rem; text-transform:uppercase; font-weight:700;">Início Último Ciclo</div>
+            <div style="font-size:1.05rem; font-weight:700; color:#f1f5f9; margin-top:2px;">
+                @(hb?.LastCycleStartedAt?.ToLocalTime().ToString("dd/MM HH:mm:ss") ?? "—")
+            </div>
+            <div style="color:#64748b; font-size:0.75rem;">Status: @(hb?.LastCycleStatus ?? "idle")</div>
+        </div>
+
+        <div>
+            <div style="color:#94a3b8; font-size:0.75rem; text-transform:uppercase; font-weight:700;">Duração do Ciclo</div>
+            <div style="font-size:1.05rem; font-weight:700; color:#38bdf8; margin-top:2px;">
+                @if (hb?.LastCycleStartedAt != null && hb.LastCycleFinishedAt != null)
+                {
+                    <span>@((hb.LastCycleFinishedAt.Value - hb.LastCycleStartedAt.Value).TotalSeconds.ToString("F1"))s</span>
+                }
+                else
+                {
+                    <span>@(hb?.IsRunning == true ? "Em execução..." : "—")</span>
+                }
+            </div>
+            <div style="color:#64748b; font-size:0.75rem;">Ciclos: @(hb?.TotalCyclesExecuted.ToString("N0") ?? "0")</div>
+        </div>
+
+        <div>
+            <div style="color:#94a3b8; font-size:0.75rem; text-transform:uppercase; font-weight:700;">Próxima Execução</div>
+            <div style="font-size:1.05rem; font-weight:700; color:#34d399; margin-top:2px;">
+                @(hb?.NextCycleDueAt?.ToLocalTime().ToString("HH:mm:ss") ?? "Em breve")
+            </div>
+            <div style="color:#64748b; font-size:0.75rem;">Intervalo padrão: 10 min</div>
+        </div>
+
+        <div>
+            <div style="color:#94a3b8; font-size:0.75rem; text-transform:uppercase; font-weight:700;">Erros Consecutivos</div>
+            <div style="font-size:1.05rem; font-weight:700; color:@(hb?.ConsecutiveErrors > 0 ? "#f87171" : "#4ade80"); margin-top:2px;">
+                @(hb?.ConsecutiveErrors ?? 0)
+            </div>
+            <div style="color:#64748b; font-size:0.75rem;">Tolerância: 3 falhas</div>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(hb?.LastError))
+    {
+        <div style="margin-top:12px; padding:8px 12px; background:rgba(239,68,68,0.15); border:1px solid #ef4444; border-radius:6px; font-size:0.8rem; color:#fca5a5;">
+            <strong>Último Alerta do Worker:</strong> @hb.LastError
+        </div>
+    }
+</div>
+
 <!-- GRID DE METRICAS E KPIS DO RADAR -->
 <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap:16px; margin-bottom:28px;">
     <div class="card" style="padding:16px; border-radius:12px; border-left:4px solid var(--primary);">
         <div style="font-size:0.8rem; text-transform:uppercase; color:var(--text-muted); font-weight:700;">Fontes Monitoradas</div>
         <div style="font-size:1.8rem; font-weight:800; color:var(--text-primary); margin-top:4px;">
-            @Model.Stats.ActiveSources <span style="font-size:1rem; color:var(--text-muted); font-weight:400;">/ @Model.Stats.TotalSources</span>
+            @(Model.Stats?.ActiveSources ?? 0) <span style="font-size:1rem; color:var(--text-muted); font-weight:400;">/ @(Model.Stats?.TotalSources ?? 0)</span>
         </div>
         <div style="font-size:0.75rem; color:#2e7d32; margin-top:4px; font-weight:600;">Fontes públicas autorizadas</div>
     </div>
@@ -47,7 +131,7 @@
     <div class="card" style="padding:16px; border-radius:12px; border-left:4px solid #1976d2;">
         <div style="font-size:0.8rem; text-transform:uppercase; color:var(--text-muted); font-weight:700;">Eventos Identificados</div>
         <div style="font-size:1.8rem; font-weight:800; color:#1976d2; margin-top:4px;">
-            @Model.Stats.UpcomingEventsCount
+            @(Model.Stats?.UpcomingEventsCount ?? 0)
         </div>
         <div style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;">JSON-LD, iCal e semântica</div>
     </div>
@@ -55,7 +139,7 @@
     <div class="card" style="padding:16px; border-radius:12px; border-left:4px solid #f57c00;">
         <div style="font-size:0.8rem; text-transform:uppercase; color:var(--text-muted); font-weight:700;">Aguardando Revisão</div>
         <div style="font-size:1.8rem; font-weight:800; color:#f57c00; margin-top:4px;">
-            @Model.Stats.PendingReviewCount
+            @(Model.Stats?.PendingReviewCount ?? 0)
         </div>
         <div style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;">Na esteira editorial humana</div>
     </div>
@@ -63,7 +147,7 @@
     <div class="card" style="padding:16px; border-radius:12px; border-left:4px solid #7b1fa2;">
         <div style="font-size:0.8rem; text-transform:uppercase; color:var(--text-muted); font-weight:700;">Consumo IA (Tokens)</div>
         <div style="font-size:1.8rem; font-weight:800; color:#7b1fa2; margin-top:4px;">
-            @Model.Stats.AiTokensConsumed.ToString("N0")
+            @(Model.Stats?.AiTokensConsumed.ToString("N0") ?? "0")
         </div>
         <div style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;">Groq / Gemini / DeepSeek</div>
     </div>
@@ -71,23 +155,126 @@
     <div class="card" style="padding:16px; border-radius:12px; border-left:4px solid #00796b;">
         <div style="font-size:0.8rem; text-transform:uppercase; color:var(--text-muted); font-weight:700;">Ciclo de Consulta</div>
         <div style="font-size:1.1rem; font-weight:700; color:var(--text-primary); margin-top:6px;">
-            @(Model.Stats.LastCrawlAt?.ToLocalTime().ToString("HH:mm:ss") ?? "Aguardando")
+            @(Model.Stats?.LastCrawlAt?.ToLocalTime().ToString("HH:mm:ss") ?? "Aguardando")
         </div>
         <div style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;">
-            Próximo: @(Model.Stats.NextCrawlDueAt?.ToLocalTime().ToString("HH:mm:ss") ?? "Em breve")
+            Próximo: @(Model.Stats?.NextCrawlDueAt?.ToLocalTime().ToString("HH:mm:ss") ?? "Em breve")
         </div>
     </div>
 
-    <div class="card" style="padding:16px; border-radius:12px; border-left:4px solid @(Model.Stats.CrawlErrorsCount > 0 ? "#d32f2f" : "#2e7d32");">
+    <div class="card" style="padding:16px; border-radius:12px; border-left:4px solid @(Model.Stats?.CrawlErrorsCount > 0 ? "#d32f2f" : "#2e7d32");">
         <div style="font-size:0.8rem; text-transform:uppercase; color:var(--text-muted); font-weight:700;">Confiabilidade / Erros</div>
-        <div style="font-size:1.8rem; font-weight:800; color:@(Model.Stats.CrawlErrorsCount > 0 ? "#d32f2f" : "#2e7d32"); margin-top:4px;">
-            @Model.Stats.CrawlErrorsCount
+        <div style="font-size:1.8rem; font-weight:800; color:@(Model.Stats?.CrawlErrorsCount > 0 ? "#d32f2f" : "#2e7d32"); margin-top:4px;">
+            @(Model.Stats?.CrawlErrorsCount ?? 0)
         </div>
         <div style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;">Falhas de requisição / HTTP 4xx/5xx</div>
     </div>
 </div>
 
-<!-- SEÇÃO 1: FONTES CANDIDATAS DESCOBERTAS NA WEB -->
+<!-- SEÇÃO 1: FONTES OPERACIONAIS, CLASSIFICAÇÃO DE CICLO E MONITORAMENTO -->
+<div class="card" style="padding:24px; border-radius:12px; margin-bottom:28px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:12px;">
+        <div>
+            <h2 style="font-size:1.25rem; font-weight:800; color:var(--text-primary); margin:0;">
+                🏛️ Catálogo de Fontes Oficiais & Monitoramento Operacional (@Model.OperationalSources.Count)
+            </h2>
+            <p style="color:var(--text-muted); font-size:0.85rem; margin:2px 0 0;">
+                Distinção real entre fontes: <strong>Configuradas</strong> (cadastradas no sistema), <strong>Autorizadas</strong> (validadas legalmente), <strong>Consultadas</strong> (verificadas pelo robô) e <strong>Operacionais</strong> (ativas e respondendo dentro dos limites).
+            </p>
+        </div>
+    </div>
+
+    @if (Model.OperationalSources.Count == 0)
+    {
+        <div style="text-align:center; padding:32px 16px; color:var(--text-muted);">
+            <div>Nenhuma fonte operacional cadastrada.</div>
+        </div>
+    }
+    else
+    {
+        <div style="overflow-x:auto;">
+            <table class="table" style="width:100%; border-collapse:collapse; font-size:0.85rem;">
+                <thead>
+                    <tr style="border-bottom:2px solid var(--border-color); text-align:left; color:var(--text-muted);">
+                        <th style="padding:10px 12px;">Fonte / Órgão</th>
+                        <th style="padding:10px 12px;">Categoria</th>
+                        <th style="padding:10px 12px;">Classificação de Ciclo</th>
+                        <th style="padding:10px 12px;">Última Consulta</th>
+                        <th style="padding:10px 12px;">Tempo Resposta</th>
+                        <th style="padding:10px 12px;">Falhas</th>
+                        <th style="padding:10px 12px; text-align:right;">Controle Operacional</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var s in Model.OperationalSources)
+                    {
+                        <tr style="border-bottom:1px solid var(--border-color); background:@(s.IsOutdated ? "#fffbeb" : "transparent");">
+                            <td style="padding:10px 12px;">
+                                <div style="font-weight:700; color:var(--text-primary);">@s.SourceName</div>
+                                <a href="@s.Url" target="_blank" rel="noopener noreferrer" style="color:var(--primary); font-size:0.75rem; word-break:break-all;">
+                                    @s.Url
+                                </a>
+                            </td>
+                            <td style="padding:10px 12px;">
+                                <span class="badge" style="background:#e0f2fe; color:#0369a1; padding:2px 6px; border-radius:4px; font-weight:600; font-size:0.75rem;">@s.Category</span>
+                                <div style="color:var(--text-muted); font-size:0.75rem; margin-top:2px;">@s.Municipality</div>
+                            </td>
+                            <td style="padding:10px 12px;">
+                                <div style="display:flex; flex-wrap:wrap; gap:4px;">
+                                    <span style="font-size:0.7rem; padding:2px 6px; border-radius:4px; font-weight:700; background:#f1f5f9; color:#475569; border:1px solid #cbd5e1;">Configurada</span>
+
+                                    @if (s.IsAuthorized)
+                                    {
+                                        <span style="font-size:0.7rem; padding:2px 6px; border-radius:4px; font-weight:700; background:#ecfdf5; color:#059669; border:1px solid #a7f3d0;">✓ Autorizada</span>
+                                    }
+
+                                    @if (s.IsConsulted)
+                                    {
+                                        <span style="font-size:0.7rem; padding:2px 6px; border-radius:4px; font-weight:700; background:#eff6ff; color:#2563eb; border:1px solid #bfdbfe;">Consultada</span>
+                                    }
+
+                                    @if (s.IsOperational)
+                                    {
+                                        <span style="font-size:0.7rem; padding:2px 6px; border-radius:4px; font-weight:700; background:#dcfce7; color:#15803d; border:1px solid #86efac;">● Operacional</span>
+                                    }
+                                    else
+                                    {
+                                        <span style="font-size:0.7rem; padding:2px 6px; border-radius:4px; font-weight:700; background:#fef2f2; color:#b91c1c; border:1px solid #fecaca;">Pausada</span>
+                                    }
+
+                                    @if (s.IsOutdated)
+                                    {
+                                        <span style="font-size:0.7rem; padding:2px 6px; border-radius:4px; font-weight:700; background:#fef3c7; color:#b45309; border:1px solid #fde68a;">⚠️ Desatualizada</span>
+                                    }
+                                </div>
+                            </td>
+                            <td style="padding:10px 12px; color:var(--text-muted); font-size:0.8rem; white-space:nowrap;">
+                                @(s.LastCheckedAt.HasValue ? s.LastCheckedAt.Value.ToLocalTime().ToString("dd/MM HH:mm") : "Nunca consultada")
+                            </td>
+                            <td style="padding:10px 12px; font-size:0.8rem;">
+                                @(s.AvgResponseTimeMs > 0 ? $"{s.AvgResponseTimeMs}ms" : "—")
+                            </td>
+                            <td style="padding:10px 12px; font-weight:700; color:@(s.ConsecutiveFailures > 0 ? "#dc2626" : "#16a34a");">
+                                @s.ConsecutiveFailures
+                            </td>
+                            <td style="padding:10px 12px; text-align:right;">
+                                <form method="post" action="/admin/radar/fontes/@s.Id/estado" style="display:inline;">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="enabled" value="@(s.Enabled ? "false" : "true")" />
+                                    <button type="submit" class="btn btn-sm" style="padding:4px 10px; font-size:0.8rem; border-radius:6px; font-weight:700; cursor:pointer; background:@(s.Enabled ? "#fff1f2" : "#ecfdf5"); color:@(s.Enabled ? "#e11d48" : "#059669"); border:1px solid rgba(0,0,0,0.1);">
+                                        @(s.Enabled ? "⏸ Pausar" : "▶ Retomar")
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+<!-- SEÇÃO 2: FONTES CANDIDATAS DESCOBERTAS NA WEB -->
 <div class="card" style="padding:24px; border-radius:12px; margin-bottom:28px;">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:12px;">
         <div>
@@ -209,21 +396,22 @@
     }
 </div>
 
-<!-- SEÇÃO 2: REGISTRO DE PERFIS PÚBLICOS E REDES SOCIAIS (SEM SCRAPING NÃO AUTORIZADO) -->
+<!-- SEÇÃO 3: RADAR SOCIAL (PERFIS OFICIAIS & PUBLICAÇÕES COM EMBEDS AUTORIZADOS) -->
 <div class="card" style="padding:24px; border-radius:12px; margin-bottom:28px;">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:12px;">
         <div>
             <h2 style="font-size:1.25rem; font-weight:800; color:var(--text-primary); margin:0;">
-                📱 Redes Sociais & Perfis Oficiais (@Model.SocialProfiles.Count)
+                📱 Radar Social: Perfis Oficiais & Publicações Vinculadas (@Model.SocialProfiles.Count perfis, @Model.SocialPosts.Count posts)
             </h2>
             <p style="color:var(--text-muted); font-size:0.85rem; margin:2px 0 0;">
-                Catálogo de canais e perfis oficiais com mecanismos autorizados de incorporação (oEmbed/Embed), links para publicações originais e licença de divulgação cultural.
+                Integração estrita com mecanismos autorizados de incorporação (oEmbed, YouTube iFrame), sem scraping invasivo ou quebra de termos de serviço das plataformas.
             </p>
         </div>
     </div>
 
     <!-- TABELA DE PERFIS CADASTRADOS -->
     <div style="overflow-x:auto; margin-bottom:24px;">
+        <h3 style="font-size:0.95rem; font-weight:700; color:var(--text-primary); margin:0 0 8px;">Perfis Institucionais Monitorados</h3>
         <table class="table" style="width:100%; border-collapse:collapse; font-size:0.9rem;">
             <thead>
                 <tr style="border-bottom:2px solid var(--border-color); text-align:left; color:var(--text-muted);">
@@ -278,48 +466,154 @@
         </table>
     </div>
 
-    <!-- FORMULÁRIO DE CADASTRO DE PERFIL SOCIAL -->
-    <div style="background:var(--bg-subtle, #f9fafb); padding:16px; border-radius:8px; border:1px solid var(--border-color);">
-        <h3 style="font-size:1rem; font-weight:700; margin:0 0 12px; color:var(--text-primary);">
-            + Cadastrar Perfil Oficial para Monitoramento
-        </h3>
-        <form method="post" action="/admin/radar/perfis/cadastrar" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)) 120px; gap:12px; align-items:end;">
-            @Html.AntiForgeryToken()
-            <div>
-                <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted);">Plataforma</label>
-                <select name="Platform" style="width:100%; padding:8px; border-radius:6px; border:1px solid var(--border-color); font-size:0.85rem;">
-                    <option value="Instagram">Instagram</option>
-                    <option value="YouTube">YouTube</option>
-                    <option value="Facebook">Facebook</option>
-                    <option value="TikTok">TikTok</option>
-                </select>
+    <!-- TABELA DE POSTS E EMBEDS VINCULADOS -->
+    @if (Model.SocialPosts.Count > 0)
+    {
+        <div style="margin-bottom:24px;">
+            <h3 style="font-size:0.95rem; font-weight:700; color:var(--text-primary); margin:0 0 8px;">Publicações e Embeds Oficiais Registrados</h3>
+            <div style="overflow-x:auto;">
+                <table class="table" style="width:100%; border-collapse:collapse; font-size:0.85rem;">
+                    <thead>
+                        <tr style="border-bottom:2px solid var(--border-color); text-align:left; color:var(--text-muted);">
+                            <th style="padding:8px 10px;">Canal / Autor</th>
+                            <th style="padding:8px 10px;">Link da Publicação</th>
+                            <th style="padding:8px 10px;">Conteúdo / Legenda</th>
+                            <th style="padding:8px 10px;">Tipo de Mídia</th>
+                            <th style="padding:8px 10px;">Conteúdo Vinculado</th>
+                            <th style="padding:8px 10px;">Patrocinado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var post in Model.SocialPosts)
+                        {
+                            <tr style="border-bottom:1px solid var(--border-color);">
+                                <td style="padding:8px 10px;">
+                                    <span style="font-weight:700;">@post.AuthorHandle</span>
+                                    <span style="color:var(--text-muted); font-size:0.75rem;">(@post.Platform)</span>
+                                </td>
+                                <td style="padding:8px 10px;">
+                                    <a href="@post.PostUrl" target="_blank" rel="noopener noreferrer" style="color:var(--primary); font-size:0.8rem;">
+                                        Ver no @post.Platform ↗
+                                    </a>
+                                </td>
+                                <td style="padding:8px 10px; max-width:280px;">
+                                    @(post.CaptionSnippet ?? "—")
+                                </td>
+                                <td style="padding:8px 10px;">
+                                    <span class="badge" style="background:#f1f5f9; color:#475569; padding:2px 6px; border-radius:4px; font-size:0.75rem;">@post.MediaType</span>
+                                </td>
+                                <td style="padding:8px 10px;">
+                                    @if (post.LinkedContentId.HasValue)
+                                    {
+                                        <a href="/admin/editorial/editar/@post.LinkedContentId.Value" style="color:var(--primary); font-weight:600;">
+                                            #@post.LinkedContentId.Value
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <span style="color:var(--text-muted);">Geral</span>
+                                    }
+                                </td>
+                                <td style="padding:8px 10px;">
+                                    @(post.IsSponsored ? "⚠️ Sim (Patrocinado)" : "Orgânico")
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
             </div>
-            <div>
-                <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted);">Handle (@@usuario)</label>
-                <input type="text" name="ProfileHandle" placeholder="ex: fumbel.belem" required style="width:100%; padding:8px; border-radius:6px; border:1px solid var(--border-color); font-size:0.85rem;" />
-            </div>
-            <div>
-                <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted);">Nome de Exibição</label>
-                <input type="text" name="DisplayName" placeholder="ex: FUMBEL Belém" required style="width:100%; padding:8px; border-radius:6px; border:1px solid var(--border-color); font-size:0.85rem;" />
-            </div>
-            <div>
-                <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted);">URL do Perfil</label>
-                <input type="url" name="ProfileUrl" placeholder="https://instagram.com/fumbel.belem" required style="width:100%; padding:8px; border-radius:6px; border:1px solid var(--border-color); font-size:0.85rem;" />
-            </div>
-            <div>
-                <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted);">Categoria</label>
-                <input type="text" name="Category" value="cultura" style="width:100%; padding:8px; border-radius:6px; border:1px solid var(--border-color); font-size:0.85rem;" />
-            </div>
-            <div>
-                <button type="submit" class="btn btn-primary" style="width:100%; padding:8px; font-weight:700; font-size:0.85rem; border-radius:6px;">
-                    Salvar
-                </button>
-            </div>
-        </form>
+        </div>
+    }
+
+    <!-- FORMULÁRIOS: CADASTRAR PERFIL & VINCULAR POST SOCIAL -->
+    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap:16px;">
+        <!-- CADASTRO DE PERFIL -->
+        <div style="background:var(--bg-subtle, #f9fafb); padding:16px; border-radius:8px; border:1px solid var(--border-color);">
+            <h3 style="font-size:0.95rem; font-weight:700; margin:0 0 12px; color:var(--text-primary);">
+                + Cadastrar Perfil Oficial para Monitoramento
+            </h3>
+            <form method="post" action="/admin/radar/perfis/cadastrar" style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                @Html.AntiForgeryToken()
+                <div>
+                    <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted);">Plataforma</label>
+                    <select name="Platform" style="width:100%; padding:6px; border-radius:6px; border:1px solid var(--border-color); font-size:0.85rem;">
+                        <option value="Instagram">Instagram</option>
+                        <option value="YouTube">YouTube</option>
+                        <option value="Facebook">Facebook</option>
+                        <option value="TikTok">TikTok</option>
+                    </select>
+                </div>
+                <div>
+                    <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted);">Handle (@@usuario)</label>
+                    <input type="text" name="ProfileHandle" placeholder="ex: fumbel.belem" required style="width:100%; padding:6px; border-radius:6px; border:1px solid var(--border-color); font-size:0.85rem;" />
+                </div>
+                <div style="grid-column: span 2;">
+                    <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted);">Nome de Exibição</label>
+                    <input type="text" name="DisplayName" placeholder="ex: FUMBEL Belém" required style="width:100%; padding:6px; border-radius:6px; border:1px solid var(--border-color); font-size:0.85rem;" />
+                </div>
+                <div style="grid-column: span 2;">
+                    <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted);">URL do Perfil</label>
+                    <input type="url" name="ProfileUrl" placeholder="https://instagram.com/fumbel.belem" required style="width:100%; padding:6px; border-radius:6px; border:1px solid var(--border-color); font-size:0.85rem;" />
+                </div>
+                <div>
+                    <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted);">Categoria</label>
+                    <input type="text" name="Category" value="cultura" style="width:100%; padding:6px; border-radius:6px; border:1px solid var(--border-color); font-size:0.85rem;" />
+                </div>
+                <div style="display:flex; align-items:flex-end;">
+                    <button type="submit" class="btn btn-primary" style="width:100%; padding:7px; font-weight:700; font-size:0.85rem; border-radius:6px;">
+                        Salvar Perfil
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- CADASTRO DE POST / EMBED VINCULADO -->
+        <div style="background:var(--bg-subtle, #f9fafb); padding:16px; border-radius:8px; border:1px solid var(--border-color);">
+            <h3 style="font-size:0.95rem; font-weight:700; margin:0 0 12px; color:var(--text-primary);">
+                + Vincular Publicação / Vídeo Autorizado
+            </h3>
+            <form method="post" action="/admin/radar/social/post" style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                @Html.AntiForgeryToken()
+                <div>
+                    <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted);">Perfil Social</label>
+                    <select name="socialProfileId" required style="width:100%; padding:6px; border-radius:6px; border:1px solid var(--border-color); font-size:0.85rem;">
+                        @foreach (var p in Model.SocialProfiles)
+                        {
+                            <option value="@p.Id">@p.DisplayName (@p.Platform)</option>
+                        }
+                    </select>
+                </div>
+                <div>
+                    <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted);">Tipo de Mídia</label>
+                    <select name="mediaType" style="width:100%; padding:6px; border-radius:6px; border:1px solid var(--border-color); font-size:0.85rem;">
+                        <option value="video">Vídeo (YouTube/Reels)</option>
+                        <option value="post">Postagem Oficial</option>
+                        <option value="embed">Embed Oficial</option>
+                    </select>
+                </div>
+                <div style="grid-column: span 2;">
+                    <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted);">URL do Post / Vídeo</label>
+                    <input type="url" name="postUrl" placeholder="https://www.youtube.com/watch?v=... ou https://instagram.com/p/..." required style="width:100%; padding:6px; border-radius:6px; border:1px solid var(--border-color); font-size:0.85rem;" />
+                </div>
+                <div style="grid-column: span 2;">
+                    <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted);">Resumo / Legenda</label>
+                    <input type="text" name="captionSnippet" placeholder="Breve descrição da publicação oficial" style="width:100%; padding:6px; border-radius:6px; border:1px solid var(--border-color); font-size:0.85rem;" />
+                </div>
+                <div>
+                    <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted);">ID Notícia/Evento (Opcional)</label>
+                    <input type="number" name="linkedContentId" placeholder="ex: 104" style="width:100%; padding:6px; border-radius:6px; border:1px solid var(--border-color); font-size:0.85rem;" />
+                </div>
+                <div style="display:flex; align-items:flex-end;">
+                    <button type="submit" class="btn btn-primary" style="width:100%; padding:7px; font-weight:700; font-size:0.85rem; border-radius:6px;">
+                        Vincular Post
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 
-<!-- SEÇÃO 3: HISTÓRICO DE RASTREAMENTO & AUDITORIA DE REDE -->
+<!-- SEÇÃO 4: HISTÓRICO DE RASTREAMENTO & AUDITORIA DE REDE -->
 <div class="card" style="padding:24px; border-radius:12px;">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
         <div>
@@ -409,3 +703,4 @@
         </div>
     }
 </div>
+

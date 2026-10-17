@@ -277,6 +277,118 @@ public sealed class RadarCrawlerTests
         }
     }
 
+    [Fact]
+    public void RadarHeartbeatCalculatesAccurateStatusFromTelemetry()
+    {
+        var now = DateTime.UtcNow;
+
+        var activeHeartbeat = new RadarHeartbeat
+        {
+            LastHeartbeatAt = now.AddMinutes(-5),
+            IsRunning = false,
+            ConsecutiveErrors = 0,
+            LastCycleStatus = "success"
+        };
+        Assert.Equal(WorkerStatus.Active, activeHeartbeat.CalculateStatus());
+        Assert.Equal("badge-success", activeHeartbeat.StatusBadgeClass);
+        Assert.Contains("Ativo", activeHeartbeat.StatusText);
+
+        var runningHeartbeat = new RadarHeartbeat
+        {
+            LastHeartbeatAt = now.AddMinutes(-2),
+            IsRunning = true,
+            ConsecutiveErrors = 0
+        };
+        Assert.Equal(WorkerStatus.Running, runningHeartbeat.CalculateStatus());
+
+        var delayedHeartbeat = new RadarHeartbeat
+        {
+            LastHeartbeatAt = now.AddMinutes(-15),
+            IsRunning = false,
+            ConsecutiveErrors = 0
+        };
+        Assert.Equal(WorkerStatus.Delayed, delayedHeartbeat.CalculateStatus());
+
+        var offHeartbeat = new RadarHeartbeat
+        {
+            LastHeartbeatAt = now.AddMinutes(-30),
+            IsRunning = false,
+            ConsecutiveErrors = 0
+        };
+        Assert.Equal(WorkerStatus.Off, offHeartbeat.CalculateStatus());
+
+        var errorHeartbeat = new RadarHeartbeat
+        {
+            LastHeartbeatAt = now.AddMinutes(-5),
+            IsRunning = false,
+            ConsecutiveErrors = 3
+        };
+        Assert.Equal(WorkerStatus.Error, errorHeartbeat.CalculateStatus());
+
+        var uninitializedHeartbeat = new RadarHeartbeat();
+        Assert.Equal(WorkerStatus.Unknown, uninitializedHeartbeat.CalculateStatus());
+    }
+
+    [Fact]
+    public void RadarOperationalSourceEvaluatesLifecycleCorrectly()
+    {
+        var source = new IngestionSource
+        {
+            Id = 42,
+            Name = "Theatro da Paz",
+            FeedUrl = "https://theatrodapaz.com.br/programacao",
+            Topics = "teatro",
+            Municipality = "Belém",
+            LicenseNote = "Conteúdo público para divulgação cultural",
+            Enabled = true,
+            Approved = true,
+            LastCheckedAt = DateTime.UtcNow.AddHours(-2),
+            LastSuccessAt = DateTime.UtcNow.AddHours(-2),
+            ConsecutiveFailures = 0
+        };
+
+        var opSource = new RadarOperationalSource { Source = source, AvgResponseTimeMs = 180 };
+
+        Assert.Equal(42, opSource.Id);
+        Assert.Equal("Theatro da Paz", opSource.SourceName);
+        Assert.Equal("https://theatrodapaz.com.br/programacao", opSource.Url);
+        Assert.Equal("teatro", opSource.Category);
+        Assert.Equal("Belém", opSource.Municipality);
+        Assert.True(opSource.IsConfigured);
+        Assert.True(opSource.IsAuthorized);
+        Assert.True(opSource.IsConsulted);
+        Assert.True(opSource.IsOperational);
+        Assert.False(opSource.IsOutdated);
+        Assert.Equal(180, opSource.AvgResponseTimeMs);
+
+        // Outdated when consecutive failures reach threshold
+        source.ConsecutiveFailures = 3;
+        Assert.True(opSource.IsOutdated);
+    }
+
+    [Fact]
+    public void SocialPostBindsAttributesAndPreservesAuthorAndContentLinkage()
+    {
+        var post = new SocialPost
+        {
+            Id = 1,
+            ProfileId = 10,
+            Platform = "Instagram",
+            AuthorHandle = "theatrodapazoficial",
+            PostUrl = "https://www.instagram.com/p/DB12345/",
+            Title = "Temporada de Ópera do Pará 2026",
+            Caption = "Estreia confirmada para o próximo mês com grandes vozes líricas da Amazônia.",
+            MediaType = "post",
+            ContentId = 55,
+            IsSponsored = false
+        };
+
+        Assert.Equal(55, post.LinkedContentId);
+        Assert.Contains("Estreia confirmada", post.CaptionSnippet);
+        Assert.False(post.IsSponsored);
+        Assert.Equal("Instagram", post.Platform);
+    }
+
     private sealed class FakeHttpClientFactory(HttpMessageHandler handler) : IHttpClientFactory
     {
         public HttpClient CreateClient(string name) => new(handler);

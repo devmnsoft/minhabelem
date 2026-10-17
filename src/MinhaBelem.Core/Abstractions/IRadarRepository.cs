@@ -17,6 +17,12 @@ public interface IRadarRepository
     Task<long> UpsertSocialProfileAsync(SocialProfileRegistry profile, CancellationToken ct);
     Task<bool> ToggleSocialProfileAsync(long id, bool isActive, CancellationToken ct);
     Task<CrawlHistoryEntry?> GetLastCrawlForUrlAsync(string url, CancellationToken ct);
+    Task UpdateHeartbeatAsync(string workerName, string status, string? summary, string? error, bool isRunning, CancellationToken ct);
+    Task<RadarHeartbeat?> GetHeartbeatAsync(string workerName, CancellationToken ct);
+    Task<IReadOnlyList<SocialPost>> SocialPostsAsync(int limit, long? profileId, CancellationToken ct);
+    Task<long> InsertSocialPostAsync(SocialPost post, CancellationToken ct);
+    Task<IReadOnlyList<RadarOperationalSource>> OperationalSourcesAsync(CancellationToken ct);
+    Task<bool> ToggleSourceStateAsync(long sourceId, bool enabled, CancellationToken ct);
 }
 
 public interface IHtmlContentExtractor

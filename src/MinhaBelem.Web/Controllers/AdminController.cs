@@ -442,10 +442,42 @@ public sealed class AdminController(IAdministrationRepository admin, IDashboardR
             Query = query,
             History = await radar.RecentCrawlHistoryAsync(25, ct),
             SocialProfiles = await radar.SocialProfilesAsync(false, ct),
-            Sources = await ingestion.SourcesAsync(false, ct)
+            Sources = await ingestion.SourcesAsync(false, ct),
+            OperationalSources = await radar.OperationalSourcesAsync(ct),
+            SocialPosts = await radar.SocialPostsAsync(20, null, ct)
         };
 
         return View(model);
+    }
+
+    [HttpPost("radar/fontes/{id:long}/estado"), Authorize(Policy = Permissions.SourceManage)]
+    public async Task<IActionResult> EstadoFonte(long id, bool enabled, CancellationToken ct)
+    {
+        await radar.ToggleSourceStateAsync(id, enabled, ct);
+        await Audit("radar.source_state", "ingestion_source", id, ct);
+        TempData["Notice"] = $"Status da fonte atualizado para {(enabled ? "Ativa" : "Pausada")}.";
+        return RedirectToAction(nameof(Radar));
+    }
+
+    [HttpPost("radar/social/post"), Authorize(Policy = Permissions.SourceManage)]
+    public async Task<IActionResult> PublicarSocialPost(SocialPost post, CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(post.Title) || string.IsNullOrWhiteSpace(post.PostUrl))
+        {
+            TempData["Notice"] = "Título e URL da publicação são obrigatórios.";
+            return RedirectToAction(nameof(Radar));
+        }
+
+        post.Title = HtmlText.Clean(post.Title, 300);
+        post.Caption = string.IsNullOrWhiteSpace(post.Caption) ? null : HtmlText.ToPlainText(post.Caption, 2000);
+        post.PostUrl = HtmlText.Clean(post.PostUrl, 1000);
+        post.EmbedHtml = string.IsNullOrWhiteSpace(post.EmbedHtml) ? null : HtmlText.Clean(post.EmbedHtml, 2000);
+        post.SponsorName = string.IsNullOrWhiteSpace(post.SponsorName) ? null : HtmlText.Clean(post.SponsorName, 150);
+
+        await radar.InsertSocialPostAsync(post, ct);
+        await Audit("radar.social_post_registered", "social_post", null, ct);
+        TempData["Notice"] = "Publicação oficial registrada no Radar Social.";
+        return RedirectToAction(nameof(Radar));
     }
 
     [HttpPost("radar/varredura"), Authorize(Policy = Permissions.SourceManage)]
