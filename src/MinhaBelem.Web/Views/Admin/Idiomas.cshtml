@@ -8,14 +8,18 @@
     var aiRuns = ViewData["AiRuns"] as IReadOnlyList<AiRun> ?? Array.Empty<AiRun>();
 }
 
-<section class="section">
-    <div class="sectionhead">
-        <div>
-            <span class="eyebrow">ADMINISTRAÇÃO MULTILÍNGUE</span>
-            <h1>🌐 Idiomas da Plataforma</h1>
+<div class="admin-shell">
+    <partial name="_AdminSidebar" />
+
+    <main class="admin-content">
+        <div class="admin-header">
+            <div>
+                <span class="eyebrow">ADMINISTRAÇÃO MULTILÍNGUE</span>
+                <h1 style="font-size:2.2rem;margin-top:4px;">Idiomas Globais da Plataforma</h1>
+                <p class="small text-muted">Gestão dos 7 idiomas nativos suportados, direção de texto (LTR/RTL) e política de moderação.</p>
+            </div>
+            <a href="/admin/traducoes" class="button secondary small">Fila de Traduções →</a>
         </div>
-        <a href="/admin/traducoes" class="button secondary">Fila de Traduções →</a>
-    </div>
 
     @if (TempData["Notice"] is string notice)
     {
@@ -147,9 +151,5 @@
             </table>
         </div>
     }
-
-    <div class="actions">
-        <a href="/admin" class="button secondary">← Painel Admin</a>
-        <a href="/admin/traducoes" class="button">Fila de Traduções</a>
-    </div>
-</section>
+    </main>
+</div>

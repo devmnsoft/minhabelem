@@ -1,4 +1,127 @@
 @model IReadOnlyList<MinhaBelem.Core.Abstractions.AdminUser>
 @using MinhaBelem.Core.Security
-<section class="section"><h1>Usuários e perfis</h1><p><a href="/admin/perfis">Configurar permissões dos perfis</a></p><div class="table-wrap"><table><thead><tr><th>Nome</th><th>E-mail</th><th>Estado</th><th>MFA</th><th>Perfil e acesso</th></tr></thead><tbody>@foreach(var user in Model){<tr><td>@user.DisplayName</td><td>@user.Email</td><td>@(user.Enabled ? "Ativo" : "Suspenso")</td><td>@(user.TwoFactorEnabled ? "Configurado" : "Pendente")</td><td><form method="post" asp-action="Papel" asp-route-id="@user.Id"><label>Perfil<select name="role">@foreach(var role in Roles.All){<option>@role</option>}</select></label><button>Alterar perfil e invalidar sessões</button></form><form method="post" asp-action="EstadoUsuario" asp-route-id="@user.Id"><input type="hidden" name="enabled" value="@((!user.Enabled).ToString().ToLowerInvariant())" /><button>@(user.Enabled ? "Suspender" : "Reativar")</button></form></td></tr>}</tbody></table></div>
-<h2>Novo usuário</h2><form method="post" asp-action="CriarUsuario"><label>Nome<input name="DisplayName" maxlength="180" required /></label><label>E-mail<input name="Email" type="email" autocomplete="off" required /></label><label>Senha inicial (12 caracteres, maiúscula, minúscula, número e símbolo)<input name="Password" type="password" autocomplete="new-password" minlength="12" required /></label><label>Perfil<select name="Role">@foreach(var role in Roles.All){<option>@role</option>}</select></label><button>Criar usuário</button></form><p>A senha não é registrada em logs. Combine sua entrega com o usuário por um canal seguro.</p></section>
+
+@{
+    ViewData["Title"] = "Gestão de Usuários & Acessos";
+}
+
+<div class="admin-shell">
+    <partial name="_AdminSidebar" />
+
+    <main class="admin-content">
+        <div class="admin-header">
+            <div>
+                <span class="eyebrow">SEGURANÇA & GOVERNANÇA DE ACESSOS</span>
+                <h1 style="font-size:2.2rem;margin-top:4px;">Usuários & Controle de Acessos</h1>
+                <p class="small text-muted">Gestão de operadores, papéis RBAC, autenticação de dois fatores (TOTP) e revogação imediata de sessões.</p>
+            </div>
+            <div style="display:flex;gap:10px;">
+                <a href="/admin/perfis" class="button secondary small">🛡️ Configurar Perfis</a>
+                <a href="#novo-usuario" class="button small">➕ Novo Usuário</a>
+            </div>
+        </div>
+
+        @if (TempData["Notice"] is string notice)
+        {
+            <div class="notice" role="status">
+                <span>ℹ️ @notice</span>
+            </div>
+        }
+
+        <!-- TABELA DE USUÁRIOS -->
+        <h2 style="font-size:1.4rem;margin:24px 0 12px;">Usuários do Sistema (@Model.Count)</h2>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nome & Identificação</th>
+                        <th>E-mail</th>
+                        <th>Estado</th>
+                        <th>MFA (TOTP)</th>
+                        <th>Gestão de Acesso</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var user in Model)
+                    {
+                        <tr>
+                            <td><strong>@user.DisplayName</strong></td>
+                            <td>@user.Email</td>
+                            <td>
+                                <span class="badge @(user.Enabled ? "badge-success" : "badge-rejected")">
+                                    @(user.Enabled ? "Ativo" : "Suspenso")
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge @(user.TwoFactorEnabled ? "badge-approved" : "badge-pending")">
+                                    @(user.TwoFactorEnabled ? "🔐 Ativo" : "⚠️ Pendente")
+                                </span>
+                            </td>
+                            <td>
+                                <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+                                    <form method="post" asp-action="Papel" asp-route-id="@user.Id" style="display:inline-flex;gap:6px;align-items:center;">
+                                        @Html.AntiForgeryToken()
+                                        <select name="role" style="padding:6px 10px;font-size:0.84rem;width:auto;margin:0;">
+                                            @foreach (var role in Roles.All)
+                                            {
+                                                <option value="@role">@role</option>
+                                            }
+                                        </select>
+                                        <button type="submit" class="button secondary small">Alterar Perfil</button>
+                                    </form>
+
+                                    <form method="post" asp-action="EstadoUsuario" asp-route-id="@user.Id" style="display:inline;">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="enabled" value="@((!user.Enabled).ToString().ToLowerInvariant())" />
+                                        <button type="submit" class="button small @(user.Enabled ? "secondary" : "")">
+                                            @(user.Enabled ? "Suspender" : "Reativar")
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <!-- FORMULÁRIO DE NOVO USUÁRIO -->
+        <div id="novo-usuario" class="card" style="margin-top:34px;border-top:4px solid var(--green-forest);">
+            <h2 style="font-size:1.4rem;margin-bottom:14px;">Criar Novo Usuário Administrativo</h2>
+            <form method="post" asp-action="CriarUsuario" style="max-width:700px;">
+                @Html.AntiForgeryToken()
+
+                <label>
+                    Nome Completo *
+                    <input name="DisplayName" maxlength="180" required placeholder="Nome e Sobrenome" />
+                </label>
+
+                <label>
+                    E-mail Corporativo *
+                    <input name="Email" type="email" autocomplete="off" required placeholder="usuario@minhabelem.com.br" />
+                </label>
+
+                <label>
+                    Senha Inicial Forte * (Mínimo 12 caracteres, maiúscula, minúscula, número e símbolo)
+                    <input name="Password" type="password" autocomplete="new-password" minlength="12" required />
+                </label>
+
+                <label>
+                    Perfil Inicial *
+                    <select name="Role">
+                        @foreach (var role in Roles.All)
+                        {
+                            <option value="@role">@role</option>
+                        }
+                    </select>
+                </label>
+
+                <p class="small text-muted" style="margin:12px 0 16px;">
+                    * A senha inicial nunca é registrada em logs e deve ser alterada no primeiro login, com configuração obrigatória de MFA.
+                </p>
+
+                <button type="submit">Cadastrar Usuário</button>
+            </form>
+        </div>
+    </main>
+</div>

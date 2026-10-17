@@ -5,14 +5,81 @@
 
 @{ 
     ViewData["Title"] = Model.DisplayTitle;
+    ViewData["Description"] = Model.LocalizedSummary ?? Model.Summary;
     var currentCulture = CultureInfo.CurrentUICulture;
     var isPortuguese = currentCulture.TwoLetterISOLanguageName.Equals("pt", StringComparison.OrdinalIgnoreCase);
     var hasTranslation = !string.IsNullOrWhiteSpace(Model.LocalizedTitle);
+    var pageUrl = $"{Context.Request.Scheme}://{Context.Request.Host}/Home/Detalhe/{Model.Id}";
 }
 
-<article class="section article">
-    <p class="eyebrow">@MinhaBelem.Core.Taxonomy.Taxonomy.Info(Model.Category).Label</p>
-    <h1>@Model.DisplayTitle</h1>
+<!-- STRUCTURED DATA (JSON-LD) -->
+<script type="application/ld+json">
+{
+  "@@context": "https://schema.org",
+  "@@type": "@(Model.Kind == ContentKind.Event ? "Event" : "NewsArticle")",
+  "headline": "@Model.DisplayTitle.Replace("\"", "\\\"")",
+  "description": "@((Model.LocalizedSummary ?? Model.Summary ?? "").Replace("\"", "\\\""))",
+  "datePublished": "@Model.PublishedAt.ToString("O")",
+  "dateModified": "@Model.UpdatedAt.ToString("O")",
+  "author": {
+    "@@type": "Person",
+    "name": "@(Model.AuthorName ?? Model.SourceName ?? "Redação MinhaBelém")"
+  },
+  "publisher": {
+    "@@type": "Organization",
+    "name": "MinhaBelém",
+    "url": "@Context.Request.Scheme://@Context.Request.Host"
+  }
+  @if (Model.Kind == ContentKind.Event && Model.EventStartAt is { } dt)
+  {
+    <text>
+    ,"startDate": "@dt.ToString("O")"
+    @if (Model.EventEndAt is { } endDt)
+    {
+        <text>,"endDate": "@endDt.ToString("O")"</text>
+    }
+    @if (Model.Address is not null)
+    {
+        <text>
+        ,"location": {
+            "@@type": "Place",
+            "name": "@Model.Address.Replace("\"", "\\\"")",
+            "address": {
+                "@@type": "PostalAddress",
+                "addressLocality": "Belém",
+                "addressRegion": "PA",
+                "addressCountry": "BR"
+            }
+        }
+        </text>
+    }
+    ,"isAccessibleForFree": @(Model.IsFree ? "true" : "false")
+    </text>
+  }
+}
+</script>
+
+<article class="section article" style="max-width:880px;margin:40px auto 60px;">
+    <!-- BREADCRUMBS -->
+    <nav aria-label="Navegação estrutural" style="margin-bottom:16px;font-size:0.86rem;color:var(--text-muted);">
+        <a href="/">Home</a> / 
+        <a href="/?categoria=@Model.Category.ToString().ToLowerInvariant()">@MinhaBelem.Core.Taxonomy.Taxonomy.Info(Model.Category).Label</a> / 
+        <span style="color:var(--text-secondary);">@Model.DisplayTitle</span>
+    </nav>
+
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px;">
+        <span class="eyebrow" style="margin-bottom:0;">@MinhaBelem.Core.Taxonomy.Taxonomy.Info(Model.Category).Label</span>
+        @if (Model.Kind == ContentKind.Event)
+        {
+            <span class="badge badge-primary">📅 Evento</span>
+        }
+        @if (Model.Neighborhood is not null)
+        {
+            <span class="badge badge-muted">📍 @Model.Neighborhood</span>
+        }
+    </div>
+
+    <h1 style="font-size:clamp(2rem, 4vw, 3rem);line-height:1.15;margin-bottom:18px;">@Model.DisplayTitle</h1>
 
     @if (!isPortuguese && !hasTranslation)
     {
@@ -34,97 +101,128 @@
         <p class="notice error-notice" role="status">Evento cancelado. Confira a fonte para orientações do organizador.</p>
     }
 
-    <p class="lead">@(Model.LocalizedSummary ?? Model.Summary)</p>
+    <p class="lead" style="font-size:1.2rem;line-height:1.6;color:var(--text-secondary);font-weight:500;margin-bottom:28px;border-left:4px solid var(--gold);padding-left:18px;">
+        @(Model.LocalizedSummary ?? Model.Summary)
+    </p>
 
+    <!-- DETALHES DE EVENTOS (QUANDO APLICÁVEL) -->
     @if (Model.EventStartAt is { } start)
     {
-        <p>
-            <strong>Quando:</strong> @PortalTime.Local(start).ToString("g", currentCulture)
-            @if (Model.EventEndAt is { } end)
+        <div class="card" style="background:#f9fbf9;border-color:#d5e5d8;margin-bottom:28px;">
+            <h3 style="font-size:1.15rem;margin-bottom:12px;color:var(--green-deep);">🗓️ Informações do Evento</h3>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:14px;font-size:0.95rem;">
+                <div>
+                    <strong>Data e Horário:</strong><br />
+                    @PortalTime.Local(start).ToString("g", currentCulture)
+                    @if (Model.EventEndAt is { } end)
+                    {
+                        <span> até @PortalTime.Local(end).ToString("t", currentCulture)</span>
+                    }
+                    <span class="small text-muted" style="display:block;">(Belém - Horário de Brasília)</span>
+                </div>
+
+                @if (Model.Address is not null)
+                {
+                    <div>
+                        <strong>Local:</strong><br />
+                        @Model.Address · @Model.Neighborhood · @Model.Municipality
+                    </div>
+                }
+
+                @if (Model.Kind == ContentKind.Event)
+                {
+                    <div>
+                        <strong>Ingresso:</strong><br />
+                        @(Model.IsFree ? "🎟️ Entrada Gratuita" : Model.TicketPrice?.ToString("C", currentCulture) ?? "Consulte o organizador")
+                    </div>
+                }
+
+                @if (Model.EventDetails is { } ev)
+                {
+                    <div>
+                        <strong>Classificação Etária:</strong><br />
+                        @(ev.AgeRating ?? "Classificação Livre")
+                    </div>
+                    @if (ev.Organizer is not null)
+                    {
+                        <div>
+                            <strong>Organização:</strong><br />
+                            @ev.Organizer
+                        </div>
+                    }
+                }
+            </div>
+
+            @if (Model.EventDetails?.Availability?.EndsWith("SoldOut", StringComparison.OrdinalIgnoreCase) == true)
             {
-                <span>até @PortalTime.Local(end).ToString("g", currentCulture)</span>
-            } 
-            (Belém - Horário de Brasília)
-        </p>
+                <div class="notice error-notice" style="margin-top:16px;">
+                    <span>⚠️ Ingressos esgotados conforme a fonte consultada. Confirme com o organizador.</span>
+                </div>
+            }
+
+            @if (Model.EventDetails is { } evExtra && !string.IsNullOrWhiteSpace(evExtra.PublicUpdateNote))
+            {
+                <div class="notice" style="margin-top:16px;">
+                    <span><strong>Nota de Atualização:</strong> @evExtra.PublicUpdateNote</span>
+                </div>
+            }
+        </div>
     }
 
-    @if (Model.Address is not null)
-    {
-        <p><strong>Onde:</strong> @Model.Address · @Model.Neighborhood · @Model.Municipality</p>
-    }
-
-    @if (Model.Kind == ContentKind.Event)
-    {
-        <p>
-            <strong>Ingresso:</strong> 
-            @(Model.IsFree ? Loc["General_Save"].Value /* or Gratuito */ ?? "Gratuito" : Model.TicketPrice?.ToString("C", currentCulture) ?? "Consulte o organizador")
-        </p>
-    }
-
-    @if (Model.EventDetails?.Availability?.EndsWith("SoldOut", StringComparison.OrdinalIgnoreCase) == true)
-    {
-        <p class="notice">Ingressos esgotados conforme a fonte consultada. Confirme com o organizador.</p>
-    }
-
-    @if (Model.EventDetails is { } ev)
-    {
-        <p><strong>Organização:</strong> @(ev.Organizer ?? "Consulte a fonte")</p>
-        <p><strong>Classificação:</strong> @(ev.AgeRating ?? "Livre")</p>
-        @if (ev.Participants is not null)
-        {
-            <p><strong>Participantes:</strong> @ev.Participants</p>
-        }
-        @if (!string.IsNullOrWhiteSpace(ev.PublicUpdateNote))
-        {
-            <aside class="notice"><strong>Atualização:</strong> @ev.PublicUpdateNote</aside>
-        }
-    }
-
+    <!-- CORPO DO TEXTO EDITORIAL -->
     @if (!string.IsNullOrWhiteSpace(Model.LocalizedBody ?? Model.Body))
     {
-        <div class="article-body">@(Model.LocalizedBody ?? Model.Body)</div>
+        <div class="article-body" style="font-size:1.05rem;line-height:1.75;margin:30px 0;color:var(--text-primary);">
+            @(Model.LocalizedBody ?? Model.Body)
+        </div>
     }
 
-    <div class="article-meta">
-        <p>
+    <!-- METADADOS E CRÉDITOS DA MATÉRIA -->
+    <div class="card-meta" style="background:var(--green-surface-subtle);padding:18px 24px;border-radius:var(--radius-md);margin-top:40px;flex-direction:column;align-items:flex-start;gap:6px;">
+        <div>
             <strong>@Loc["Explore_VerifiedSource"]:</strong> 
             @if (MinhaBelem.Core.Security.SafeUrl.Validate(Model.SourceUrl).IsValid)
             {
-                <a href="@Model.SourceUrl" target="_blank" rel="noopener noreferrer">@Model.SourceName</a>
+                <a href="@Model.SourceUrl" target="_blank" rel="noopener noreferrer" style="font-weight:700;">@Model.SourceName ↗</a>
             }
             else
             {
-                <span>@Model.SourceName</span>
+                <span style="font-weight:700;">@Model.SourceName</span>
             }
-        </p>
-        <p><strong>Autoria:</strong> @(Model.AuthorName ?? "Não informada")</p>
-        <p class="small">
+        </div>
+        <div><strong>Autoria:</strong> @(Model.AuthorName ?? "Redação MinhaBelém")</div>
+        <div class="small" style="color:var(--text-muted);margin-top:4px;">
             Publicado em @PortalTime.Local(Model.PublishedAt).ToString("g", currentCulture) · 
             Atualizado em @PortalTime.Local(Model.UpdatedAt).ToString("g", currentCulture) · 
-            Verificado em @PortalTime.Local(Model.LastVerifiedAt).ToString("g", currentCulture)
-        </p>
+            Verificado editorialmente em @PortalTime.Local(Model.LastVerifiedAt).ToString("g", currentCulture)
+        </div>
     </div>
 
-    <div class="actions">
-        <button id="share" type="button">Compartilhar</button>
-        <a class="button secondary" href="https://wa.me/?text=@Uri.EscapeDataString(Model.DisplayTitle + " " + Context.Request.Scheme + "://" + Context.Request.Host + "/Home/Detalhe/" + Model.Id)" target="_blank" rel="noopener noreferrer">
-            Enviar pelo WhatsApp
+    <!-- BOTÕES DE COMPARTILHAMENTO E AÇÕES -->
+    <div class="actions" style="display:flex;gap:12px;flex-wrap:wrap;margin-top:30px;align-items:center;">
+        <a class="button" style="background:#25D366;" href="https://wa.me/?text=@Uri.EscapeDataString(Model.DisplayTitle + " - " + pageUrl)" target="_blank" rel="noopener noreferrer">
+            💬 Compartilhar no WhatsApp
         </a>
-        <a class="button secondary" href="/explore">🌎 @Loc["Nav_Explore"]</a>
-        <a class="button secondary" href="/agenda">📅 @Loc["Nav_Agenda"]</a>
+        <button id="share" type="button" class="button secondary">
+            🔗 Copiar Link
+        </button>
+        <a class="button outline" href="/explore">🌎 @Loc["Nav_Explore"]</a>
+        <a class="button outline" href="/agenda">📅 @Loc["Nav_Agenda"]</a>
     </div>
-    <p id="share-status" role="status" aria-live="polite"></p>
+    <p id="share-status" role="status" aria-live="polite" style="font-size:0.88rem;color:var(--green-forest);margin-top:8px;"></p>
 </article>
 
 @if (ViewData["PublicHistory"] is (DateTime Date, string Note)[] history && history.Length > 0)
 {
-    <section class="section article">
-        <h2>Histórico de atualizações</h2>
-        <ul>
-            @foreach (var entry in history)
-            {
-                <li>@PortalTime.Local(entry.Date).ToString("g", currentCulture) · @entry.Note</li>
-            }
-        </ul>
+    <section class="section article" style="max-width:880px;margin:20px auto 60px;">
+        <div class="card">
+            <h3 style="font-size:1.15rem;margin-bottom:12px;">Histórico de Atualizações da Matéria</h3>
+            <ul style="padding-left:20px;font-size:0.92rem;color:var(--text-secondary);display:grid;gap:6px;">
+                @foreach (var entry in history)
+                {
+                    <li><strong>@PortalTime.Local(entry.Date).ToString("g", currentCulture):</strong> @entry.Note</li>
+                }
+            </ul>
+        </div>
     </section>
 }

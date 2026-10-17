@@ -19,8 +19,40 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content="@(ViewData["Description"] ?? Loc["Hero_Subtitle"].Value ?? "MinhaBelém: portal global de cultura, turismo, notícias e serviços de Belém do Pará.")" />
+    <meta name="description" content="@(ViewData["Description"] ?? Loc["Hero_Subtitle"].Value ?? "MinhaBelém: portal global de cultura, turismo, notícias, mobilidade e serviços de Belém do Pará.")" />
     <title>@(ViewData["Title"] != null ? $"{ViewData["Title"]} — MinhaBelém" : Loc["Brand_Tagline"].Value ?? "MinhaBelém — Nossa cidade. Mil histórias.")</title>
+
+    <!-- Google Fonts Preconnect & Stylesheets -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+
+    <!-- Open Graph & Social Sharing -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="MinhaBelém" />
+    <meta property="og:title" content="@(ViewData["Title"] != null ? $"{ViewData["Title"]} — MinhaBelém" : "MinhaBelém — Nossa cidade. Mil histórias.")" />
+    <meta property="og:description" content="@(ViewData["Description"] ?? Loc["Hero_Subtitle"].Value ?? "Portal completo de notícias, eventos, turismo, mobilidade e cultura de Belém do Pará.")" />
+    <meta property="og:url" content="@canonicalUrl" />
+    <meta property="og:locale" content="@currentCulture.Replace("-", "_")" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="@(ViewData["Title"] != null ? $"{ViewData["Title"]} — MinhaBelém" : "MinhaBelém — Nossa cidade. Mil histórias.")" />
+    <meta name="twitter:description" content="@(ViewData["Description"] ?? Loc["Hero_Subtitle"].Value ?? "Portal completo de notícias, eventos, turismo, mobilidade e cultura de Belém do Pará.")" />
+
+    <!-- Schema.org JSON-LD Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@@context": "https://schema.org",
+      "@@type": "WebSite",
+      "name": "MinhaBelém",
+      "url": "@Context.Request.Scheme://@Context.Request.Host",
+      "description": "Portal 360 de notícias, cultura, turismo e serviços de Belém do Pará",
+      "potentialAction": {
+        "@@type": "SearchAction",
+        "target": "@Context.Request.Scheme://@Context.Request.Host/?busca={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    }
+    </script>
 
     <!-- SEO & Multilingual Alternate Hreflang -->
     <link rel="canonical" href="@canonicalUrl" />

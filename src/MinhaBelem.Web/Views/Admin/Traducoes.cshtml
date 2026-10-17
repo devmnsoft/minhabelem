@@ -12,16 +12,18 @@
     var untranslatedPlaces = ViewData["UntranslatedPlaces"] as IReadOnlyList<Place> ?? Array.Empty<Place>();
 }
 
-<section class="section">
-    <div class="sectionhead">
-        <div>
-            <span class="eyebrow">INTELIGÊNCIA DE CONTEÚDO MULTILÍNGUE</span>
-            <h1>📚 Gestão de Traduções</h1>
+<div class="admin-shell">
+    <partial name="_AdminSidebar" />
+
+    <main class="admin-content">
+        <div class="admin-header">
+            <div>
+                <span class="eyebrow">INTELIGÊNCIA DE CONTEÚDO MULTILÍNGUE</span>
+                <h1 style="font-size:2.2rem;margin-top:4px;">Fila & Gestão de Traduções</h1>
+                <p class="small text-muted">Aprovação editorial de traduções geradas por IA com preservação de expressões culturais amazônicas.</p>
+            </div>
+            <a href="/admin/idiomas" class="button secondary small">🌐 Gerenciar Idiomas</a>
         </div>
-        <div class="actions">
-            <a href="/admin/idiomas" class="button secondary">🌐 Gerenciar Idiomas</a>
-        </div>
-    </div>
 
     @if (TempData["Notice"] is string notice)
     {
@@ -197,4 +199,5 @@
             </table>
         </div>
     }
-</section>
+    </main>
+</div>

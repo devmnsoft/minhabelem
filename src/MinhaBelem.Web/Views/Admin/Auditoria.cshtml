@@ -1,2 +1,65 @@
 @model IReadOnlyList<MinhaBelem.Core.Entities.AuditEntry>
-<section class="section"><h1>Trilha de auditoria</h1><div class="table-wrap"><table><thead><tr><th>Data (UTC)</th><th>Responsável</th><th>Ação</th><th>Registro</th><th>Detalhes</th></tr></thead><tbody>@foreach(var entry in Model){<tr><td>@entry.CreatedAt</td><td>@entry.ActorId · @entry.ActorName</td><td>@entry.Action</td><td>@entry.EntityType #@entry.EntityId</td><td>@entry.DetailsJson</td></tr>}</tbody></table></div></section>
+
+@{
+    ViewData["Title"] = "Trilha de Auditoria & Segurança";
+}
+
+<div class="admin-shell">
+    <partial name="_AdminSidebar" />
+
+    <main class="admin-content">
+        <div class="admin-header">
+            <div>
+                <span class="eyebrow">CONFORMIDADE & SEGURANÇA</span>
+                <h1 style="font-size:2.2rem;margin-top:4px;">Trilha de Auditoria</h1>
+                <p class="small text-muted">Histórico imutável de eventos sensíveis, login, alterações de status e permissões.</p>
+            </div>
+            <a href="/admin/relatorios" class="button secondary small">📈 Relatório Consolidado</a>
+        </div>
+
+        <h2 style="font-size:1.4rem;margin:24px 0 12px;">Últimas Ações Registradas (@Model.Count)</h2>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Data e Hora (UTC)</th>
+                        <th>Operador / Responsável</th>
+                        <th>Ação Realizada</th>
+                        <th>Entidade / Alvo</th>
+                        <th>Detalhes / Payload</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Count == 0)
+                    {
+                        <tr>
+                            <td colspan="5" style="text-align:center;padding:24px;">Nenhum registro de auditoria disponível no momento.</td>
+                        </tr>
+                    }
+                    @foreach (var entry in Model)
+                    {
+                        <tr>
+                            <td>
+                                <strong>@entry.CreatedAt.ToString("dd/MM/yyyy HH:mm:ss")</strong>
+                            </td>
+                            <td>
+                                <div><strong>@(entry.ActorName ?? "Sistema")</strong></div>
+                                <div class="small text-muted">ID: #@entry.ActorId</div>
+                            </td>
+                            <td>
+                                <span class="badge badge-primary">@entry.Action</span>
+                            </td>
+                            <td>
+                                <strong>@entry.EntityType</strong>
+                                <span class="small text-muted">#@entry.EntityId</span>
+                            </td>
+                            <td>
+                                <code style="font-size:0.8rem;word-break:break-all;max-width:300px;display:inline-block;">@entry.DetailsJson</code>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </main>
+</div>

@@ -6,7 +6,7 @@ using MinhaBelem.Web.Models;
 namespace MinhaBelem.Web.Controllers;
 public sealed class AgendaController(IContentRepository content) : Controller
 {
-    [HttpGet("agenda"), HttpGet("{culture:regex(^(pt-BR|en|fr|es|ru|zh-Hans|ja)$)}/agenda"), HttpGet("agenda/semana"), HttpGet("proximos-eventos"), HttpGet("programacao-infantil"), HttpGet("cinema-teatro"), HttpGet("esporte-lazer"), HttpGet("eventos-gratuitos"), HttpGet("meu-bairro"), HttpGet("fim-de-semana"), HttpGet("eventos-do-para"), HttpGet("feriados"), HttpGet("agora")]
+    [HttpGet("agenda"), HttpGet("{culture:regex(^(pt-BR|en|fr|es|ru|zh-Hans|ja)$)}/agenda"), HttpGet("agenda/semana"), HttpGet("proximos-eventos"), HttpGet("programacao-infantil"), HttpGet("cinema-teatro"), HttpGet("esporte-lazer"), HttpGet("eventos-gratuitos"), HttpGet("agenda/meu-bairro"), HttpGet("fim-de-semana"), HttpGet("eventos-do-para"), HttpGet("feriados"), HttpGet("agora")]
     public async Task<IActionResult> Index(int dias = 30, string? busca = null, string? bairro = null, string? municipio = null, string? categoria = null, Audience? publico = null, AccessibilityFeature? acessibilidade = null, int? idade = null, bool gratuito = false, CancellationToken ct = default)
     {
         if (!new[] { 0, 1, 7, 30, 90, 180, 365 }.Contains(dias) || busca?.Length > 120 || bairro?.Length > 120 || municipio?.Length > 120 || idade is < 0 or > 18 || publico is { } p && !Enum.IsDefined(p) || acessibilidade is { } a && !Enum.IsDefined(a)) return BadRequest();
@@ -22,7 +22,7 @@ public sealed class AgendaController(IContentRepository content) : Controller
         if (path == "/cinema-teatro") { title = "Cinema e teatro"; query.Subjects = new[] { "cinema", "teatro" }; }
         if (path == "/esporte-lazer") { title = "Esporte e lazer"; query.Category = ContentCategory.Esporte; }
         if (path == "/eventos-gratuitos") { title = "Eventos gratuitos"; query.FreeOnly = true; }
-        if (path == "/meu-bairro") title = "Meu bairro";
+        if (path is "/meu-bairro" or "/agenda/meu-bairro") title = "Meu bairro";
         if (path == "/eventos-do-para") title = "Eventos do Pará";
         if (path == "/fim-de-semana")
         {

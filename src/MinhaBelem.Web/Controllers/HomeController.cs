@@ -14,7 +14,10 @@ public sealed class HomeController(
     IContentRepository content,
     ICommunityRepository community,
     IPlaceRepository places,
-    ITranslationRepository translationRepo) : Controller
+    ITranslationRepository translationRepo,
+    ITransitRepository? transitRepo = null,
+    INeighborhoodRepository? neighborhoodRepo = null,
+    ITouristRepository? touristRepo = null) : Controller
 {
     public async Task<IActionResult> Index(
         string? categoria,
@@ -51,6 +54,47 @@ public sealed class HomeController(
                 Culture = currentCulture,
                 PageSize = 12
             }, ct);
+        }
+
+        // Se for a capa principal (sem filtros), carregar dados agregados para os blocos editoriais da Home
+        if (string.IsNullOrWhiteSpace(categoria) && string.IsNullOrWhiteSpace(busca) && string.IsNullOrWhiteSpace(bairro) && pagina == 1)
+        {
+            try
+            {
+                ViewData["UpcomingEvents"] = await content.SearchAsync(new ContentQuery
+                {
+                    OnlyUpcomingEvents = true,
+                    PageSize = 4,
+                    Culture = currentCulture
+                }, ct);
+
+                ViewData["GastronomyPlaces"] = await places.SearchAsync(new PlaceQuery
+                {
+                    Category = "gastronomia",
+                    PageSize = 4,
+                    Culture = currentCulture
+                }, ct);
+
+                if (transitRepo is not null)
+                {
+                    ViewData["TransitAlerts"] = await transitRepo.GetActiveAlertsAsync(ct);
+                    ViewData["TransitLines"] = await transitRepo.GetLinesAsync(null, ct);
+                }
+
+                if (neighborhoodRepo is not null)
+                {
+                    ViewData["Neighborhoods"] = await neighborhoodRepo.GetNeighborhoodsAsync(ct);
+                }
+
+                if (touristRepo is not null)
+                {
+                    ViewData["TouristItineraries"] = await touristRepo.GetItinerariesAsync(ct);
+                }
+            }
+            catch
+            {
+                // Degradação graciosa em testes
+            }
         }
 
         return View(await content.SearchAsync(new ContentQuery

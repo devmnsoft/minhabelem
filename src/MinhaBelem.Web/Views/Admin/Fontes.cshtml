@@ -1,7 +1,266 @@
 @model IReadOnlyList<MinhaBelem.Core.Entities.IngestionSource>
 @using MinhaBelem.Core.Entities
 @using MinhaBelem.Core.Services
-@{ var profiles = ViewData["Profiles"] as Dictionary<long,SourceProfile> ?? new(); }
-<section class="section"><h1>Fontes e monitoramento</h1><p>Apenas fontes aprovadas e habilitadas são consultadas. A coleta respeita robots.txt.</p><div class="table-wrap"><table><thead><tr><th>Fonte</th><th>Estado</th><th>Última consulta (UTC)</th><th>Falhas</th><th>Ação</th></tr></thead><tbody>@foreach(var source in Model){<tr><td><a href="@(MinhaBelem.Core.Security.SafeUrl.Validate(source.FeedUrl).IsValid ? source.FeedUrl : null)" rel="noopener noreferrer">@source.Name</a><p>@source.Protocol · @source.LicenseNote</p><p>@profiles.GetValueOrDefault(source.Id)?.OwnerName · @profiles.GetValueOrDefault(source.Id)?.Organization · @profiles.GetValueOrDefault(source.Id)?.Region</p><p>Frequência: @profiles.GetValueOrDefault(source.Id)?.FrequencyMinutes min · Cota: @profiles.GetValueOrDefault(source.Id)?.DailyRequestLimit/dia</p></td><td>@(!source.Approved ? "Não autorizada" : !source.Enabled ? "Suspensa" : MinhaBelem.Web.Models.SourceStatusLabels.Label(profiles.GetValueOrDefault(source.Id)?.Status))</td><td>@source.LastCheckedAt<p>Próxima: @profiles.GetValueOrDefault(source.Id)?.NextDueAt</p><p>Estado: @MinhaBelem.Web.Models.SourceStatusLabels.Label(profiles.GetValueOrDefault(source.Id)?.Status) · Registros: @profiles.GetValueOrDefault(source.Id)?.RecordsFound</p></td><td>@source.ConsecutiveFailures · @source.LastError</td><td><form method="post" asp-action="SuspenderFonte" asp-route-id="@source.Id"><button>Suspender</button></form><details><summary>Permissão de mídia</summary><form method="post" asp-action="PermitirMidia" asp-route-id="@source.Id"><label>Licença e evidência da autorização<textarea name="license" maxlength="1000" required></textarea></label><label><input type="checkbox" name="allowed" value="true" /> Autorizar análise local de mídia</label><button>Registrar permissão</button></form></details></td></tr>}</tbody></table></div>
-<form method="post" asp-action="ExecutarColeta"><button>Verificar fontes com agendamento vencido</button></form><h2>Cadastrar ou atualizar por URL</h2><form method="post" asp-action="SalvarFonte"><label>Nome<input name="Name" maxlength="200" required /></label><label>URL HTTPS<input name="FeedUrl" type="url" maxlength="2000" required /></label><label>Protocolo<select name="Protocol">@foreach(var protocol in Enum.GetNames<FeedProtocol>()){<option>@protocol</option>}</select></label><label>Assuntos<input name="Topics" maxlength="255" /></label><label>Município<input name="Municipality" maxlength="120" /></label><label>Autorização, licença e política de uso<textarea name="LicenseNote" maxlength="500" required></textarea></label><label><input type="checkbox" name="Approved" value="true" /> Fonte autorizada após conferência</label><label><input type="checkbox" name="Enabled" value="true" /> Habilitar consulta</label><label>Responsável<input name="OwnerName" maxlength="180" /></label><label>Organização<input name="Organization" maxlength="200" /></label><label>Região<input name="Region" maxlength="120" value="Pará" /></label><label>Palavras-chave<input name="Keywords" maxlength="500" /></label><label>Frequência (minutos)<input name="FrequencyMinutes" type="number" value="10" min="10" max="1440" /></label><label>Limite diário de requisições<input name="DailyRequestLimit" type="number" value="24" min="1" max="1000" /></label><label>Itens por consulta<input name="MaxItems" type="number" value="20" min="1" max="100" /></label><label>Referência de credencial (nunca a chave ou token)<input name="CredentialReference" maxlength="80" pattern="[a-zA-Z0-9_-]{1,80}" /></label><button>Salvar fonte</button></form>
-<h2>Execuções recentes</h2><ul>@foreach(var run in ViewData["Runs"] as IReadOnlyList<IngestionRun> ?? Array.Empty<IngestionRun>()){<li>@run.StartedAt UTC · @run.Status · @run.SourcesChecked fontes · @run.ItemsInserted itens · @run.SourcesFailed falhas · @run.Error</li>}</ul></section>
+
+@{
+    ViewData["Title"] = "Fontes de Ingestão & Monitoramento";
+    var profiles = ViewData["Profiles"] as Dictionary<long, SourceProfile> ?? new();
+    var runs = ViewData["Runs"] as IReadOnlyList<IngestionRun> ?? Array.Empty<IngestionRun>();
+}
+
+<div class="admin-shell">
+    <partial name="_AdminSidebar" />
+
+    <main class="admin-content">
+        <div class="admin-header">
+            <div>
+                <span class="eyebrow">CENTRAL DE INTELIGÊNCIA DIGITAL</span>
+                <h1 style="font-size:2.2rem;margin-top:4px;">Fontes de Ingestão & Monitoramento</h1>
+                <p class="small text-muted">Apenas fontes autorizadas e habilitadas são consultadas em ciclos programados, respeitando robots.txt e cotas.</p>
+            </div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                <form method="post" asp-action="ExecutarColeta" style="display:inline;">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="button small">⚡ Executar Coleta Imediata</button>
+                </form>
+                <a href="#nova-fonte" class="button secondary small">➕ Nova Fonte</a>
+            </div>
+        </div>
+
+        @if (TempData["Notice"] is string notice)
+        {
+            <div class="notice" role="status">
+                <span>ℹ️ @notice</span>
+            </div>
+        }
+
+        <!-- TABELA DE FONTES CADASTRADAS -->
+        <h2 style="font-size:1.4rem;margin:24px 0 12px;">Fontes Ativas e Monitoradas (@Model.Count)</h2>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Fonte / Canal</th>
+                        <th>Status</th>
+                        <th>Última Consulta (UTC)</th>
+                        <th>Falhas / Erros</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Count == 0)
+                    {
+                        <tr>
+                            <td colspan="5" style="text-align:center;padding:24px;">Nenhuma fonte configurada no momento.</td>
+                        </tr>
+                    }
+                    @foreach (var source in Model)
+                    {
+                        var profile = profiles.GetValueOrDefault(source.Id);
+                        <tr>
+                            <td>
+                                <strong>
+                                    @if (MinhaBelem.Core.Security.SafeUrl.Validate(source.FeedUrl).IsValid)
+                                    {
+                                        <a href="@source.FeedUrl" target="_blank" rel="noopener noreferrer">@source.Name ↗</a>
+                                    }
+                                    else
+                                    {
+                                        <span>@source.Name</span>
+                                    }
+                                </strong>
+                                <div class="small text-muted" style="margin-top:4px;">
+                                    <span>Protocolo: <span class="badge badge-info">@source.Protocol</span></span> · 
+                                    <span>Região: @(profile?.Region ?? "Pará")</span>
+                                </div>
+                                <div class="small" style="color:var(--text-secondary);margin-top:2px;">
+                                    Licença: <em>@source.LicenseNote</em>
+                                </div>
+                                @if (profile is not null)
+                                {
+                                    <div class="small text-muted" style="margin-top:2px;">
+                                        Frequência: @profile.FrequencyMinutes min · Cota: @profile.DailyRequestLimit req/dia
+                                    </div>
+                                }
+                            </td>
+                            <td>
+                                @if (!source.Approved)
+                                {
+                                    <span class="badge badge-rejected">Não autorizada</span>
+                                }
+                                else if (!source.Enabled)
+                                {
+                                    <span class="badge badge-muted">Suspensa</span>
+                                }
+                                else
+                                {
+                                    <span class="badge badge-success">@MinhaBelem.Web.Models.SourceStatusLabels.Label(profile?.Status)</span>
+                                }
+                            </td>
+                            <td>
+                                <div class="small">
+                                    <strong>Última:</strong> @(source.LastCheckedAt?.ToString("dd/MM HH:mm") ?? "Nunca")<br />
+                                    <strong>Próxima:</strong> @(profile?.NextDueAt?.ToString("dd/MM HH:mm") ?? "Pendente")
+                                </div>
+                            </td>
+                            <td>
+                                @if (source.ConsecutiveFailures > 0)
+                                {
+                                    <span class="badge badge-rejected">@source.ConsecutiveFailures falhas</span>
+                                    <div class="small text-muted" style="max-width:200px;overflow:hidden;text-overflow:ellipsis;">@source.LastError</div>
+                                }
+                                else
+                                {
+                                    <span class="badge badge-success">Zero falhas</span>
+                                }
+                            </td>
+                            <td>
+                                <div style="display:flex;gap:6px;flex-direction:column;">
+                                    <form method="post" asp-action="SuspenderFonte" asp-route-id="@source.Id">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="button secondary small" style="width:100%;">
+                                            @(source.Enabled ? "Suspender" : "Reativar")
+                                        </button>
+                                    </form>
+
+                                    <details style="font-size:0.85rem;">
+                                        <summary style="cursor:pointer;color:var(--green-forest);font-weight:600;">Permissão de Mídia</summary>
+                                        <form method="post" asp-action="PermitirMidia" asp-route-id="@source.Id" style="margin-top:8px;background:#f9fbf9;padding:10px;border-radius:6px;border:1px solid #d5e5d8;">
+                                            @Html.AntiForgeryToken()
+                                            <label style="font-size:0.8rem;margin-bottom:6px;">
+                                                Licença/Evidência
+                                                <textarea name="license" maxlength="1000" rows="2" required placeholder="Termo de autorização..."></textarea>
+                                            </label>
+                                            <label style="display:flex;align-items:center;gap:6px;font-size:0.8rem;margin-bottom:8px;">
+                                                <input type="checkbox" name="allowed" value="true" style="width:auto;margin:0;" /> 
+                                                <span>Autorizar OCR/Mídia local</span>
+                                            </label>
+                                            <button type="submit" class="button small" style="width:100%;">Salvar</button>
+                                        </form>
+                                    </details>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <!-- FORMULÁRIO DE CADASTRO DE FONTE -->
+        <div id="nova-fonte" class="card" style="margin-top:34px;border-top:4px solid var(--green-forest);">
+            <h2 style="font-size:1.4rem;margin-bottom:14px;">Cadastrar ou Atualizar Fonte Autorizada</h2>
+            <form method="post" asp-action="SalvarFonte">
+                @Html.AntiForgeryToken()
+
+                <div class="grid" style="grid-template-columns:1fr 1fr;gap:18px;">
+                    <label>
+                        Nome da Fonte / Canal *
+                        <input name="Name" maxlength="200" required placeholder="Ex: Diário Oficial / Agência Pará / Blog Cultural" />
+                    </label>
+
+                    <label>
+                        URL HTTPS da Fonte ou Feed *
+                        <input name="FeedUrl" type="url" maxlength="2000" required placeholder="https://exemplo.pa.gov.br/feed.xml" />
+                    </label>
+                </div>
+
+                <div class="grid" style="grid-template-columns:1fr 1fr 1fr;gap:18px;">
+                    <label>
+                        Protocolo de Conexão *
+                        <select name="Protocol">
+                            @foreach (var protocol in Enum.GetNames<FeedProtocol>())
+                            {
+                                <option value="@protocol">@protocol</option>
+                            }
+                        </select>
+                    </label>
+
+                    <label>
+                        Assuntos Principais
+                        <input name="Topics" maxlength="255" placeholder="cultura, mobilidade, servicos" />
+                    </label>
+
+                    <label>
+                        Município de Cobertura
+                        <input name="Municipality" maxlength="120" value="Belém" />
+                    </label>
+                </div>
+
+                <label>
+                    Autorização, Licença e Política de Uso *
+                    <textarea name="LicenseNote" maxlength="500" rows="2" required placeholder="Fonte pública governamental / Parceria editorial firmada em..."></textarea>
+                </label>
+
+                <div class="grid" style="grid-template-columns:1fr 1fr 1fr;gap:18px;">
+                    <label>
+                        Responsável Legal
+                        <input name="OwnerName" maxlength="180" placeholder="Nome do contato ou editor" />
+                    </label>
+
+                    <label>
+                        Organização
+                        <input name="Organization" maxlength="200" placeholder="Secult / Semob / Produtora" />
+                    </label>
+
+                    <label>
+                        Frequência de Checagem (minutos)
+                        <input name="FrequencyMinutes" type="number" value="10" min="10" max="1440" />
+                    </label>
+                </div>
+
+                <div style="display:flex;gap:24px;margin:16px 0;flex-wrap:wrap;">
+                    <label class="checkbox-label" style="display:flex;align-items:center;gap:8px;font-weight:600;">
+                        <input type="checkbox" name="Approved" value="true" checked style="width:auto;margin:0;" />
+                        <span>Fonte autorizada após conferência documental</span>
+                    </label>
+
+                    <label class="checkbox-label" style="display:flex;align-items:center;gap:8px;font-weight:600;">
+                        <input type="checkbox" name="Enabled" value="true" checked style="width:auto;margin:0;" />
+                        <span>Habilitar coleta contínua em segundo plano</span>
+                    </label>
+                </div>
+
+                <button type="submit">Salvar e Configurar Fonte</button>
+            </form>
+        </div>
+
+        <!-- EXECUÇÕES RECENTES DA INGESTÃO -->
+        <div class="card" style="margin-top:30px;">
+            <h3 style="font-size:1.2rem;margin-bottom:12px;">Histórico de Execuções Recentes da Coleta</h3>
+            @if (runs.Count == 0)
+            {
+                <p class="small text-muted">Nenhuma execução registrada no banco.</p>
+            }
+            else
+            {
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Início (UTC)</th>
+                                <th>Status</th>
+                                <th>Fontes Checadas</th>
+                                <th>Itens Inseridos</th>
+                                <th>Falhas</th>
+                                <th>Detalhes</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var run in runs.Take(10))
+                            {
+                                <tr>
+                                    <td>@run.StartedAt.ToString("dd/MM/yyyy HH:mm:ss")</td>
+                                    <td><span class="badge @(run.Status == RunStatus.Success ? "badge-success" : "badge-pending")">@run.Status</span></td>
+                                    <td>@run.SourcesChecked</td>
+                                    <td><strong>@run.ItemsInserted</strong></td>
+                                    <td>@run.SourcesFailed</td>
+                                    <td><small class="text-muted">@(run.Error ?? "Sem erros")</small></td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </main>
+</div>

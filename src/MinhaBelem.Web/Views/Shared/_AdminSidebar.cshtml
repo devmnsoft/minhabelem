@@ -1,0 +1,124 @@
+@using MinhaBelem.Core.Security
+
+@{
+    var currentPath = Context.Request.Path.Value?.ToLowerInvariant() ?? "";
+}
+
+<aside class="admin-sidebar" aria-label="Navegação Administrativa">
+    <div style="padding: 0 12px 10px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 8px;">
+        <span style="font-size:0.75rem; letter-spacing:0.1em; color:var(--gold); font-weight:800; text-transform:uppercase;">Painel de Controle</span>
+        <div style="font-size:1.15rem; font-weight:800; color:white; font-family:var(--font-heading);">MinhaBelém 360</div>
+    </div>
+
+    <!-- GRUPO: EDITORIAL -->
+    <div class="admin-sidebar-group">
+        <span class="admin-sidebar-heading">Editorial & Conteúdo</span>
+        <a href="/admin" class="@(currentPath == "/admin" ? "active" : "")">
+            <span>📊</span> Dashboard Executivo
+        </a>
+        @if (User.HasClaim("mb:permission", Permissions.ContentRead))
+        {
+            <a href="/admin/conteudo" class="@(currentPath.StartsWith("/admin/conteudo") ? "active" : "")">
+                <span>📰</span> Gestão de Matérias
+            </a>
+            <a href="/editorial" class="@(currentPath.StartsWith("/editorial") ? "active" : "")">
+                <span>✍️</span> Fila Editorial
+            </a>
+        }
+        @if (User.HasClaim("mb:permission", Permissions.PlaceManage))
+        {
+            <a href="/admin/lugares" class="@(currentPath.StartsWith("/admin/lugares") ? "active" : "")">
+                <span>📍</span> Guia de Lugares
+            </a>
+        }
+        @if (User.HasClaim("mb:permission", Permissions.SubmissionModerate))
+        {
+            <a href="/admin/colaboracoes" class="@(currentPath.StartsWith("/admin/colaboracoes") ? "active" : "")">
+                <span>📬</span> Colaborações
+            </a>
+        }
+    </div>
+
+    <!-- GRUPO: CIDADE & SERVIÇOS -->
+    <div class="admin-sidebar-group">
+        <span class="admin-sidebar-heading">Cidade & Serviços</span>
+        @if (User.HasClaim("mb:permission", Permissions.SettingsManage))
+        {
+            <a href="/admin/mobilidade" class="@(currentPath.StartsWith("/admin/mobilidade") ? "active" : "")">
+                <span>🚌</span> Mobilidade Urbana
+            </a>
+        }
+        @if (User.HasClaim("mb:permission", Permissions.PlaceManage))
+        {
+            <a href="/admin/bairros" class="@(currentPath.StartsWith("/admin/bairros") ? "active" : "")">
+                <span>🏘️</span> Guias de Bairro
+            </a>
+        }
+    </div>
+
+    <!-- GRUPO: INTELIGÊNCIA DIGITAL & IA -->
+    <div class="admin-sidebar-group">
+        <span class="admin-sidebar-heading">Inteligência & IA</span>
+        @if (User.HasClaim("mb:permission", Permissions.SourceManage))
+        {
+            <a href="/admin/fontes" class="@(currentPath.StartsWith("/admin/fontes") ? "active" : "")">
+                <span>📡</span> Fontes de Ingestão
+            </a>
+        }
+        @if (User.HasClaim("mb:permission", Permissions.TranslationRead))
+        {
+            <a href="/admin/traducoes" class="@(currentPath.StartsWith("/admin/traducoes") ? "active" : "")">
+                <span>🌐</span> Moderação de IA
+            </a>
+            <a href="/admin/idiomas" class="@(currentPath.StartsWith("/admin/idiomas") ? "active" : "")">
+                <span>🗣️</span> Gestão de Idiomas
+            </a>
+        }
+        @if (User.HasClaim("mb:permission", Permissions.DashboardRead))
+        {
+            <a href="/admin/relatorios" class="@(currentPath.StartsWith("/admin/relatorios") ? "active" : "")">
+                <span>📈</span> Métricas & IA Tokens
+            </a>
+        }
+    </div>
+
+    <!-- GRUPO: NEGÓCIOS -->
+    @if (User.HasClaim("mb:permission", Permissions.AdvertiserManage))
+    {
+        <div class="admin-sidebar-group">
+            <span class="admin-sidebar-heading">Negócios & Parceiros</span>
+            <a href="/admin/anunciantes" class="@(currentPath.StartsWith("/admin/anunciantes") ? "active" : "")">
+                <span>💼</span> Anunciantes & Campanhas
+            </a>
+        </div>
+    }
+
+    <!-- GRUPO: SISTEMA & SEGURANÇA -->
+    <div class="admin-sidebar-group">
+        <span class="admin-sidebar-heading">Segurança & Sistema</span>
+        @if (User.HasClaim("mb:permission", Permissions.UserManage))
+        {
+            <a href="/admin/usuarios" class="@(currentPath.StartsWith("/admin/usuarios") ? "active" : "")">
+                <span>👥</span> Usuários & Acessos
+            </a>
+            <a href="/admin/perfis" class="@(currentPath.StartsWith("/admin/perfis") ? "active" : "")">
+                <span>🛡️</span> Perfis & Permissões
+            </a>
+        }
+        @if (User.HasClaim("mb:permission", Permissions.AuditRead))
+        {
+            <a href="/admin/auditoria" class="@(currentPath.StartsWith("/admin/auditoria") ? "active" : "")">
+                <span>📜</span> Trilha de Auditoria
+            </a>
+        }
+        @if (User.HasClaim("mb:permission", Permissions.SettingsManage))
+        {
+            <a href="/admin/integracoes" class="@(currentPath.StartsWith("/admin/integracoes") ? "active" : "")">
+                <span>🔌</span> Integrações Externas
+            </a>
+            <a href="/admin/configuracoes" class="@(currentPath.StartsWith("/admin/configuracoes") ? "active" : "")">
+                <span>⚙️</span> Configurações Gerais
+            </a>
+        }
+    </div>
+</aside>

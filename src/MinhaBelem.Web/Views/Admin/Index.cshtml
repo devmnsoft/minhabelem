@@ -1,2 +1,112 @@
 @model MinhaBelem.Core.Entities.DashboardSnapshot
-<section class="section"><p class="eyebrow">OPERAÇÃO</p><h1>Painel administrativo</h1><div class="grid"><article class="card"><h2>@Model.PublishedContent</h2><p>Conteúdos publicados</p></article><article class="card"><h2>@Model.ContentInReview</h2><p>Em revisão</p></article><article class="card"><h2>@Model.PendingCandidates</h2><p>Candidatos pendentes</p></article><article class="card"><h2>@Model.FailingSources</h2><p>Fontes com falhas</p></article></div><p>IA nas últimas 24 horas: @Model.AiRunsLast24h execuções, @Model.AiFailuresLast24h falhas. Custo registrado em 30 dias: US$ @Model.AiCostUsdLast30d.</p><p>Os indicadores refletem o banco; não indicam que integrações externas estejam autorizadas ou disponíveis.</p></section>
+@{
+    ViewData["Title"] = "Dashboard Executivo — Administração";
+}
+
+<div class="admin-shell">
+    <partial name="_AdminSidebar" />
+
+    <main class="admin-content" id="conteudo-admin">
+        <div class="admin-header">
+            <div>
+                <span class="eyebrow">OPERAÇÃO & GOVERNANÇA 360</span>
+                <h1 style="font-size:2.2rem;margin-top:4px;">Painel Executivo MinhaBelém</h1>
+                <p class="small text-muted">Visão consolidada da redação, inteligência digital, infraestrutura e custos operacionais.</p>
+            </div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                <a href="/admin/conteudo" class="button small">➕ Nova Matéria</a>
+                <a href="/admin/fontes" class="button secondary small">📡 Gerenciar Fontes</a>
+                <a href="/admin/relatorios" class="button outline small">📈 Relatório Completo</a>
+            </div>
+        </div>
+
+        <!-- CARDS DE ESTATÍSTICA PRINCIPAIS -->
+        <div class="admin-stats-grid">
+            <div class="stat-card">
+                <span class="eyebrow" style="color:var(--green-forest);">PUBLICADOS</span>
+                <div class="stat-number">@Model.PublishedContent</div>
+                <p class="small text-muted">Matérias e eventos ativos</p>
+            </div>
+
+            <div class="stat-card" style="border-left:4px solid var(--gold);">
+                <span class="eyebrow" style="color:var(--gold-dark);">EM REVISÃO</span>
+                <div class="stat-number" style="color:var(--gold-dark);">@Model.ContentInReview</div>
+                <p class="small text-muted">Aguardando conferência humana</p>
+            </div>
+
+            <div class="stat-card" style="border-left:4px solid var(--terracotta);">
+                <span class="eyebrow" style="color:var(--terracotta);">DESCOBERTA IA</span>
+                <div class="stat-number" style="color:var(--terracotta);">@Model.PendingCandidates</div>
+                <p class="small text-muted">Candidatos pendentes na fila</p>
+            </div>
+
+            <div class="stat-card" style="border-left:4px solid @(Model.FailingSources > 0 ? "#dc2626" : "var(--green-forest)");">
+                <span class="eyebrow" style="color:@(Model.FailingSources > 0 ? "#dc2626" : "var(--green-forest)");">FONTES COM FALHA</span>
+                <div class="stat-number" style="color:@(Model.FailingSources > 0 ? "#dc2626" : "var(--green-forest)");">@Model.FailingSources</div>
+                <p class="small text-muted">Exigem atenção ou ajuste de feed</p>
+            </div>
+        </div>
+
+        <!-- PAINEL MONITORAMENTO DE IA & CUSTOS -->
+        <div class="card" style="margin-bottom:30px;background:linear-gradient(145deg, #ffffff 0%, #f7faf7 100%);border-color:#c8ded0;">
+            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:16px;">
+                <span class="eyebrow" style="color:var(--green-forest);">🤖 ORQUESTRADOR MULTIPROVEDOR (GROQ, GEMINI & DEEPSEEK)</span>
+                <span class="badge badge-success">✓ Gateways Ativos com Fallback</span>
+            </div>
+
+            <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:20px;">
+                <div>
+                    <strong>Execuções (24h):</strong>
+                    <div style="font-size:1.6rem;font-weight:800;color:var(--green-forest);">@Model.AiRunsLast24h</div>
+                    <span class="small text-muted">Classificações e traduções</span>
+                </div>
+
+                <div>
+                    <strong>Falhas Transitórias (24h):</strong>
+                    <div style="font-size:1.6rem;font-weight:800;color:@(Model.AiFailuresLast24h > 0 ? "#dc2626" : "var(--green-forest)");">@Model.AiFailuresLast24h</div>
+                    <span class="small text-muted">Tratadas com fallback automático</span>
+                </div>
+
+                <div>
+                    <strong>Custo Registrado (30 dias):</strong>
+                    <div style="font-size:1.6rem;font-weight:800;color:var(--terracotta);">US$ @Model.AiCostUsdLast30d.ToString("F4")</div>
+                    <span class="small text-muted">Métrica real persistida em mb_ai_runs</span>
+                </div>
+            </div>
+
+            <p class="small text-muted" style="margin-top:16px;border-top:1px solid #e3ede5;padding-top:10px;">
+                * Os indicadores refletem o banco MySQL da aplicação; não garantem que integrações externas proprietárias estejam ativas sem chave cadastrada.
+            </p>
+        </div>
+
+        <!-- AÇÕES RÁPIDAS & LINKS DA EQUIPE EDITORIAL -->
+        <div class="grid" style="grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));">
+            <div class="card">
+                <span class="eyebrow">FLUXO EDITORIAL</span>
+                <h3>Revisão de Conteúdo</h3>
+                <p>Compare textos brutos coletados com as propostas preparadas pela IA e aprove ou rejeite publicações.</p>
+                <div style="margin-top:auto;padding-top:14px;">
+                    <a href="/editorial" class="button-link">Acessar mesa editorial →</a>
+                </div>
+            </div>
+
+            <div class="card">
+                <span class="eyebrow">INTERNACIONALIZAÇÃO</span>
+                <h3>Moderação de Traduções</h3>
+                <p>Verifique traduções automáticas para os 7 idiomas antes de exibição pública a turistas internacionais.</p>
+                <div style="margin-top:auto;padding-top:14px;">
+                    <a href="/admin/traducoes" class="button-link">Abrir fila de idiomas →</a>
+                </div>
+            </div>
+
+            <div class="card">
+                <span class="eyebrow">INFRAESTRUTURA</span>
+                <h3>Auditoria & Segurança</h3>
+                <p>Monitore acessos administrativos, sessões ativas com MFA TOTP e histórico de alterações em matérias.</p>
+                <div style="margin-top:auto;padding-top:14px;">
+                    <a href="/admin/auditoria" class="button-link">Ver logs de auditoria →</a>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>

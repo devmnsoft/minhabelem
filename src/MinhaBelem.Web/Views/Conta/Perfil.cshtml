@@ -1,2 +1,65 @@
 @model MinhaBelem.Infrastructure.Identity.ApplicationUser
-<section class="section article"><h1>Meu perfil</h1><p>@Model.DisplayName · @Model.Email</p><p><a href="/conta/mfa">Autenticador</a> · <a href="/conta/sessoes">Minhas sessões</a></p><h2>Alterar senha</h2><form method="post" asp-action="Senha"><label>Senha atual<input name="CurrentPassword" type="password" autocomplete="current-password" required /></label><label>Nova senha (12 caracteres ou mais)<input name="NewPassword" type="password" autocomplete="new-password" minlength="12" required /></label><button type="submit">Alterar senha e sair</button></form><h2>Permissões</h2><ul>@foreach(var claim in User.FindAll("mb:permission")){<li>@claim.Value</li>}</ul><form method="post" asp-action="Sair"><button type="submit">Sair desta sessão</button></form></section>
+
+@{
+    ViewData["Title"] = "Meu Perfil — MinhaBelém";
+}
+
+<section class="section" style="max-width:760px;margin:50px auto 80px;">
+    <div class="card" style="padding:36px;border-top:6px solid var(--green-forest);box-shadow:var(--shadow-md);">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:16px;margin-bottom:24px;">
+            <div>
+                <span class="eyebrow">DADOS DA CONTA</span>
+                <h1 style="font-size:2rem;margin:4px 0 6px;">@Model.DisplayName</h1>
+                <p class="small text-muted" style="margin:0;">@Model.Email · Usuário registrado</p>
+            </div>
+            <div style="display:flex;gap:10px;">
+                <a href="/conta/mfa" class="button secondary small">🔐 Autenticador TOTP</a>
+                <a href="/conta/sessoes" class="button outline small">📱 Sessões Ativas</a>
+            </div>
+        </div>
+
+        @if (TempData["Notice"] is string notice)
+        {
+            <div class="notice" role="status">
+                <span>ℹ️ @notice</span>
+            </div>
+        }
+
+        <!-- ALTERAÇÃO DE SENHA -->
+        <div style="background:var(--creme);padding:24px;border-radius:var(--radius-md);border:1px solid var(--border);margin-bottom:30px;">
+            <h2 style="font-size:1.3rem;margin-bottom:12px;">Alterar Senha de Acesso</h2>
+            <form method="post" asp-action="Senha">
+                @Html.AntiForgeryToken()
+                <label>
+                    Senha Atual *
+                    <input name="CurrentPassword" type="password" autocomplete="current-password" required placeholder="Digite sua senha atual" />
+                </label>
+                <label style="margin-top:14px;">
+                    Nova Senha Forte * (Mínimo 12 caracteres, maiúscula, minúscula, número e símbolo)
+                    <input name="NewPassword" type="password" autocomplete="new-password" minlength="12" required placeholder="Digite a nova senha segura" />
+                </label>
+                <div style="margin-top:18px;">
+                    <button type="submit" class="button small">Alterar Senha e Invalidar Sessões Anteriores</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- PERMISSÕES CONCEDIDAS -->
+        <div style="margin-bottom:30px;">
+            <h3 style="font-size:1.15rem;margin-bottom:12px;">Permissões Atribuídas ao seu Perfil</h3>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                @foreach (var claim in User.FindAll("mb:permission"))
+                {
+                    <span class="badge badge-primary">@claim.Value</span>
+                }
+            </div>
+        </div>
+
+        <div style="padding-top:20px;border-top:1px solid var(--border-subtle);display:flex;justify-content:flex-end;">
+            <form method="post" asp-action="Sair">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="button secondary small">Encerrar Sessão</button>
+            </form>
+        </div>
+    </div>
+</section>

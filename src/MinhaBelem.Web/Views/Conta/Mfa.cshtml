@@ -1,6 +1,56 @@
 @model MinhaBelem.Web.Models.MfaModel
-<section class="section article"><h1>Autenticação em duas etapas</h1>
-@if(Model.Enabled){<p>Seu autenticador está ativo.</p><a href="/editorial">Ir para a central editorial</a>}
-else if(Model.Secret is null){<p>Adicione sua conta a um aplicativo autenticador para acessar a central.</p><form method="post" asp-action="IniciarMfa"><button type="submit">Preparar autenticador</button></form>}
-else{<p>No aplicativo, adicione uma chave de configuração do tipo TOTP. Guarde esta chave em local privado.</p><p><strong>Conta:</strong> MinhaBelém</p><p><strong>Chave:</strong> <code>@Model.Secret</code></p><p><a href="@Model.Uri">Abrir no aplicativo autenticador</a></p><form method="post" asp-action="ConfirmarMfa"><label for="code">Código de seis números</label><input id="code" name="code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required /><button type="submit">Ativar e obter códigos de recuperação</button></form>}
+
+@{
+    ViewData["Title"] = "Autenticação em Duas Etapas (MFA) — MinhaBelém";
+}
+
+<section class="section" style="max-width:580px;margin:50px auto 80px;">
+    <div class="card" style="padding:36px;border-top:6px solid var(--gold);box-shadow:var(--shadow-md);">
+        <span class="eyebrow" style="color:var(--gold-dark);">SEGURANÇA DA CONTA</span>
+        <h1 style="font-size:1.85rem;margin:6px 0 16px;">Autenticação em Duas Etapas (TOTP)</h1>
+
+        @if (Model.Enabled)
+        {
+            <div class="notice" role="status">
+                <span>✓ <strong>Autenticador Ativo:</strong> Sua conta está protegida com TOTP de segundo fator.</span>
+            </div>
+            <div style="margin-top:20px;">
+                <a href="/editorial" class="button">Acessar Central Editorial →</a>
+            </div>
+        }
+        else if (Model.Secret is null)
+        {
+            <p>
+                Para acessar as áreas administrativas e editoriais do MinhaBelém, é obrigatório vincular sua conta a um aplicativo autenticador como Google Authenticator, Microsoft Authenticator ou 1Password.
+            </p>
+            <form method="post" asp-action="IniciarMfa" style="margin-top:20px;">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="button">Configurar Aplicativo Autenticador</button>
+            </form>
+        }
+        else
+        {
+            <p class="small text-muted" style="margin-bottom:16px;">
+                No seu aplicativo autenticador, adicione uma nova conta via chave de configuração manual ou utilize o link direto.
+            </p>
+
+            <div style="background:var(--creme);padding:18px;border-radius:var(--radius-sm);border:1px solid var(--border);margin-bottom:20px;">
+                <div style="font-size:0.9rem;margin-bottom:6px;"><strong>Conta:</strong> MinhaBelém Redação</div>
+                <div style="font-size:0.9rem;margin-bottom:12px;"><strong>Chave Secreta:</strong> <code style="font-size:1.05rem;font-weight:700;color:var(--green-deep);background:#e2ebe4;padding:3px 8px;border-radius:4px;">@Model.Secret</code></div>
+                <a href="@Model.Uri" class="button-link">📲 Abrir diretamente no aplicativo</a>
+            </div>
+
+            <form method="post" asp-action="ConfirmarMfa">
+                @Html.AntiForgeryToken()
+                <label for="code">
+                    Código de 6 dígitos gerado pelo aplicativo *
+                    <input id="code" name="code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required placeholder="000000" style="font-size:1.4rem;letter-spacing:0.2em;text-align:center;" />
+                </label>
+
+                <div style="margin-top:20px;">
+                    <button type="submit" style="width:100%;">Validar Código e Obter Códigos de Recuperação</button>
+                </div>
+            </form>
+        }
+    </div>
 </section>

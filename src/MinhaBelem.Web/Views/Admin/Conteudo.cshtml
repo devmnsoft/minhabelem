@@ -7,14 +7,18 @@
     var currentBusca = ViewData["CurrentBusca"] as string;
 }
 
-<section class="section">
-    <div class="sectionhead">
-        <div>
-            <span class="eyebrow">ADMINISTRAÇÃO EDITORIAL</span>
-            <h1>📰 Matérias & Notícias</h1>
+<div class="admin-shell">
+    <partial name="_AdminSidebar" />
+
+    <main class="admin-content">
+        <div class="admin-header">
+            <div>
+                <span class="eyebrow">ADMINISTRAÇÃO EDITORIAL</span>
+                <h1 style="font-size:2.2rem;margin-top:4px;">Gestão de Matérias & Notícias</h1>
+                <p class="small text-muted">Controle de reportagens manuais, revisão de artigos e arquivamento seguro.</p>
+            </div>
+            <a href="#nova-materia" class="button small">➕ Nova Matéria Manual</a>
         </div>
-        <a href="#nova-materia" class="button">+ Nova Matéria Manual</a>
-    </div>
 
     @if (TempData["Notice"] is string notice)
     {
@@ -153,4 +157,5 @@
             <button type="submit" style="margin-top:14px;">Publicar Matéria</button>
         </form>
     </div>
-</section>
+    </main>
+</div>

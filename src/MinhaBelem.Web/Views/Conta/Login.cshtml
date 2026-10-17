@@ -1,6 +1,42 @@
 @model MinhaBelem.Web.Models.LoginInput
-<section class="section article"><p class="eyebrow">ÁREA RESTRITA</p><h1>Entre na sua conta</h1><p>Use seu e-mail e senha. A central editorial exige um aplicativo autenticador.</p>
-<div asp-validation-summary="All" role="alert"></div><form method="post" asp-action="Login">
-<label asp-for="Email">E-mail</label><input asp-for="Email" autocomplete="username" type="email" required />
-<label asp-for="Password">Senha</label><input asp-for="Password" autocomplete="current-password" type="password" required />
-<button type="submit">Entrar</button></form></section>
+
+@{
+    ViewData["Title"] = "Entrar na Conta — MinhaBelém";
+}
+
+<section class="section" style="max-width:520px;margin:60px auto 80px;">
+    <div class="card" style="padding:40px;border-top:6px solid var(--green-forest);box-shadow:var(--shadow-lg);">
+        <div style="text-align:center;margin-bottom:28px;">
+            <span class="brand" style="justify-content:center;margin-bottom:8px;">
+                <span class="brand-icon">✺</span> minha<span>belém</span>
+            </span>
+            <span class="eyebrow" style="color:var(--gold-dark);display:block;">ÁREA RESTRITA & REDAÇÃO</span>
+            <h1 style="font-size:1.8rem;margin:6px 0;">Entre na sua Conta</h1>
+            <p class="small text-muted" style="margin:0;">Acesso seguro para editores, curadores e administradores com suporte a MFA (TOTP).</p>
+        </div>
+
+        <div asp-validation-summary="All" class="notice error-notice" role="alert"></div>
+
+        <form method="post" asp-action="Login">
+            @Html.AntiForgeryToken()
+
+            <label asp-for="Email">
+                E-mail Cadastrado *
+                <input asp-for="Email" autocomplete="username" type="email" required placeholder="seu.email@minhabelem.com.br" />
+            </label>
+
+            <label asp-for="Password" style="margin-top:16px;">
+                Senha de Acesso *
+                <input asp-for="Password" autocomplete="current-password" type="password" required placeholder="••••••••••••" />
+            </label>
+
+            <div style="margin-top:24px;">
+                <button type="submit" style="width:100%;padding:14px;">Entrar no Portal</button>
+            </div>
+        </form>
+
+        <div style="margin-top:24px;padding-top:18px;border-top:1px solid var(--border-subtle);text-align:center;font-size:0.86rem;color:var(--text-muted);">
+            <span>🔒 Proteção contra ataques de força bruta, sessões criptografadas e conformidade com a LGPD.</span>
+        </div>
+    </div>
+</section>
