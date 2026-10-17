@@ -16,6 +16,9 @@
         <a href="/admin" class="@(currentPath == "/admin" ? "active" : "")">
             <span>📊</span> Dashboard Executivo
         </a>
+        <a href="/admin/evolucao" class="@(currentPath.StartsWith("/admin/evolucao") ? "active" : "")">
+            <span>🚀</span> Evolução & Homologação
+        </a>
         @if (User.HasClaim("mb:permission", Permissions.ContentRead))
         {
             <a href="/admin/conteudo" class="@(currentPath.StartsWith("/admin/conteudo") ? "active" : "")">

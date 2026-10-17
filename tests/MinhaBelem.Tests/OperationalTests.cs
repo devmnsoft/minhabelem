@@ -35,7 +35,7 @@ public sealed class OperationalTests(PortalFixture fixture)
         if (!setupMfa) return (client, id);
         Assert.Equal(HttpStatusCode.Redirect, (await PortalFixture.Post(client, "/conta/mfa/iniciar", "/conta/mfa", new())).StatusCode);
         var html = await client.GetStringAsync("/conta/mfa");
-        var secret = Regex.Match(html, "<code>([A-Z2-7]+)</code>").Groups[1].Value;
+        var secret = Regex.Match(html, @"<code\b[^>]*>\s*([A-Z2-7]+)\s*</code>").Groups[1].Value;
         Assert.NotEmpty(secret);
         var recovery = await PortalFixture.Post(client, "/conta/mfa", "/conta/mfa", new() { ["code"] = Totp.CurrentCode(secret, DateTime.UtcNow) });
         Assert.Equal(HttpStatusCode.OK, recovery.StatusCode);
