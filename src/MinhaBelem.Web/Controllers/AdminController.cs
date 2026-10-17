@@ -19,7 +19,8 @@ namespace MinhaBelem.Web.Controllers;
 public sealed class AdminController(IAdministrationRepository admin, IDashboardRepository dashboard, IIngestionRepository ingestion, IAuditRepository audit,
     IAiRunRepository aiRuns, UserManager<ApplicationUser> users, ICommunityRepository community, IPlaceRepository places, IPlacesClient google, IOptions<AiOptions> aiOptions,
     IDiscoveryRepository discovery, ISourceCollection collector, ITranslationRepository translation, IContentTranslationService translationService, IContentRepository content,
-    ITransitRepository transit, IAdvertiserRepository advertisers, INeighborhoodRepository neighborhoods) : Controller
+    ITransitRepository transit, IAdvertiserRepository advertisers, INeighborhoodRepository neighborhoods,
+    IRadarRepository radar, IPublicWebCrawler crawler, IRadarWorker radarWorker) : Controller
 {
     private long Actor => long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
     private Task Audit(string action, string type, long? id, CancellationToken ct) => audit.WriteAsync(new AuditEntry { ActorId = Actor, Action = action, EntityType = type, EntityId = id }, ct);
@@ -428,6 +429,95 @@ public sealed class AdminController(IAdministrationRepository admin, IDashboardR
         await Audit("neighborhood.saved", "neighborhood", null, ct);
         TempData["Notice"] = $"Guia do bairro '{guide.Name}' salvo com sucesso!";
         return RedirectToAction(nameof(Bairros));
+    }
+
+    [HttpGet("radar"), Authorize(Policy = Permissions.SourceManage)]
+    public async Task<IActionResult> Radar([FromQuery] DiscoveredSourceQuery query, CancellationToken ct)
+    {
+        var model = new RadarDashboardViewModel
+        {
+            Stats = await radar.GetDashboardStatsAsync(ct),
+            DiscoveredSources = await radar.DiscoveredSourcesAsync(query, ct),
+            TotalDiscovered = await radar.CountDiscoveredSourcesAsync(query, ct),
+            Query = query,
+            History = await radar.RecentCrawlHistoryAsync(25, ct),
+            SocialProfiles = await radar.SocialProfilesAsync(false, ct),
+            Sources = await ingestion.SourcesAsync(false, ct)
+        };
+
+        return View(model);
+    }
+
+    [HttpPost("radar/varredura"), Authorize(Policy = Permissions.SourceManage)]
+    public async Task<IActionResult> ExecutarVarredura(string? url, CancellationToken ct)
+    {
+        if (!string.IsNullOrWhiteSpace(url))
+        {
+            if (!SafeUrl.Validate(url).IsValid)
+            {
+                TempData["Notice"] = "URL informada não é permitida ou falhou na validação de segurança.";
+                return RedirectToAction(nameof(Radar));
+            }
+
+            var result = await crawler.CrawlTargetUrlAsync(url, new CrawlerOptions { MaxDepth = 1, MaxPagesPerHost = 5 }, ct);
+            await Audit("radar.crawl_target", "radar", null, ct);
+            TempData["Notice"] = $"Varredura manual concluída: {result.UrlsCrawled} páginas, {result.ItemsDiscovered} matérias, {result.EventsIdentified} eventos em {result.Duration.TotalSeconds:F1}s.";
+        }
+        else
+        {
+            await radarWorker.TriggerOnceAsync(ct);
+            await Audit("radar.crawl_all", "radar", null, ct);
+            TempData["Notice"] = "Ciclo autônomo de varredura do Radar executado para todas as fontes ativas.";
+        }
+
+        return RedirectToAction(nameof(Radar));
+    }
+
+    [HttpPost("radar/fontes/avaliar"), Authorize(Policy = Permissions.SourceManage)]
+    public async Task<IActionResult> AvaliarFonte(long id, string status, string? notes, CancellationToken ct)
+    {
+        if (!Enum.TryParse<SourceEvaluationStatus>(status, true, out var parsedStatus))
+        {
+            TempData["Notice"] = "Status de avaliação inválido.";
+            return RedirectToAction(nameof(Radar));
+        }
+
+        await radar.EvaluateDiscoveredSourceAsync(id, parsedStatus, notes, Actor, ct);
+        await Audit("radar.source_evaluated", "discovered_source", id, ct);
+        TempData["Notice"] = $"Fonte avaliada com sucesso ({parsedStatus}).";
+        return RedirectToAction(nameof(Radar));
+    }
+
+    [HttpPost("radar/perfis/cadastrar"), Authorize(Policy = Permissions.SourceManage)]
+    public async Task<IActionResult> CadastrarPerfilSocial(SocialProfileRegistry profile, CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(profile.ProfileHandle) || string.IsNullOrWhiteSpace(profile.DisplayName))
+        {
+            TempData["Notice"] = "Handle e Nome de Exibição são obrigatórios.";
+            return RedirectToAction(nameof(Radar));
+        }
+
+        profile.ProfileHandle = HtmlText.Clean(profile.ProfileHandle.Trim().TrimStart('@'), 150);
+        profile.DisplayName = HtmlText.Clean(profile.DisplayName, 200);
+        profile.ProfileUrl = HtmlText.Clean(profile.ProfileUrl, 1000);
+        profile.OfficialEmbedUrl = string.IsNullOrWhiteSpace(profile.OfficialEmbedUrl) ? null : HtmlText.Clean(profile.OfficialEmbedUrl, 1500);
+        profile.Category = HtmlText.Clean(profile.Category, 100);
+        profile.Municipality = HtmlText.Clean(profile.Municipality, 100);
+        profile.LicenseNotes = HtmlText.Clean(profile.LicenseNotes, 500);
+
+        await radar.UpsertSocialProfileAsync(profile, ct);
+        await Audit("radar.social_registered", "social_profile", null, ct);
+        TempData["Notice"] = $"Perfil oficial '@{profile.ProfileHandle}' registrado no Radar com sucesso.";
+        return RedirectToAction(nameof(Radar));
+    }
+
+    [HttpPost("radar/perfis/{id:long}/status"), Authorize(Policy = Permissions.SourceManage)]
+    public async Task<IActionResult> StatusPerfilSocial(long id, bool active, CancellationToken ct)
+    {
+        await radar.ToggleSocialProfileAsync(id, active, ct);
+        await Audit("radar.social_toggled", "social_profile", id, ct);
+        TempData["Notice"] = "Status do perfil atualizado.";
+        return RedirectToAction(nameof(Radar));
     }
 }
 

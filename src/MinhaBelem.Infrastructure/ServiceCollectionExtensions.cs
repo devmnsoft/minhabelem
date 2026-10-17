@@ -115,6 +115,15 @@ public static class InfrastructureServiceCollectionExtensions
         services.AddScoped<ITouristRepository, TouristRepository>();
         services.AddScoped<ITransitRepository, TransitRepository>();
         services.AddScoped<INeighborhoodRepository, NeighborhoodRepository>();
+        services.AddScoped<IRadarRepository, RadarRepository>();
+        services.AddScoped<IHtmlContentExtractor, HtmlContentExtractor>();
+        services.AddScoped<IEventStructuredDataExtractor, EventStructuredDataExtractor>();
+        services.AddScoped<ISitemapDiscoveryService, SitemapDiscoveryService>();
+        services.AddScoped<IPublicRssDiscoveryService, PublicRssDiscoveryService>();
+        services.AddScoped<IEventPosterAnalyzer, EventPosterAnalyzer>();
+        services.AddScoped<ISourceChangeDetector, SourceChangeDetector>();
+        services.AddScoped<IContentDeduplicationService, ContentDeduplicationService>();
+        services.AddScoped<IPublicWebCrawler, PublicWebCrawler>();
 
         services.AddSingleton(sp => sp.GetRequiredService<IOptions<AiOptions>>().Value);
         services.AddScoped<AiRunLogger>();
@@ -136,6 +145,9 @@ public static class InfrastructureServiceCollectionExtensions
         services.AddSingleton<ISourceCollection>(sp => sp.GetRequiredService<FeedCollectorWorker>());
         services.AddHostedService(sp => sp.GetRequiredService<FeedCollectorWorker>());
         services.AddHostedService<MaintenanceWorker>();
+        services.AddSingleton<RadarWorker>();
+        services.AddSingleton<IRadarWorker>(sp => sp.GetRequiredService<RadarWorker>());
+        services.AddHostedService(sp => sp.GetRequiredService<RadarWorker>());
 
         return services;
     }

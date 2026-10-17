@@ -1,0 +1,411 @@
+@model MinhaBelem.Web.Models.RadarDashboardViewModel
+@{
+    ViewData["Title"] = "MinhaBelém Radar — Robô Autônomo de Descoberta";
+    Layout = "_AdminLayout";
+}
+
+<div class="admin-content-header" style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:24px; flex-wrap:wrap; gap:16px;">
+    <div>
+        <div style="display:flex; align-items:center; gap:8px;">
+            <span style="font-size:1.6rem;">🧭</span>
+            <h1 style="font-size:1.8rem; font-weight:800; color:var(--text-primary); margin:0;">MinhaBelém Radar</h1>
+            <span class="badge" style="background:rgba(46,125,50,0.15); color:#2e7d32; border:1px solid rgba(46,125,50,0.3); font-size:0.75rem; padding:3px 8px; border-radius:12px; font-weight:700;">Worker Ativo (10m)</span>
+        </div>
+        <p style="color:var(--text-muted); margin:4px 0 0; font-size:0.95rem;">
+            Robô autônomo de monitoramento contínuo de fontes públicas autorizadas sobre Belém e o Pará (cultura, eventos, lazer, trânsito e serviços).
+        </p>
+    </div>
+
+    <div style="display:flex; gap:12px; align-items:center;">
+        <form method="post" action="/admin/radar/varredura" style="display:flex; gap:8px;">
+            @Html.AntiForgeryToken()
+            <input type="url" name="url" placeholder="https://exemplo.belem.pa.gov.br (opcional)" style="padding:8px 12px; border-radius:8px; border:1px solid var(--border-color); font-size:0.85rem; width:260px;" />
+            <button type="submit" class="btn btn-primary" style="display:flex; align-items:center; gap:6px; font-size:0.9rem; padding:8px 16px; border-radius:8px; font-weight:700;">
+                <span>⚡</span> Varredura Imediata
+            </button>
+        </form>
+    </div>
+</div>
+
+@if (TempData["Notice"] is string notice)
+{
+    <div style="background:#e8f5e9; color:#2e7d32; border:1px solid #c8e6c9; border-radius:8px; padding:12px 16px; margin-bottom:20px; font-weight:600; display:flex; align-items:center; gap:8px;">
+        <span>ℹ️</span> @notice
+    </div>
+}
+
+<!-- GRID DE METRICAS E KPIS DO RADAR -->
+<div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap:16px; margin-bottom:28px;">
+    <div class="card" style="padding:16px; border-radius:12px; border-left:4px solid var(--primary);">
+        <div style="font-size:0.8rem; text-transform:uppercase; color:var(--text-muted); font-weight:700;">Fontes Monitoradas</div>
+        <div style="font-size:1.8rem; font-weight:800; color:var(--text-primary); margin-top:4px;">
+            @Model.Stats.ActiveSources <span style="font-size:1rem; color:var(--text-muted); font-weight:400;">/ @Model.Stats.TotalSources</span>
+        </div>
+        <div style="font-size:0.75rem; color:#2e7d32; margin-top:4px; font-weight:600;">Fontes públicas autorizadas</div>
+    </div>
+
+    <div class="card" style="padding:16px; border-radius:12px; border-left:4px solid #1976d2;">
+        <div style="font-size:0.8rem; text-transform:uppercase; color:var(--text-muted); font-weight:700;">Eventos Identificados</div>
+        <div style="font-size:1.8rem; font-weight:800; color:#1976d2; margin-top:4px;">
+            @Model.Stats.UpcomingEventsCount
+        </div>
+        <div style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;">JSON-LD, iCal e semântica</div>
+    </div>
+
+    <div class="card" style="padding:16px; border-radius:12px; border-left:4px solid #f57c00;">
+        <div style="font-size:0.8rem; text-transform:uppercase; color:var(--text-muted); font-weight:700;">Aguardando Revisão</div>
+        <div style="font-size:1.8rem; font-weight:800; color:#f57c00; margin-top:4px;">
+            @Model.Stats.PendingReviewCount
+        </div>
+        <div style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;">Na esteira editorial humana</div>
+    </div>
+
+    <div class="card" style="padding:16px; border-radius:12px; border-left:4px solid #7b1fa2;">
+        <div style="font-size:0.8rem; text-transform:uppercase; color:var(--text-muted); font-weight:700;">Consumo IA (Tokens)</div>
+        <div style="font-size:1.8rem; font-weight:800; color:#7b1fa2; margin-top:4px;">
+            @Model.Stats.AiTokensConsumed.ToString("N0")
+        </div>
+        <div style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;">Groq / Gemini / DeepSeek</div>
+    </div>
+
+    <div class="card" style="padding:16px; border-radius:12px; border-left:4px solid #00796b;">
+        <div style="font-size:0.8rem; text-transform:uppercase; color:var(--text-muted); font-weight:700;">Ciclo de Consulta</div>
+        <div style="font-size:1.1rem; font-weight:700; color:var(--text-primary); margin-top:6px;">
+            @(Model.Stats.LastCrawlAt?.ToLocalTime().ToString("HH:mm:ss") ?? "Aguardando")
+        </div>
+        <div style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;">
+            Próximo: @(Model.Stats.NextCrawlDueAt?.ToLocalTime().ToString("HH:mm:ss") ?? "Em breve")
+        </div>
+    </div>
+
+    <div class="card" style="padding:16px; border-radius:12px; border-left:4px solid @(Model.Stats.CrawlErrorsCount > 0 ? "#d32f2f" : "#2e7d32");">
+        <div style="font-size:0.8rem; text-transform:uppercase; color:var(--text-muted); font-weight:700;">Confiabilidade / Erros</div>
+        <div style="font-size:1.8rem; font-weight:800; color:@(Model.Stats.CrawlErrorsCount > 0 ? "#d32f2f" : "#2e7d32"); margin-top:4px;">
+            @Model.Stats.CrawlErrorsCount
+        </div>
+        <div style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;">Falhas de requisição / HTTP 4xx/5xx</div>
+    </div>
+</div>
+
+<!-- SEÇÃO 1: FONTES CANDIDATAS DESCOBERTAS NA WEB -->
+<div class="card" style="padding:24px; border-radius:12px; margin-bottom:28px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:12px;">
+        <div>
+            <h2 style="font-size:1.25rem; font-weight:800; color:var(--text-primary); margin:0;">
+                🌐 Fontes Candidatas Descobertas na Web (@Model.TotalDiscovered)
+            </h2>
+            <p style="color:var(--text-muted); font-size:0.85rem; margin:2px 0 0;">
+                Links identificados organicamente pelo robô a partir de páginas públicas sobre Belém e Pará, aguardando aprovação editorial para monitoramento contínuo.
+            </p>
+        </div>
+
+        <form method="get" action="/admin/radar" style="display:flex; gap:8px; align-items:center;">
+            <select name="status" onchange="this.form.submit()" style="padding:6px 10px; border-radius:8px; border:1px solid var(--border-color); font-size:0.85rem;">
+                <option value="">Todos os status</option>
+                <option value="Pending" selected="@(Model.Query.Status == MinhaBelem.Core.Entities.SourceEvaluationStatus.Pending)">Pendentes de Avaliação</option>
+                <option value="Approved" selected="@(Model.Query.Status == MinhaBelem.Core.Entities.SourceEvaluationStatus.Approved)">Aprovadas</option>
+                <option value="Rejected" selected="@(Model.Query.Status == MinhaBelem.Core.Entities.SourceEvaluationStatus.Rejected)">Rejeitadas</option>
+            </select>
+        </form>
+    </div>
+
+    @if (Model.DiscoveredSources.Count == 0)
+    {
+        <div style="text-align:center; padding:32px 16px; color:var(--text-muted);">
+            <div style="font-size:2rem; margin-bottom:8px;">🔍</div>
+            <div>Nenhuma fonte candidata encontrada com os filtros selecionados.</div>
+        </div>
+    }
+    else
+    {
+        <div style="overflow-x:auto;">
+            <table class="table" style="width:100%; border-collapse:collapse; font-size:0.9rem;">
+                <thead>
+                    <tr style="border-bottom:2px solid var(--border-color); text-align:left; color:var(--text-muted);">
+                        <th style="padding:10px 12px;">Fonte / Domínio</th>
+                        <th style="padding:10px 12px;">Categoria / Cidade</th>
+                        <th style="padding:10px 12px;">Descoberta a partir de</th>
+                        <th style="padding:10px 12px;">Protocolo / Score</th>
+                        <th style="padding:10px 12px;">Status</th>
+                        <th style="padding:10px 12px; text-align:right;">Ações Editoriais</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var disc in Model.DiscoveredSources)
+                    {
+                        <tr style="border-bottom:1px solid var(--border-color);">
+                            <td style="padding:12px;">
+                                <div style="font-weight:700; color:var(--text-primary);">@disc.SourceName</div>
+                                <a href="@disc.Url" target="_blank" rel="noopener noreferrer" style="color:var(--primary); font-size:0.8rem; word-break:break-all;">
+                                    @disc.Url
+                                </a>
+                            </td>
+                            <td style="padding:12px;">
+                                <span class="badge" style="background:#e0f2fe; color:#0369a1; padding:3px 8px; border-radius:6px; font-weight:600; font-size:0.75rem;">@disc.Category</span>
+                                <div style="color:var(--text-muted); font-size:0.8rem; margin-top:2px;">@disc.Municipality</div>
+                            </td>
+                            <td style="padding:12px; max-width:240px; word-break:break-all; font-size:0.8rem; color:var(--text-muted);">
+                                @if (!string.IsNullOrWhiteSpace(disc.DiscoveredFromUrl))
+                                {
+                                    <a href="@disc.DiscoveredFromUrl" target="_blank" rel="noopener noreferrer" style="color:inherit;">
+                                        @disc.DiscoveredFromUrl
+                                    </a>
+                                }
+                                else
+                                {
+                                    <span>Catálogo inicial</span>
+                                }
+                            </td>
+                            <td style="padding:12px;">
+                                <span style="font-weight:700; text-transform:uppercase; font-size:0.8rem;">@disc.FeedProtocolCandidate</span>
+                                <div style="color:var(--text-muted); font-size:0.75rem;">Confiança: @((disc.ConfidenceScore * 100).ToString("F0"))%</div>
+                            </td>
+                            <td style="padding:12px;">
+                                @if (disc.EvaluationStatus == MinhaBelem.Core.Entities.SourceEvaluationStatus.Approved)
+                                {
+                                    <span style="color:#2e7d32; font-weight:700; background:#e8f5e9; padding:4px 8px; border-radius:6px; font-size:0.75rem;">✓ Aprovada</span>
+                                }
+                                else if (disc.EvaluationStatus == MinhaBelem.Core.Entities.SourceEvaluationStatus.Rejected)
+                                {
+                                    <span style="color:#d32f2f; font-weight:700; background:#ffebee; padding:4px 8px; border-radius:6px; font-size:0.75rem;">✕ Rejeitada</span>
+                                }
+                                else
+                                {
+                                    <span style="color:#f57c00; font-weight:700; background:#fff3e0; padding:4px 8px; border-radius:6px; font-size:0.75rem;">⏳ Pendente</span>
+                                }
+                            </td>
+                            <td style="padding:12px; text-align:right;">
+                                @if (disc.EvaluationStatus == MinhaBelem.Core.Entities.SourceEvaluationStatus.Pending)
+                                {
+                                    <div style="display:inline-flex; gap:6px;">
+                                        <form method="post" action="/admin/radar/fontes/avaliar">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="id" value="@disc.Id" />
+                                            <input type="hidden" name="status" value="Approved" />
+                                            <button type="submit" class="btn btn-sm btn-success" style="padding:4px 10px; font-size:0.8rem; background:#2e7d32; color:white; border:none; border-radius:6px; font-weight:700; cursor:pointer;">
+                                                Aprovar
+                                            </button>
+                                        </form>
+                                        <form method="post" action="/admin/radar/fontes/avaliar">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="id" value="@disc.Id" />
+                                            <input type="hidden" name="status" value="Rejected" />
+                                            <button type="submit" class="btn btn-sm btn-danger" style="padding:4px 10px; font-size:0.8rem; background:#d32f2f; color:white; border:none; border-radius:6px; font-weight:700; cursor:pointer;">
+                                                Rejeitar
+                                            </button>
+                                        </form>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <span style="font-size:0.8rem; color:var(--text-muted);">Avaliado</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+<!-- SEÇÃO 2: REGISTRO DE PERFIS PÚBLICOS E REDES SOCIAIS (SEM SCRAPING NÃO AUTORIZADO) -->
+<div class="card" style="padding:24px; border-radius:12px; margin-bottom:28px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:12px;">
+        <div>
+            <h2 style="font-size:1.25rem; font-weight:800; color:var(--text-primary); margin:0;">
+                📱 Redes Sociais & Perfis Oficiais (@Model.SocialProfiles.Count)
+            </h2>
+            <p style="color:var(--text-muted); font-size:0.85rem; margin:2px 0 0;">
+                Catálogo de canais e perfis oficiais com mecanismos autorizados de incorporação (oEmbed/Embed), links para publicações originais e licença de divulgação cultural.
+            </p>
+        </div>
+    </div>
+
+    <!-- TABELA DE PERFIS CADASTRADOS -->
+    <div style="overflow-x:auto; margin-bottom:24px;">
+        <table class="table" style="width:100%; border-collapse:collapse; font-size:0.9rem;">
+            <thead>
+                <tr style="border-bottom:2px solid var(--border-color); text-align:left; color:var(--text-muted);">
+                    <th style="padding:10px 12px;">Plataforma</th>
+                    <th style="padding:10px 12px;">Identificação</th>
+                    <th style="padding:10px 12px;">URL Oficial</th>
+                    <th style="padding:10px 12px;">Categoria / Cidade</th>
+                    <th style="padding:10px 12px;">Direitos & Licença</th>
+                    <th style="padding:10px 12px; text-align:right;">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var prof in Model.SocialProfiles)
+                {
+                    <tr style="border-bottom:1px solid var(--border-color);">
+                        <td style="padding:12px;">
+                            <span style="font-weight:700; text-transform:capitalize;">
+                                @if (prof.Platform == MinhaBelem.Core.Entities.SocialPlatform.Instagram) { <span>📸 Instagram</span> }
+                                else if (prof.Platform == MinhaBelem.Core.Entities.SocialPlatform.YouTube) { <span>▶️ YouTube</span> }
+                                else if (prof.Platform == MinhaBelem.Core.Entities.SocialPlatform.Facebook) { <span>👥 Facebook</span> }
+                                else { <span>🎵 TikTok</span> }
+                            </span>
+                        </td>
+                        <td style="padding:12px;">
+                            <div style="font-weight:700; color:var(--text-primary);">@prof.DisplayName</div>
+                            <div style="font-size:0.8rem; color:var(--text-muted);">@@@prof.ProfileHandle</div>
+                        </td>
+                        <td style="padding:12px;">
+                            <a href="@prof.ProfileUrl" target="_blank" rel="noopener noreferrer" style="color:var(--primary); font-size:0.85rem;">
+                                Abrir Perfil Oficial ↗
+                            </a>
+                        </td>
+                        <td style="padding:12px;">
+                            <span class="badge" style="background:#f3e8ff; color:#6b21a8; padding:3px 8px; border-radius:6px; font-weight:600; font-size:0.75rem;">@prof.Category</span>
+                            <div style="color:var(--text-muted); font-size:0.8rem; margin-top:2px;">@prof.Municipality</div>
+                        </td>
+                        <td style="padding:12px; font-size:0.8rem; color:var(--text-muted); max-width:260px;">
+                            @prof.LicenseNotes
+                        </td>
+                        <td style="padding:12px; text-align:right;">
+                            <form method="post" action="/admin/radar/perfis/@prof.Id/status" style="display:inline;">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="active" value="@(prof.IsActive ? "false" : "true")" />
+                                <button type="submit" class="btn btn-sm" style="padding:4px 10px; font-size:0.8rem; border-radius:6px; font-weight:700; cursor:pointer; background:@(prof.IsActive ? "#e8f5e9" : "#ffebee"); color:@(prof.IsActive ? "#2e7d32" : "#d32f2f"); border:1px solid rgba(0,0,0,0.1);">
+                                    @(prof.IsActive ? "● Ativo" : "○ Pausado")
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <!-- FORMULÁRIO DE CADASTRO DE PERFIL SOCIAL -->
+    <div style="background:var(--bg-subtle, #f9fafb); padding:16px; border-radius:8px; border:1px solid var(--border-color);">
+        <h3 style="font-size:1rem; font-weight:700; margin:0 0 12px; color:var(--text-primary);">
+            + Cadastrar Perfil Oficial para Monitoramento
+        </h3>
+        <form method="post" action="/admin/radar/perfis/cadastrar" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)) 120px; gap:12px; align-items:end;">
+            @Html.AntiForgeryToken()
+            <div>
+                <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted);">Plataforma</label>
+                <select name="Platform" style="width:100%; padding:8px; border-radius:6px; border:1px solid var(--border-color); font-size:0.85rem;">
+                    <option value="Instagram">Instagram</option>
+                    <option value="YouTube">YouTube</option>
+                    <option value="Facebook">Facebook</option>
+                    <option value="TikTok">TikTok</option>
+                </select>
+            </div>
+            <div>
+                <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted);">Handle (@@usuario)</label>
+                <input type="text" name="ProfileHandle" placeholder="ex: fumbel.belem" required style="width:100%; padding:8px; border-radius:6px; border:1px solid var(--border-color); font-size:0.85rem;" />
+            </div>
+            <div>
+                <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted);">Nome de Exibição</label>
+                <input type="text" name="DisplayName" placeholder="ex: FUMBEL Belém" required style="width:100%; padding:8px; border-radius:6px; border:1px solid var(--border-color); font-size:0.85rem;" />
+            </div>
+            <div>
+                <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted);">URL do Perfil</label>
+                <input type="url" name="ProfileUrl" placeholder="https://instagram.com/fumbel.belem" required style="width:100%; padding:8px; border-radius:6px; border:1px solid var(--border-color); font-size:0.85rem;" />
+            </div>
+            <div>
+                <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted);">Categoria</label>
+                <input type="text" name="Category" value="cultura" style="width:100%; padding:8px; border-radius:6px; border:1px solid var(--border-color); font-size:0.85rem;" />
+            </div>
+            <div>
+                <button type="submit" class="btn btn-primary" style="width:100%; padding:8px; font-weight:700; font-size:0.85rem; border-radius:6px;">
+                    Salvar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- SEÇÃO 3: HISTÓRICO DE RASTREAMENTO & AUDITORIA DE REDE -->
+<div class="card" style="padding:24px; border-radius:12px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+        <div>
+            <h2 style="font-size:1.25rem; font-weight:800; color:var(--text-primary); margin:0;">
+                📜 Histórico de Rastreamento & Auditoria de Rede
+            </h2>
+            <p style="color:var(--text-muted); font-size:0.85rem; margin:2px 0 0;">
+                Auditoria de requisições do robô: código HTTP, ETag, Last-Modified, proteção SSRF, profundidade e extração de eventos.
+            </p>
+        </div>
+    </div>
+
+    @if (Model.History.Count == 0)
+    {
+        <div style="text-align:center; padding:32px 16px; color:var(--text-muted);">
+            <div>Nenhum registro de varredura executado ainda. Clique em "Varredura Imediata" para rodar o robô.</div>
+        </div>
+    }
+    else
+    {
+        <div style="overflow-x:auto;">
+            <table class="table" style="width:100%; border-collapse:collapse; font-size:0.85rem;">
+                <thead>
+                    <tr style="border-bottom:2px solid var(--border-color); text-align:left; color:var(--text-muted);">
+                        <th style="padding:8px 10px;">Data/Hora</th>
+                        <th style="padding:8px 10px;">URL Consultada</th>
+                        <th style="padding:8px 10px;">HTTP</th>
+                        <th style="padding:8px 10px;">ETag / Cache</th>
+                        <th style="padding:8px 10px;">Itens Extraídos</th>
+                        <th style="padding:8px 10px;">Eventos</th>
+                        <th style="padding:8px 10px;">Latência</th>
+                        <th style="padding:8px 10px;">Status / Detalhes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var h in Model.History)
+                    {
+                        <tr style="border-bottom:1px solid var(--border-color);">
+                            <td style="padding:8px 10px; color:var(--text-muted); white-space:nowrap;">
+                                @h.CrawledAt.ToLocalTime().ToString("dd/MM HH:mm:ss")
+                            </td>
+                            <td style="padding:8px 10px; max-width:280px; word-break:break-all;">
+                                <a href="@h.Url" target="_blank" rel="noopener noreferrer" style="color:inherit;">
+                                    @h.Url
+                                </a>
+                            </td>
+                            <td style="padding:8px 10px;">
+                                @if (h.StatusCode >= 200 && h.StatusCode < 300)
+                                {
+                                    <span style="color:#2e7d32; font-weight:700;">@h.StatusCode</span>
+                                }
+                                else if (h.StatusCode == 304)
+                                {
+                                    <span style="color:#0284c7; font-weight:700;">304 (Cache)</span>
+                                }
+                                else
+                                {
+                                    <span style="color:#d32f2f; font-weight:700;">@(h.StatusCode == 0 ? "Erro" : h.StatusCode.ToString())</span>
+                                }
+                            </td>
+                            <td style="padding:8px 10px; color:var(--text-muted); font-size:0.75rem;">
+                                @(h.ETag ?? "—")
+                            </td>
+                            <td style="padding:8px 10px; font-weight:700; color:var(--text-primary);">
+                                @h.DiscoveredItemsCount
+                            </td>
+                            <td style="padding:8px 10px; font-weight:700; color:#1976d2;">
+                                @h.EventsIdentifiedCount
+                            </td>
+                            <td style="padding:8px 10px; color:var(--text-muted);">
+                                @(h.DurationMs)ms
+                            </td>
+                            <td style="padding:8px 10px;">
+                                @if (!string.IsNullOrWhiteSpace(h.ErrorMessage))
+                                {
+                                    <span style="color:#d32f2f; font-size:0.75rem;">@h.ErrorMessage</span>
+                                }
+                                else
+                                {
+                                    <span style="color:#2e7d32; font-size:0.75rem;">Sucesso</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
