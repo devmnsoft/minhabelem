@@ -14,7 +14,7 @@ namespace MinhaBelem.Infrastructure.Background;
 public sealed class CollectorOptions
 {
     public bool Enabled { get; set; }
-    public int IntervalMinutes { get; set; } = 10;
+    public int IntervalMinutes { get; set; } = 1;
     public int MaxItemsPerFeed { get; set; } = 40;
     public int MaxConcurrentSources { get; set; } = 4;
 }
