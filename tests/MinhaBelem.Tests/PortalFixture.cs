@@ -65,7 +65,14 @@ public sealed class PortalFixture : IAsyncLifetime
         return client;
     }
     public async Task<MySqlConnection> OpenAsync() { var db = new MySqlConnection(ConnectionString); await db.OpenAsync(); return db; }
-    public static string Token(string html) => WebUtility.HtmlDecode(Regex.Match(html, "name=\"__RequestVerificationToken\"[^>]*value=\"([^\"]+)\"").Groups[1].Value);
+    public static string Token(string html)
+    {
+        var m1 = Regex.Match(html, @"name=""__RequestVerificationToken""[^>]*value=""([^""]+)""");
+        if (m1.Success) return WebUtility.HtmlDecode(m1.Groups[1].Value);
+        var m2 = Regex.Match(html, @"value=""([^""]+)""[^>]*name=""__RequestVerificationToken""");
+        if (m2.Success) return WebUtility.HtmlDecode(m2.Groups[1].Value);
+        return string.Empty;
+    }
     public static async Task<HttpResponseMessage> Post(HttpClient client, string path, string formPage, Dictionary<string, string> fields)
     {
         var html = await client.GetStringAsync(formPage);
