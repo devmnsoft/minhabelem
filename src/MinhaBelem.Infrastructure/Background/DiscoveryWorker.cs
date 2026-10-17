@@ -18,7 +18,7 @@ public sealed class FeedCollectorWorker(IServiceScopeFactory scopes, IOptions<Co
                 await using var scope = scopes.CreateAsyncScope();
                 var settings = await scope.ServiceProvider.GetRequiredService<IAdministrationRepository>().SettingsAsync(ct);
                 var enabled = bool.TryParse(settings.GetValueOrDefault("collector.enabled"), out var value) ? value : options.Value.Enabled;
-                var minutes = int.TryParse(settings.GetValueOrDefault("collector.intervalMinutes"), out var interval) ? Math.Clamp(interval, 10, 240) : Math.Clamp(options.Value.IntervalMinutes, 10, 240);
+                var minutes = int.TryParse(settings.GetValueOrDefault("collector.intervalMinutes"), out var interval) ? Math.Clamp(interval, 1, 240) : Math.Clamp(options.Value.IntervalMinutes, 1, 240);
                 if (enabled && DateTime.UtcNow >= last.AddMinutes(minutes)) { await CollectOnceAsync(ct); last = DateTime.UtcNow; }
             }
             catch (OperationCanceledException) when (ct.IsCancellationRequested) { return; }
@@ -29,7 +29,7 @@ public sealed class FeedCollectorWorker(IServiceScopeFactory scopes, IOptions<Co
     public async Task CollectOnceAsync(CancellationToken ct)
     {
         using var timeout = CancellationTokenSource.CreateLinkedTokenSource(ct);
-        timeout.CancelAfter(TimeSpan.FromMinutes(9));
+        timeout.CancelAfter(TimeSpan.FromSeconds(55));
         ct = timeout.Token;
         await using var lease = await data.OpenConnectionAsync(ct);
         if (await lease.ExecuteScalarAsync<int>(new CommandDefinition("SELECT GET_LOCK('minhabelem_collector',0)", cancellationToken: ct)) != 1) return;
