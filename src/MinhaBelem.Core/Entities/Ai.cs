@@ -12,7 +12,8 @@ public enum AiTask
     DuplicateCheck,
     FreshnessCheck,
     SafetyCheck,
-    PublishPackage
+    PublishPackage,
+    Translate
 }
 
 /// <summary>Registro obrigatório de toda chamada de IA: modelo, versão, custo e resultado.</summary>
@@ -76,4 +77,7 @@ public sealed record AiAnalysisResult(
     long? DuplicateOfId,
     double DuplicateScore,
     bool LooksOutdated,
-    IReadOnlyList<AiRun> Runs);
+    IReadOnlyList<AiRun> Runs)
+{
+    public Services.EventEvidence? Event { get; init; }
+}

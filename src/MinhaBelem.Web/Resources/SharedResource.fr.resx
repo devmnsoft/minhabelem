@@ -1,0 +1,304 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="SiteTitle" xml:space="preserve">
+    <value>MinhaBelÃ©m â€” Notre ville. Mille histoires.</value>
+  </data>
+  <data name="BrandTagline" xml:space="preserve">
+    <value>Notre ville. Mille histoires. BelÃ©m, ParÃ¡, BrÃ©sil.</value>
+  </data>
+  <data name="SkipToContent" xml:space="preserve">
+    <value>Passer au contenu</value>
+  </data>
+  <data name="NavHome" xml:space="preserve">
+    <value>Accueil</value>
+  </data>
+  <data name="NavCulture" xml:space="preserve">
+    <value>Culture</value>
+  </data>
+  <data name="NavAgenda" xml:space="preserve">
+    <value>Agenda</value>
+  </data>
+  <data name="NavCitizenship" xml:space="preserve">
+    <value>CitoyennetÃ©</value>
+  </data>
+  <data name="NavMobility" xml:space="preserve">
+    <value>MobilitÃ©</value>
+  </data>
+  <data name="NavGuide" xml:space="preserve">
+    <value>Guide de la ville</value>
+  </data>
+  <data name="NavExplore" xml:space="preserve">
+    <value>Explorez BelÃ©m</value>
+  </data>
+  <data name="NavMyAccount" xml:space="preserve">
+    <value>Mon compte</value>
+  </data>
+  <data name="NavLogin" xml:space="preserve">
+    <value>Connexion</value>
+  </data>
+  <data name="NavLogout" xml:space="preserve">
+    <value>DÃ©connexion</value>
+  </data>
+  <data name="NavAdmin" xml:space="preserve">
+    <value>Administration</value>
+  </data>
+  <data name="SelectLanguage" xml:space="preserve">
+    <value>Langue</value>
+  </data>
+  <data name="CurrentLanguage" xml:space="preserve">
+    <value>FranÃ§ais</value>
+  </data>
+  <data name="Search" xml:space="preserve">
+    <value>Rechercher</value>
+  </data>
+  <data name="SearchPlaceholder" xml:space="preserve">
+    <value>Ã‰vÃ©nements, culture, lieux Ã  BelÃ©m...</value>
+  </data>
+  <data name="SearchButton" xml:space="preserve">
+    <value>Rechercher</value>
+  </data>
+  <data name="Filter" xml:space="preserve">
+    <value>Filtrer</value>
+  </data>
+  <data name="ClearFilters" xml:space="preserve">
+    <value>Effacer les filtres</value>
+  </data>
+  <data name="AllCategories" xml:space="preserve">
+    <value>Toutes les catÃ©gories</value>
+  </data>
+  <data name="AllNeighborhoods" xml:space="preserve">
+    <value>Tous les quartiers</value>
+  </data>
+  <data name="AllMunicipalities" xml:space="preserve">
+    <value>Toutes les municipalitÃ©s</value>
+  </data>
+  <data name="FreeOnly" xml:space="preserve">
+    <value>Gratuit uniquement</value>
+  </data>
+  <data name="ViewMore" xml:space="preserve">
+    <value>Voir plus</value>
+  </data>
+  <data name="Details" xml:space="preserve">
+    <value>Voir les dÃ©tails</value>
+  </data>
+  <data name="Back" xml:space="preserve">
+    <value>Retour</value>
+  </data>
+  <data name="Send" xml:space="preserve">
+    <value>Envoyer</value>
+  </data>
+  <data name="Save" xml:space="preserve">
+    <value>Enregistrer</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Annuler</value>
+  </data>
+  <data name="Edit" xml:space="preserve">
+    <value>Modifier</value>
+  </data>
+  <data name="Delete" xml:space="preserve">
+    <value>Supprimer</value>
+  </data>
+  <data name="Approve" xml:space="preserve">
+    <value>Approuver</value>
+  </data>
+  <data name="Reject" xml:space="preserve">
+    <value>Rejeter</value>
+  </data>
+  <data name="Publish" xml:space="preserve">
+    <value>Publier</value>
+  </data>
+  <data name="Review" xml:space="preserve">
+    <value>RÃ©viser</value>
+  </data>
+  <data name="Close" xml:space="preserve">
+    <value>Fermer</value>
+  </data>
+  <data name="ExploreTitle" xml:space="preserve">
+    <value>Explorez BelÃ©m â€” Guide Touristique International</value>
+  </data>
+  <data name="ExploreSubtitle" xml:space="preserve">
+    <value>Circuits guidÃ©s, trÃ©sors historiques, gastronomie amazonienne, Ã®les fluviales et culture vivante Ã  BelÃ©m.</value>
+  </data>
+  <data name="ItinerariesTitle" xml:space="preserve">
+    <value>ItinÃ©raires RecommandÃ©s</value>
+  </data>
+  <data name="Itinerary1Day" xml:space="preserve">
+    <value>1 Jour : BelÃ©m Express</value>
+  </data>
+  <data name="Itinerary2Days" xml:space="preserve">
+    <value>2 Jours : Culture &amp; ÃŽle de Combu</value>
+  </data>
+  <data name="Itinerary3Days" xml:space="preserve">
+    <value>3 Jours : Nature, Fleuves &amp; Tradition</value>
+  </data>
+  <data name="Itinerary5Days" xml:space="preserve">
+    <value>5 Jours : Immersion Amazonienne ComplÃ¨te</value>
+  </data>
+  <data name="WhatToVisit" xml:space="preserve">
+    <value>Que visiter</value>
+  </data>
+  <data name="WhereToEat" xml:space="preserve">
+    <value>OÃ¹ manger &amp; Gastronomie</value>
+  </data>
+  <data name="WhereToStay" xml:space="preserve">
+    <value>OÃ¹ loger</value>
+  </data>
+  <data name="HistoricTours" xml:space="preserve">
+    <value>Parcours historiques</value>
+  </data>
+  <data name="RiverTours" xml:space="preserve">
+    <value>Excursions fluviales et Ã®les</value>
+  </data>
+  <data name="MarketsAndFairs" xml:space="preserve">
+    <value>MarchÃ©s et foires</value>
+  </data>
+  <data name="ParksAndNature" xml:space="preserve">
+    <value>Parcs et forÃªt urbaine</value>
+  </data>
+  <data name="PracticalTips" xml:space="preserve">
+    <value>Conseils pratiques et sÃ©curitÃ©</value>
+  </data>
+  <data name="EquatorialWeather" xml:space="preserve">
+    <value>Climat Ã©quatorial chaud et humide avec averses l&apos;aprÃ¨s-midi. PrÃ©voyez des vÃªtements lÃ©gers et un parapluie.</value>
+  </data>
+  <data name="SafetyRecommendation" xml:space="preserve">
+    <value>Dans les zones touristiques, veillez sur vos effets personnels et privilÃ©giez les taxis officiels ou applications de transport.</value>
+  </data>
+  <data name="EmergencyPhones" xml:space="preserve">
+    <value>NumÃ©ros d&apos;urgence : Police 190 | Pompiers 193 | SAMU 192 | Police Touristique (DPTUR) +55 (91) 3212-3977</value>
+  </data>
+  <data name="CulturalNotesTitle" xml:space="preserve">
+    <value>Notes culturelles amazoniennes</value>
+  </data>
+  <data name="CulturalGlossary" xml:space="preserve">
+    <value>Glossaire Amazonien</value>
+  </data>
+  <data name="UpcomingEvents" xml:space="preserve">
+    <value>Ã‰vÃ©nements Ã  venir</value>
+  </data>
+  <data name="ThisWeek" xml:space="preserve">
+    <value>Cette semaine</value>
+  </data>
+  <data name="ThisWeekend" xml:space="preserve">
+    <value>Que faire ce week-end</value>
+  </data>
+  <data name="FreeEvents" xml:space="preserve">
+    <value>Ã‰vÃ©nements gratuits</value>
+  </data>
+  <data name="ChildrenProgram" xml:space="preserve">
+    <value>Programme jeunesse &amp; famille</value>
+  </data>
+  <data name="EventDate" xml:space="preserve">
+    <value>Date et horaire</value>
+  </data>
+  <data name="TicketPrice" xml:space="preserve">
+    <value>EntrÃ©e</value>
+  </data>
+  <data name="FreeAdmission" xml:space="preserve">
+    <value>EntrÃ©e libre</value>
+  </data>
+  <data name="EventCancelled" xml:space="preserve">
+    <value>Annulation confirmÃ©e par l&apos;organisateur.</value>
+  </data>
+  <data name="VerifiedSource" xml:space="preserve">
+    <value>Source officielle vÃ©rifiÃ©e</value>
+  </data>
+  <data name="CollaborateTitle" xml:space="preserve">
+    <value>Proposer un Ã©vÃ©nement ou une nouvelle</value>
+  </data>
+  <data name="YourName" xml:space="preserve">
+    <value>Votre nom</value>
+  </data>
+  <data name="YourMessage" xml:space="preserve">
+    <value>DÃ©tails de l&apos;Ã©vÃ©nement ou message</value>
+  </data>
+  <data name="ConsentTerms" xml:space="preserve">
+    <value>J&apos;ai lu et j&apos;accepte la politique de confidentialitÃ©.</value>
+  </data>
+  <data name="SubmissionNotice" xml:space="preserve">
+    <value>Suggestion envoyÃ©e avec succÃ¨s pour examen Ã©ditorial.</value>
+  </data>
+  <data name="PrivacyPolicy" xml:space="preserve">
+    <value>Politique de ConfidentialitÃ©</value>
+  </data>
+  <data name="TermsOfUse" xml:space="preserve">
+    <value>Conditions d&apos;Utilisation</value>
+  </data>
+  <data name="Copyright" xml:space="preserve">
+    <value>MinhaBelÃ©m â€” MNSOFT. Tous droits rÃ©servÃ©s.</value>
+  </data>
+  <data name="AllRightsReserved" xml:space="preserve">
+    <value>Tous droits rÃ©servÃ©s</value>
+  </data>
+  <data name="AdminTranslations" xml:space="preserve">
+    <value>Centre d&apos;Internationalisation et Traductions</value>
+  </data>
+  <data name="ActiveLanguages" xml:space="preserve">
+    <value>Langues Actives</value>
+  </data>
+  <data name="TranslateWithAi" xml:space="preserve">
+    <value>Traduire par IA</value>
+  </data>
+  <data name="CompareOriginalTranslation" xml:space="preserve">
+    <value>Comparaison Original / Traduction</value>
+  </data>
+  <data name="PendingTranslations" xml:space="preserve">
+    <value>Traductions en Attente de RÃ©vision</value>
+  </data>
+  <data name="ApprovedStatus" xml:space="preserve">
+    <value>ApprouvÃ©e</value>
+  </data>
+  <data name="PendingStatus" xml:space="preserve">
+    <value>En attente</value>
+  </data>
+  <data name="RejectedStatus" xml:space="preserve">
+    <value>RejetÃ©e</value>
+  </data>
+  <data name="TokensUsed" xml:space="preserve">
+    <value>Tokens consommÃ©s</value>
+  </data>
+  <data name="AiCost" xml:space="preserve">
+    <value>CoÃ»t estimÃ© (USD)</value>
+  </data>
+  <data name="NotFoundTitle" xml:space="preserve">
+    <value>Page non trouvÃ©e</value>
+  </data>
+  <data name="NotFoundMessage" xml:space="preserve">
+    <value>La page demandÃ©e n&apos;existe pas ou a Ã©tÃ© archivÃ©e.</value>
+  </data>
+  <data name="ErrorTitle" xml:space="preserve">
+    <value>Une erreur inattendue est survenue</value>
+  </data>
+  <data name="ErrorMessage" xml:space="preserve">
+    <value>Notre Ã©quipe technique a Ã©tÃ© avertie. Veuillez rÃ©essayer dans quelques instants.</value>
+  </data>
+</root>

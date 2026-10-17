@@ -1,0 +1,304 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="SiteTitle" xml:space="preserve">
+    <value>MinhaBelÃ©m â€” ÐÐ°Ñˆ Ð³Ð¾Ñ€Ð¾Ð´. Ð¢Ñ‹ÑÑÑ‡Ð° Ð¸ÑÑ‚Ð¾Ñ€Ð¸Ð¹.</value>
+  </data>
+  <data name="BrandTagline" xml:space="preserve">
+    <value>ÐÐ°Ñˆ Ð³Ð¾Ñ€Ð¾Ð´. Ð¢Ñ‹ÑÑÑ‡Ð° Ð¸ÑÑ‚Ð¾Ñ€Ð¸Ð¹. Ð‘ÐµÐ»ÐµÐ½, ÐŸÐ°Ñ€Ð°, Ð‘Ñ€Ð°Ð·Ð¸Ð»Ð¸Ñ.</value>
+  </data>
+  <data name="SkipToContent" xml:space="preserve">
+    <value>ÐŸÐµÑ€ÐµÐ¹Ñ‚Ð¸ Ðº Ð¾ÑÐ½Ð¾Ð²Ð½Ð¾Ð¼Ñƒ ÑÐ¾Ð´ÐµÑ€Ð¶Ð¸Ð¼Ð¾Ð¼Ñƒ</value>
+  </data>
+  <data name="NavHome" xml:space="preserve">
+    <value>Ð“Ð»Ð°Ð²Ð½Ð°Ñ</value>
+  </data>
+  <data name="NavCulture" xml:space="preserve">
+    <value>ÐšÑƒÐ»ÑŒÑ‚ÑƒÑ€Ð°</value>
+  </data>
+  <data name="NavAgenda" xml:space="preserve">
+    <value>ÐÑ„Ð¸ÑˆÐ°</value>
+  </data>
+  <data name="NavCitizenship" xml:space="preserve">
+    <value>Ð“Ð¾Ñ€Ð¾Ð¶Ð°Ð½Ð°Ð¼</value>
+  </data>
+  <data name="NavMobility" xml:space="preserve">
+    <value>Ð¢Ñ€Ð°Ð½ÑÐ¿Ð¾Ñ€Ñ‚</value>
+  </data>
+  <data name="NavGuide" xml:space="preserve">
+    <value>Ð“Ð¸Ð´ Ð¿Ð¾ Ð³Ð¾Ñ€Ð¾Ð´Ñƒ</value>
+  </data>
+  <data name="NavExplore" xml:space="preserve">
+    <value>ÐžÑ‚ÐºÑ€Ð¾Ð¹Ñ‚Ðµ Ð‘ÐµÐ»ÐµÐ½</value>
+  </data>
+  <data name="NavMyAccount" xml:space="preserve">
+    <value>Ð›Ð¸Ñ‡Ð½Ñ‹Ð¹ ÐºÐ°Ð±Ð¸Ð½ÐµÑ‚</value>
+  </data>
+  <data name="NavLogin" xml:space="preserve">
+    <value>Ð’Ð¾Ð¹Ñ‚Ð¸</value>
+  </data>
+  <data name="NavLogout" xml:space="preserve">
+    <value>Ð’Ñ‹Ð¹Ñ‚Ð¸</value>
+  </data>
+  <data name="NavAdmin" xml:space="preserve">
+    <value>Ð£Ð¿Ñ€Ð°Ð²Ð»ÐµÐ½Ð¸Ðµ</value>
+  </data>
+  <data name="SelectLanguage" xml:space="preserve">
+    <value>Ð¯Ð·Ñ‹Ðº</value>
+  </data>
+  <data name="CurrentLanguage" xml:space="preserve">
+    <value>Ð ÑƒÑÑÐºÐ¸Ð¹</value>
+  </data>
+  <data name="Search" xml:space="preserve">
+    <value>ÐŸÐ¾Ð¸ÑÐº</value>
+  </data>
+  <data name="SearchPlaceholder" xml:space="preserve">
+    <value>ÐŸÐ¾Ð¸ÑÐº ÑÐ¾Ð±Ñ‹Ñ‚Ð¸Ð¹, ÐºÑƒÐ»ÑŒÑ‚ÑƒÑ€Ñ‹, Ð¼ÐµÑÑ‚ Ð² Ð‘ÐµÐ»ÐµÐ½Ðµ...</value>
+  </data>
+  <data name="SearchButton" xml:space="preserve">
+    <value>ÐÐ°Ð¹Ñ‚Ð¸</value>
+  </data>
+  <data name="Filter" xml:space="preserve">
+    <value>Ð¤Ð¸Ð»ÑŒÑ‚Ñ€Ñ‹</value>
+  </data>
+  <data name="ClearFilters" xml:space="preserve">
+    <value>Ð¡Ð±Ñ€Ð¾ÑÐ¸Ñ‚ÑŒ Ñ„Ð¸Ð»ÑŒÑ‚Ñ€Ñ‹</value>
+  </data>
+  <data name="AllCategories" xml:space="preserve">
+    <value>Ð’ÑÐµ ÐºÐ°Ñ‚ÐµÐ³Ð¾Ñ€Ð¸Ð¸</value>
+  </data>
+  <data name="AllNeighborhoods" xml:space="preserve">
+    <value>Ð’ÑÐµ Ñ€Ð°Ð¹Ð¾Ð½Ñ‹</value>
+  </data>
+  <data name="AllMunicipalities" xml:space="preserve">
+    <value>Ð’ÑÐµ Ð¼ÑƒÐ½Ð¸Ñ†Ð¸Ð¿Ð°Ð»Ð¸Ñ‚ÐµÑ‚Ñ‹</value>
+  </data>
+  <data name="FreeOnly" xml:space="preserve">
+    <value>Ð¢Ð¾Ð»ÑŒÐºÐ¾ Ð±ÐµÑÐ¿Ð»Ð°Ñ‚Ð½Ñ‹Ðµ</value>
+  </data>
+  <data name="ViewMore" xml:space="preserve">
+    <value>ÐŸÐ¾ÐºÐ°Ð·Ð°Ñ‚ÑŒ Ð±Ð¾Ð»ÑŒÑˆÐµ</value>
+  </data>
+  <data name="Details" xml:space="preserve">
+    <value>ÐŸÐ¾Ð´Ñ€Ð¾Ð±Ð½ÐµÐµ</value>
+  </data>
+  <data name="Back" xml:space="preserve">
+    <value>ÐÐ°Ð·Ð°Ð´</value>
+  </data>
+  <data name="Send" xml:space="preserve">
+    <value>ÐžÑ‚Ð¿Ñ€Ð°Ð²Ð¸Ñ‚ÑŒ</value>
+  </data>
+  <data name="Save" xml:space="preserve">
+    <value>Ð¡Ð¾Ñ…Ñ€Ð°Ð½Ð¸Ñ‚ÑŒ</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>ÐžÑ‚Ð¼ÐµÐ½Ð°</value>
+  </data>
+  <data name="Edit" xml:space="preserve">
+    <value>Ð ÐµÐ´Ð°ÐºÑ‚Ð¸Ñ€Ð¾Ð²Ð°Ñ‚ÑŒ</value>
+  </data>
+  <data name="Delete" xml:space="preserve">
+    <value>Ð£Ð´Ð°Ð»Ð¸Ñ‚ÑŒ</value>
+  </data>
+  <data name="Approve" xml:space="preserve">
+    <value>ÐžÐ´Ð¾Ð±Ñ€Ð¸Ñ‚ÑŒ</value>
+  </data>
+  <data name="Reject" xml:space="preserve">
+    <value>ÐžÑ‚ÐºÐ»Ð¾Ð½Ð¸Ñ‚ÑŒ</value>
+  </data>
+  <data name="Publish" xml:space="preserve">
+    <value>ÐžÐ¿ÑƒÐ±Ð»Ð¸ÐºÐ¾Ð²Ð°Ñ‚ÑŒ</value>
+  </data>
+  <data name="Review" xml:space="preserve">
+    <value>ÐŸÑ€Ð¾Ð²ÐµÑ€Ð¸Ñ‚ÑŒ</value>
+  </data>
+  <data name="Close" xml:space="preserve">
+    <value>Ð—Ð°ÐºÑ€Ñ‹Ñ‚ÑŒ</value>
+  </data>
+  <data name="ExploreTitle" xml:space="preserve">
+    <value>ÐžÑ‚ÐºÑ€Ð¾Ð¹Ñ‚Ðµ Ð‘ÐµÐ»ÐµÐ½ â€” ÐœÐµÐ¶Ð´ÑƒÐ½Ð°Ñ€Ð¾Ð´Ð½Ñ‹Ð¹ Ñ‚ÑƒÑ€Ð¸ÑÑ‚Ð¸Ñ‡ÐµÑÐºÐ¸Ð¹ Ð³Ð¸Ð´</value>
+  </data>
+  <data name="ExploreSubtitle" xml:space="preserve">
+    <value>ÐœÐ°Ñ€ÑˆÑ€ÑƒÑ‚Ñ‹, Ð¸ÑÑ‚Ð¾Ñ€Ð¸Ñ‡ÐµÑÐºÐ¸Ðµ Ð¿Ð°Ð¼ÑÑ‚Ð½Ð¸ÐºÐ¸, Ð°Ð¼Ð°Ð·Ð¾Ð½ÑÐºÐ°Ñ Ð³Ð°ÑÑ‚Ñ€Ð¾Ð½Ð¾Ð¼Ð¸Ñ, Ñ€ÐµÑ‡Ð½Ñ‹Ðµ Ð¾ÑÑ‚Ñ€Ð¾Ð²Ð° Ð¸ Ð¶Ð¸Ð²Ñ‹Ðµ Ñ‚Ñ€Ð°Ð´Ð¸Ñ†Ð¸Ð¸ ÑÑ‚Ð¾Ð»Ð¸Ñ†Ñ‹ ÑˆÑ‚Ð°Ñ‚Ð° ÐŸÐ°Ñ€Ð°.</value>
+  </data>
+  <data name="ItinerariesTitle" xml:space="preserve">
+    <value>Ð ÐµÐºÐ¾Ð¼ÐµÐ½Ð´Ð¾Ð²Ð°Ð½Ð½Ñ‹Ðµ Ñ‚ÑƒÑ€Ð¸ÑÑ‚Ð¸Ñ‡ÐµÑÐºÐ¸Ðµ Ð¼Ð°Ñ€ÑˆÑ€ÑƒÑ‚Ñ‹</value>
+  </data>
+  <data name="Itinerary1Day" xml:space="preserve">
+    <value>1 Ð´ÐµÐ½ÑŒ: Ð‘ÐµÐ»ÐµÐ½ Ð­ÐºÑÐ¿Ñ€ÐµÑÑ</value>
+  </data>
+  <data name="Itinerary2Days" xml:space="preserve">
+    <value>2 Ð´Ð½Ñ: ÐšÑƒÐ»ÑŒÑ‚ÑƒÑ€Ð° Ð¸ Ð¾ÑÑ‚Ñ€Ð¾Ð² ÐšÐ¾Ð¼Ð±Ñƒ</value>
+  </data>
+  <data name="Itinerary3Days" xml:space="preserve">
+    <value>3 Ð´Ð½Ñ: ÐŸÑ€Ð¸Ñ€Ð¾Ð´Ð°, Ñ€ÐµÐºÐ¸ Ð¸ Ð½Ð°ÑÐ»ÐµÐ´Ð¸Ðµ</value>
+  </data>
+  <data name="Itinerary5Days" xml:space="preserve">
+    <value>5 Ð´Ð½ÐµÐ¹: ÐŸÐ¾Ð»Ð½Ð¾Ðµ Ð¿Ð¾Ð³Ñ€ÑƒÐ¶ÐµÐ½Ð¸Ðµ Ð² ÐÐ¼Ð°Ð·Ð¾Ð½Ð¸ÑŽ</value>
+  </data>
+  <data name="WhatToVisit" xml:space="preserve">
+    <value>Ð§Ñ‚Ð¾ Ð¿Ð¾ÑÐµÑ‚Ð¸Ñ‚ÑŒ</value>
+  </data>
+  <data name="WhereToEat" xml:space="preserve">
+    <value>Ð“Ð´Ðµ Ð¿Ð¾ÐµÑÑ‚ÑŒ Ð¸ ÐºÑƒÑ…Ð½Ñ</value>
+  </data>
+  <data name="WhereToStay" xml:space="preserve">
+    <value>Ð“Ð´Ðµ Ð¾ÑÑ‚Ð°Ð½Ð¾Ð²Ð¸Ñ‚ÑŒÑÑ</value>
+  </data>
+  <data name="HistoricTours" xml:space="preserve">
+    <value>Ð˜ÑÑ‚Ð¾Ñ€Ð¸Ñ‡ÐµÑÐºÐ¸Ðµ Ð¿Ñ€Ð¾Ð³ÑƒÐ»ÐºÐ¸</value>
+  </data>
+  <data name="RiverTours" xml:space="preserve">
+    <value>Ð ÐµÑ‡Ð½Ñ‹Ðµ Ð¿Ñ€Ð¾Ð³ÑƒÐ»ÐºÐ¸ Ð¸ Ð¾ÑÑ‚Ñ€Ð¾Ð²Ð°</value>
+  </data>
+  <data name="MarketsAndFairs" xml:space="preserve">
+    <value>Ð Ñ‹Ð½ÐºÐ¸ Ð¸ ÑÑ€Ð¼Ð°Ñ€ÐºÐ¸</value>
+  </data>
+  <data name="ParksAndNature" xml:space="preserve">
+    <value>ÐŸÐ°Ñ€ÐºÐ¸ Ð¸ Ñ‚Ñ€Ð¾Ð¿Ð¸Ñ‡ÐµÑÐºÐ¸Ð¹ Ð»ÐµÑ</value>
+  </data>
+  <data name="PracticalTips" xml:space="preserve">
+    <value>ÐŸÑ€Ð°ÐºÑ‚Ð¸Ñ‡ÐµÑÐºÐ¸Ðµ ÑÐ¾Ð²ÐµÑ‚Ñ‹ Ð¸ Ð±ÐµÐ·Ð¾Ð¿Ð°ÑÐ½Ð¾ÑÑ‚ÑŒ</value>
+  </data>
+  <data name="EquatorialWeather" xml:space="preserve">
+    <value>Ð­ÐºÐ²Ð°Ñ‚Ð¾Ñ€Ð¸Ð°Ð»ÑŒÐ½Ñ‹Ð¹ Ð¶Ð°Ñ€ÐºÐ¸Ð¹ Ð¸ Ð²Ð»Ð°Ð¶Ð½Ñ‹Ð¹ ÐºÐ»Ð¸Ð¼Ð°Ñ‚ Ñ Ñ€ÐµÐ³ÑƒÐ»ÑÑ€Ð½Ñ‹Ð¼Ð¸ Ð¿Ð¾ÑÐ»ÐµÐ¿Ð¾Ð»ÑƒÐ´ÐµÐ½Ð½Ñ‹Ð¼Ð¸ Ð´Ð¾Ð¶Ð´ÑÐ¼Ð¸. ÐÐ¾ÑÐ¸Ñ‚Ðµ Ð»ÐµÐ³ÐºÑƒÑŽ Ð¾Ð´ÐµÐ¶Ð´Ñƒ Ð¸ Ð·Ð¾Ð½Ñ‚.</value>
+  </data>
+  <data name="SafetyRecommendation" xml:space="preserve">
+    <value>Ð’ Ñ‚ÑƒÑ€Ð¸ÑÑ‚Ð¸Ñ‡ÐµÑÐºÐ¸Ñ… Ñ†ÐµÐ½Ñ‚Ñ€Ð°Ñ…, Ñ‚Ð°ÐºÐ¸Ñ… ÐºÐ°Ðº Ð’ÐµÑ€-Ð¾-ÐŸÐµÐ·Ð¾, ÑÐ»ÐµÐ´Ð¸Ñ‚Ðµ Ð·Ð° Ð²ÐµÑ‰Ð°Ð¼Ð¸ Ð¸ Ð¿Ð¾Ð»ÑŒÐ·ÑƒÐ¹Ñ‚ÐµÑÑŒ Ð¾Ñ„Ð¸Ñ†Ð¸Ð°Ð»ÑŒÐ½Ñ‹Ð¼Ð¸ Ñ‚Ð°ÐºÑÐ¸ Ð¸Ð»Ð¸ Ð¿Ñ€Ð¸Ð»Ð¾Ð¶ÐµÐ½Ð¸ÑÐ¼Ð¸.</value>
+  </data>
+  <data name="EmergencyPhones" xml:space="preserve">
+    <value>Ð­ÐºÑÑ‚Ñ€ÐµÐ½Ð½Ñ‹Ðµ ÑÐ»ÑƒÐ¶Ð±Ñ‹: ÐŸÐ¾Ð»Ð¸Ñ†Ð¸Ñ 190 | ÐŸÐ¾Ð¶Ð°Ñ€Ð½Ñ‹Ðµ 193 | Ð¡ÐºÐ¾Ñ€Ð°Ñ Ð¿Ð¾Ð¼Ð¾Ñ‰ÑŒ 192 | Ð¢ÑƒÑ€Ð¸ÑÑ‚Ð¸Ñ‡ÐµÑÐºÐ°Ñ Ð¿Ð¾Ð»Ð¸Ñ†Ð¸Ñ (DPTUR) +55 (91) 3212-3977</value>
+  </data>
+  <data name="CulturalNotesTitle" xml:space="preserve">
+    <value>ÐšÑƒÐ»ÑŒÑ‚ÑƒÑ€Ð½Ñ‹Ð¹ Ð³Ð»Ð¾ÑÑÐ°Ñ€Ð¸Ð¹ ÐÐ¼Ð°Ð·Ð¾Ð½Ð¸Ð¸</value>
+  </data>
+  <data name="CulturalGlossary" xml:space="preserve">
+    <value>Ð“Ð»Ð¾ÑÑÐ°Ñ€Ð¸Ð¹ ÐÐ¼Ð°Ð·Ð¾Ð½Ð¸Ð¸</value>
+  </data>
+  <data name="UpcomingEvents" xml:space="preserve">
+    <value>Ð‘Ð»Ð¸Ð¶Ð°Ð¹ÑˆÐ¸Ðµ ÑÐ¾Ð±Ñ‹Ñ‚Ð¸Ñ</value>
+  </data>
+  <data name="ThisWeek" xml:space="preserve">
+    <value>Ð¡Ð¾Ð±Ñ‹Ñ‚Ð¸Ñ Ð½ÐµÐ´ÐµÐ»Ð¸</value>
+  </data>
+  <data name="ThisWeekend" xml:space="preserve">
+    <value>ÐšÑƒÐ´Ð° ÑÑ…Ð¾Ð´Ð¸Ñ‚ÑŒ Ð² Ð²Ñ‹Ñ…Ð¾Ð´Ð½Ñ‹Ðµ</value>
+  </data>
+  <data name="FreeEvents" xml:space="preserve">
+    <value>Ð‘ÐµÑÐ¿Ð»Ð°Ñ‚Ð½Ñ‹Ðµ ÑÐ¾Ð±Ñ‹Ñ‚Ð¸Ñ</value>
+  </data>
+  <data name="ChildrenProgram" xml:space="preserve">
+    <value>Ð”ÐµÑ‚ÑÐºÐ°Ñ Ð¿Ñ€Ð¾Ð³Ñ€Ð°Ð¼Ð¼Ð°</value>
+  </data>
+  <data name="EventDate" xml:space="preserve">
+    <value>Ð”Ð°Ñ‚Ð° Ð¸ Ð²Ñ€ÐµÐ¼Ñ</value>
+  </data>
+  <data name="TicketPrice" xml:space="preserve">
+    <value>Ð‘Ð¸Ð»ÐµÑ‚Ñ‹</value>
+  </data>
+  <data name="FreeAdmission" xml:space="preserve">
+    <value>Ð’Ñ…Ð¾Ð´ ÑÐ²Ð¾Ð±Ð¾Ð´Ð½Ñ‹Ð¹</value>
+  </data>
+  <data name="EventCancelled" xml:space="preserve">
+    <value>Ð¡Ð¾Ð±Ñ‹Ñ‚Ð¸Ðµ Ð¾Ñ‚Ð¼ÐµÐ½ÐµÐ½Ð¾ Ð¾Ñ€Ð³Ð°Ð½Ð¸Ð·Ð°Ñ‚Ð¾Ñ€Ð¾Ð¼.</value>
+  </data>
+  <data name="VerifiedSource" xml:space="preserve">
+    <value>ÐŸÑ€Ð¾Ð²ÐµÑ€ÐµÐ½Ð½Ñ‹Ð¹ Ð¾Ñ„Ð¸Ñ†Ð¸Ð°Ð»ÑŒÐ½Ñ‹Ð¹ Ð¸ÑÑ‚Ð¾Ñ‡Ð½Ð¸Ðº</value>
+  </data>
+  <data name="CollaborateTitle" xml:space="preserve">
+    <value>ÐŸÑ€ÐµÐ´Ð»Ð¾Ð¶Ð¸Ñ‚ÑŒ ÑÐ¾Ð±Ñ‹Ñ‚Ð¸Ðµ Ð¸Ð»Ð¸ Ð½Ð¾Ð²Ð¾ÑÑ‚ÑŒ</value>
+  </data>
+  <data name="YourName" xml:space="preserve">
+    <value>Ð’Ð°ÑˆÐµ Ð¸Ð¼Ñ</value>
+  </data>
+  <data name="YourMessage" xml:space="preserve">
+    <value>ÐžÐ¿Ð¸ÑÐ°Ð½Ð¸Ðµ ÑÐ¾Ð±Ñ‹Ñ‚Ð¸Ñ Ð¸Ð»Ð¸ Ñ‚ÐµÐºÑÑ‚</value>
+  </data>
+  <data name="ConsentTerms" xml:space="preserve">
+    <value>Ð¯ Ð¾Ð·Ð½Ð°ÐºÐ¾Ð¼Ð»ÐµÐ½ Ð¸ ÑÐ¾Ð³Ð»Ð°ÑÐµÐ½ Ñ Ð¿Ð¾Ð»Ð¸Ñ‚Ð¸ÐºÐ¾Ð¹ ÐºÐ¾Ð½Ñ„Ð¸Ð´ÐµÐ½Ñ†Ð¸Ð°Ð»ÑŒÐ½Ð¾ÑÑ‚Ð¸.</value>
+  </data>
+  <data name="SubmissionNotice" xml:space="preserve">
+    <value>Ð¡Ð¿Ð°ÑÐ¸Ð±Ð¾! Ð’Ð°ÑˆÐµ Ð¿Ñ€ÐµÐ´Ð»Ð¾Ð¶ÐµÐ½Ð¸Ðµ Ð¾Ñ‚Ð¿Ñ€Ð°Ð²Ð»ÐµÐ½Ð¾ Ð½Ð° Ñ€ÐµÐ´Ð°ÐºÑ†Ð¸Ð¾Ð½Ð½ÑƒÑŽ Ð¿Ñ€Ð¾Ð²ÐµÑ€ÐºÑƒ.</value>
+  </data>
+  <data name="PrivacyPolicy" xml:space="preserve">
+    <value>ÐŸÐ¾Ð»Ð¸Ñ‚Ð¸ÐºÐ° ÐºÐ¾Ð½Ñ„Ð¸Ð´ÐµÐ½Ñ†Ð¸Ð°Ð»ÑŒÐ½Ð¾ÑÑ‚Ð¸</value>
+  </data>
+  <data name="TermsOfUse" xml:space="preserve">
+    <value>Ð£ÑÐ»Ð¾Ð²Ð¸Ñ Ð¸ÑÐ¿Ð¾Ð»ÑŒÐ·Ð¾Ð²Ð°Ð½Ð¸Ñ</value>
+  </data>
+  <data name="Copyright" xml:space="preserve">
+    <value>MinhaBelÃ©m â€” MNSOFT. Ð’ÑÐµ Ð¿Ñ€Ð°Ð²Ð° Ð·Ð°Ñ‰Ð¸Ñ‰ÐµÐ½Ñ‹.</value>
+  </data>
+  <data name="AllRightsReserved" xml:space="preserve">
+    <value>Ð’ÑÐµ Ð¿Ñ€Ð°Ð²Ð° Ð·Ð°Ñ‰Ð¸Ñ‰ÐµÐ½Ñ‹</value>
+  </data>
+  <data name="AdminTranslations" xml:space="preserve">
+    <value>Ð¦ÐµÐ½Ñ‚Ñ€ Ð¸Ð½Ñ‚ÐµÑ€Ð½Ð°Ñ†Ð¸Ð¾Ð½Ð°Ð»Ð¸Ð·Ð°Ñ†Ð¸Ð¸ Ð¸ Ð¿ÐµÑ€ÐµÐ²Ð¾Ð´Ð¾Ð²</value>
+  </data>
+  <data name="ActiveLanguages" xml:space="preserve">
+    <value>ÐÐºÑ‚Ð¸Ð²Ð½Ñ‹Ðµ ÑÐ·Ñ‹ÐºÐ¸</value>
+  </data>
+  <data name="TranslateWithAi" xml:space="preserve">
+    <value>Ð—Ð°Ð¿Ñ€Ð¾ÑÐ¸Ñ‚ÑŒ Ð¿ÐµÑ€ÐµÐ²Ð¾Ð´ Ð˜Ð˜</value>
+  </data>
+  <data name="CompareOriginalTranslation" xml:space="preserve">
+    <value>Ð¡Ñ€Ð°Ð²Ð½Ð¸Ñ‚ÑŒ Ð¾Ñ€Ð¸Ð³Ð¸Ð½Ð°Ð» Ð¸ Ð¿ÐµÑ€ÐµÐ²Ð¾Ð´</value>
+  </data>
+  <data name="PendingTranslations" xml:space="preserve">
+    <value>ÐŸÐµÑ€ÐµÐ²Ð¾Ð´Ñ‹ Ð½Ð° Ð¼Ð¾Ð´ÐµÑ€Ð°Ñ†Ð¸Ð¸</value>
+  </data>
+  <data name="ApprovedStatus" xml:space="preserve">
+    <value>ÐžÐ´Ð¾Ð±Ñ€ÐµÐ½Ð¾</value>
+  </data>
+  <data name="PendingStatus" xml:space="preserve">
+    <value>ÐÐ° Ð¿Ñ€Ð¾Ð²ÐµÑ€ÐºÐµ</value>
+  </data>
+  <data name="RejectedStatus" xml:space="preserve">
+    <value>ÐžÑ‚ÐºÐ»Ð¾Ð½ÐµÐ½Ð¾</value>
+  </data>
+  <data name="TokensUsed" xml:space="preserve">
+    <value>Ð˜ÑÐ¿Ð¾Ð»ÑŒÐ·Ð¾Ð²Ð°Ð½Ð¾ Ñ‚Ð¾ÐºÐµÐ½Ð¾Ð²</value>
+  </data>
+  <data name="AiCost" xml:space="preserve">
+    <value>ÐžÑ†ÐµÐ½Ð¾Ñ‡Ð½Ð°Ñ ÑÑ‚Ð¾Ð¸Ð¼Ð¾ÑÑ‚ÑŒ (USD)</value>
+  </data>
+  <data name="NotFoundTitle" xml:space="preserve">
+    <value>Ð¡Ñ‚Ñ€Ð°Ð½Ð¸Ñ†Ð° Ð½Ðµ Ð½Ð°Ð¹Ð´ÐµÐ½Ð°</value>
+  </data>
+  <data name="NotFoundMessage" xml:space="preserve">
+    <value>Ð—Ð°Ð¿Ñ€Ð¾ÑˆÐµÐ½Ð½Ð°Ñ ÑÑ‚Ñ€Ð°Ð½Ð¸Ñ†Ð° Ð½Ðµ ÑÑƒÑ‰ÐµÑÑ‚Ð²ÑƒÐµÑ‚ Ð¸Ð»Ð¸ Ð±Ñ‹Ð»Ð° Ð¿ÐµÑ€ÐµÐ¼ÐµÑ‰ÐµÐ½Ð° Ð² Ð°Ñ€Ñ…Ð¸Ð².</value>
+  </data>
+  <data name="ErrorTitle" xml:space="preserve">
+    <value>ÐŸÑ€Ð¾Ð¸Ð·Ð¾ÑˆÐ»Ð° Ð½ÐµÐ¿Ñ€ÐµÐ´Ð²Ð¸Ð´ÐµÐ½Ð½Ð°Ñ Ð¾ÑˆÐ¸Ð±ÐºÐ°</value>
+  </data>
+  <data name="ErrorMessage" xml:space="preserve">
+    <value>ÐÐ°ÑˆÐ° Ñ‚ÐµÑ…Ð½Ð¸Ñ‡ÐµÑÐºÐ°Ñ ÑÐ»ÑƒÐ¶Ð±Ð° ÑƒÐ¶Ðµ Ð¾Ð¿Ð¾Ð²ÐµÑ‰ÐµÐ½Ð°. ÐŸÐ¾Ð¶Ð°Ð»ÑƒÐ¹ÑÑ‚Ð°, Ð¿Ð¾Ð²Ñ‚Ð¾Ñ€Ð¸Ñ‚Ðµ Ð¿Ð¾Ð¿Ñ‹Ñ‚ÐºÑƒ Ñ‡ÐµÑ€ÐµÐ· Ð¼Ð¸Ð½ÑƒÑ‚Ñƒ.</value>
+  </data>
+</root>

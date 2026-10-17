@@ -16,7 +16,7 @@ public sealed class MySqlRoleStore(MySqlDataSource dataSource)
 
     public async Task<IdentityResult> CreateAsync(IdentityRole<long> role, CancellationToken cancellationToken)
     {
-        role.ConcurrencyStamp ??= Guid.NewGuid().ToString("N");
+        role.ConcurrencyStamp = Guid.NewGuid().ToString("N");
         await using var connection = await OpenAsync(cancellationToken);
         var id = await connection.ExecuteScalarAsync<long?>(new CommandDefinition(
             """

@@ -1,0 +1,82 @@
+@model IReadOnlyList<MinhaBelem.Core.Entities.AdvertiserCampaign>
+
+@{
+    ViewData["Title"] = "Gestão de Anunciantes & Parceiros";
+}
+
+<section class="section">
+    <div class="sectionhead">
+        <div>
+            <span class="eyebrow">MONETIZAÇÃO ÉTICA</span>
+            <h1>💼 Anunciantes & Campanhas</h1>
+        </div>
+        <a href="/parceiros" class="button secondary" target="_blank">Página de Planos Públicos ↗</a>
+    </div>
+
+    @if (TempData["Notice"] is string notice)
+    {
+        <p class="notice" role="status">@notice</p>
+    }
+
+    <h2>Campanhas Registradas (@Model.Count)</h2>
+    @if (Model.Count == 0)
+    {
+        <div class="empty">
+            <p>Nenhuma campanha comercial cadastrada no momento.</p>
+        </div>
+    }
+    else
+    {
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Anunciante</th>
+                        <th>Título da Campanha</th>
+                        <th>Período</th>
+                        <th>Segmentação</th>
+                        <th>Status</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var c in Model)
+                    {
+                        <tr>
+                            <td>#@c.Id</td>
+                            <td><strong>@c.AdvertiserName</strong></td>
+                            <td>
+                                @(c.Headline ?? c.Label)<br />
+                                <small class="text-muted"><a href="@c.DestinationUrl" target="_blank" rel="noopener noreferrer">@c.DestinationUrl</a></small>
+                            </td>
+                            <td><small>@(c.ValidFrom?.ToString("dd/MM/yyyy") ?? "Imediato") até @(c.ValidTo?.ToString("dd/MM/yyyy") ?? "Indeterminado")</small></td>
+                            <td>
+                                <span class="badge badge-info">@c.Label</span>
+                            </td>
+                            <td>
+                                @if (c.Active)
+                                {
+                                    <span class="badge badge-success">Ativa</span>
+                                }
+                                else
+                                {
+                                    <span class="badge badge-muted">Pausada</span>
+                                }
+                            </td>
+                            <td>
+                                <form action="/admin/anunciantes/@c.Id/estado" method="post" style="display:inline;">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="active" value="@(c.Active ? "false" : "true")" />
+                                    <button type="submit" class="button small @(c.Active ? "secondary" : "")">
+                                        @(c.Active ? "Pausar" : "Ativar")
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</section>

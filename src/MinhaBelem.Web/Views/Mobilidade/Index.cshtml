@@ -1,0 +1,146 @@
+@model MinhaBelem.Web.Models.MobilidadeViewModel
+@using System.Globalization
+
+@{
+    ViewData["Title"] = "Mobilidade Urbana em Belém";
+    var currentCulture = CultureInfo.CurrentUICulture;
+}
+
+<div class="mobility-page">
+    <section class="hero">
+        <div class="eyebrow">TRANSPORTE & TRÂNSITO EM BELÉM 🚌 🚤</div>
+        <h1>Mobilidade Urbana</h1>
+        <p>Linhas de ônibus, estações BRT, travessias fluviais amazônicas e alertas oficiais de trânsito em tempo real.</p>
+        
+        <form method="get" action="/mobilidade" class="search" role="search">
+            <label for="busca-linha" class="sr-only">Buscar linha, bairro ou trajeto</label>
+            <input id="busca-linha" name="busca" maxlength="120" placeholder="Digite número da linha, rua ou destino (ex: 758, Ver-o-Peso, BRT)..." value="@Model.SearchQuery" />
+            <button type="submit">Buscar Linha</button>
+        </form>
+    </section>
+
+    <!-- Alertas de Trânsito Ativos -->
+    @if (Model.Alerts.Count > 0)
+    {
+        <section class="section alerts-section">
+            <div class="sectionhead">
+                <div>
+                    <span class="eyebrow">AVISOS OFICIAIS SEMOB</span>
+                    <h2>⚠️ Alertas e Interdições de Trânsito</h2>
+                </div>
+            </div>
+
+            <div class="grid alerts-grid">
+                @foreach (var alert in Model.Alerts)
+                {
+                    <div class="card alert-card notice error-notice">
+                        <div class="alert-header">
+                            <span class="badge badge-rejected">@alert.Severity</span>
+                            <span class="small">📍 @alert.Neighborhood</span>
+                        </div>
+                        <h3>@alert.Title</h3>
+                        <p>@alert.Description</p>
+                        <span class="small">Início: @alert.StartAt.ToString("dd/MM/yyyy HH:mm")</span>
+                    </div>
+                }
+            </div>
+        </section>
+    }
+
+    <!-- Linhas de Ônibus e BRT -->
+    <section class="section lines-section">
+        <div class="sectionhead">
+            <div>
+                <span class="eyebrow">TRANSPORTE COLETIVO</span>
+                <h2>Linhas de Ônibus & BRT</h2>
+            </div>
+            <div class="filter-pills" style="display:flex;gap:8px;flex-wrap:wrap;">
+                <a href="/mobilidade" class="button @(string.IsNullOrEmpty(Model.SelectedType) ? "" : "secondary") small">Todas</a>
+                <a href="/mobilidade?tipo=BRT" class="button @(Model.SelectedType == "BRT" ? "" : "secondary") small">BRT Metropolitano</a>
+                <a href="/mobilidade?tipo=Urbano" class="button @(Model.SelectedType == "Urbano" ? "" : "secondary") small">Urbanas</a>
+                <a href="/mobilidade?tipo=Distrital" class="button @(Model.SelectedType == "Distrital" ? "" : "secondary") small">Distritais</a>
+            </div>
+        </div>
+
+        @if (Model.Lines.Count == 0)
+        {
+            <div class="empty">
+                <h3>Nenhuma linha encontrada</h3>
+                <p>Tente buscar por outro termo ou selecione todas as categorias.</p>
+            </div>
+        }
+        else
+        {
+            <div class="grid lines-grid">
+                @foreach (var line in Model.Lines)
+                {
+                    <article class="card line-card">
+                        <div class="line-header" style="display:flex;justify-content:space-between;align-items:center;">
+                            <span class="line-code-badge" style="background:var(--green);color:white;padding:6px 14px;border-radius:10px;font-weight:900;font-size:1.1rem;">
+                                @line.Code
+                            </span>
+                            <span class="badge badge-info">@line.TransitType</span>
+                        </div>
+
+                        <h3 style="margin:14px 0 6px;"><a href="/mobilidade/linha/@line.Code">@line.Name</a></h3>
+                        <p class="small"><strong>Trajeto:</strong> @line.Origin ⇄ @line.Destination</p>
+
+                        @if (!string.IsNullOrWhiteSpace(line.ItinerarySummary))
+                        {
+                            <p class="small text-muted">@line.ItinerarySummary</p>
+                        }
+
+                        <div class="line-features" style="display:flex;gap:12px;margin:12px 0;font-size:0.85rem;">
+                            <span>💰 R$ @line.Fare.ToString("F2")</span>
+                            @if (line.HasAirConditioning)
+                            {
+                                <span>❄️ Ar-condicionado</span>
+                            }
+                            @if (line.HasWheelchairLift)
+                            {
+                                <span>♿ Elevador acessível</span>
+                            }
+                        </div>
+
+                        <div class="card-footer" style="margin-top:12px;border-top:1px solid #edf1ed;padding-top:10px;">
+                            <a href="/mobilidade/linha/@line.Code" class="button-link">Ver detalhes e itinerário →</a>
+                        </div>
+                    </article>
+                }
+            </div>
+        }
+    </section>
+
+    <!-- Travessias Fluviais Amazônicas -->
+    <section class="section river-transit-section">
+        <div class="sectionhead">
+            <div>
+                <span class="eyebrow">TRANSPORTE HIDROVIÁRIO</span>
+                <h2>🚤 Travessias Fluviais & Ilhas</h2>
+            </div>
+            <p class="small">Acesso às ilhas de Belém: Combu, Cotijuba, Barcarena e Mosqueiro.</p>
+        </div>
+
+        <div class="grid river-grid">
+            @foreach (var route in Model.RiverRoutes)
+            {
+                <article class="card river-card">
+                    <span class="eyebrow">Ilha: @route.DestinationIsland</span>
+                    <h3>@route.Name</h3>
+                    <p><strong>Embarque:</strong> @route.DeparturePort</p>
+                    <p><strong>Desembarque:</strong> @route.DestinationPort</p>
+                    <div class="river-meta" style="margin:12px 0;font-size:0.9rem;">
+                        <p>⏱️ <strong>Duração estimada:</strong> ~@route.EstimatedDurationMinutes minutos</p>
+                        <p>💰 <strong>Tarifa:</strong> R$ @route.Fare.ToString("F2")</p>
+                        <p>🚢 <strong>Embarcação:</strong> @route.VesselType</p>
+                        <p>🕒 <strong>Horários:</strong> @route.OperatingHours</p>
+                    </div>
+                    @if (!string.IsNullOrWhiteSpace(route.OperatorNotes))
+                    {
+                        <div class="cultural-badge">💡 @route.OperatorNotes</div>
+                    }
+                </article>
+            }
+        </div>
+    </section>
+</div>

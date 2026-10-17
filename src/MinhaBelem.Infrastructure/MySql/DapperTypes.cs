@@ -52,6 +52,7 @@ public static class DapperTypes
         lock (Gate)
         {
             if (_registered) return;
+            SqlMapper.AddTypeHandler(new DateOnlyHandler());
             SqlMapper.AddTypeHandler(new StringEnumTypeHandler<ContentCategory>());
             SqlMapper.AddTypeHandler(new StringEnumTypeHandler<ContentKind>());
             SqlMapper.AddTypeHandler(new StringEnumTypeHandler<ContentStatus>());
@@ -68,4 +69,9 @@ public static class DapperTypes
             _registered = true;
         }
     }
+}
+public sealed class DateOnlyHandler : SqlMapper.TypeHandler<DateOnly>
+{
+    public override DateOnly Parse(object value) => value is DateOnly date ? date : DateOnly.FromDateTime(Convert.ToDateTime(value, CultureInfo.InvariantCulture));
+    public override void SetValue(IDbDataParameter parameter, DateOnly value) { parameter.DbType = DbType.Date; parameter.Value = value.ToDateTime(TimeOnly.MinValue); }
 }

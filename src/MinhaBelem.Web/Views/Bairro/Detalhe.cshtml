@@ -1,0 +1,98 @@
+@model MinhaBelem.Web.Models.BairroDetailViewModel
+
+@{
+    ViewData["Title"] = $"Bairro {Model.Guide.Name} — MinhaBelém";
+}
+
+<article class="section neighborhood-detail-page">
+    <div class="sectionhead">
+        <div>
+            <a href="/meu-bairro" class="back-link">← Voltar para Meu Bairro</a>
+            <span class="eyebrow">REGIÃO: @Model.Guide.Zone.ToUpperInvariant()</span>
+            <h1>Bairro @Model.Guide.Name</h1>
+        </div>
+    </div>
+
+    <div class="grid" style="grid-template-columns:2fr 1fr;gap:30px;margin-top:20px;">
+        <div class="main-content">
+            <div class="card">
+                <h3>História & Origens</h3>
+                <p style="line-height:1.8;">@Model.Guide.HistorySummary</p>
+
+                <h3 style="margin-top:24px;">Identidade & Tradições</h3>
+                <p style="line-height:1.8;">@Model.Guide.CulturalCharacteristics</p>
+
+                @if (!string.IsNullOrWhiteSpace(Model.Guide.PopularAttractions))
+                {
+                    <h3 style="margin-top:24px;">Pontos de Interesse e Atrações</h3>
+                    <p style="line-height:1.8;">@Model.Guide.PopularAttractions</p>
+                }
+            </div>
+
+            <!-- Notícias Locais do Bairro -->
+            @if (Model.LocalNews.Count > 0)
+            {
+                <section style="margin-top:36px;">
+                    <h2>Notícias e Eventos em @Model.Guide.Name</h2>
+                    <div class="grid" style="grid-template-columns:1fr 1fr;gap:16px;margin-top:16px;">
+                        @foreach (var news in Model.LocalNews)
+                        {
+                            <div class="card">
+                                <span class="eyebrow">@news.Category</span>
+                                <h4><a href="/Home/Detalhe/@news.Id">@news.DisplayTitle</a></h4>
+                                <p class="small">@news.DisplaySummary</p>
+                            </div>
+                        }
+                    </div>
+                </section>
+            }
+
+            <!-- Lugares do Bairro -->
+            @if (Model.LocalPlaces.Count > 0)
+            {
+                <section style="margin-top:36px;">
+                    <h2>Onde ir em @Model.Guide.Name</h2>
+                    <div class="grid" style="grid-template-columns:1fr 1fr;gap:16px;margin-top:16px;">
+                        @foreach (var place in Model.LocalPlaces)
+                        {
+                            <div class="card">
+                                <span class="eyebrow">@place.PrimaryType</span>
+                                <h4><a href="/guia/@place.Id">@place.DisplayName</a></h4>
+                                <p class="small">@place.DisplayEditorialNote</p>
+                            </div>
+                        }
+                    </div>
+                </section>
+            }
+        </div>
+
+        <div class="side-bar">
+            @if (!string.IsNullOrWhiteSpace(Model.Guide.SafetyTips))
+            {
+                <div class="card notice">
+                    <h4>💡 Dicas de Segurança & Convivência</h4>
+                    <p>@Model.Guide.SafetyTips</p>
+                </div>
+            }
+
+            <div class="card" style="margin-top:20px;">
+                <h4>Participe do seu Bairro</h4>
+                <p>Mora em @Model.Guide.Name? Envie uma notícia, aviso comunitário ou evento da sua rua.</p>
+                <a href="/#colaborar" class="button small">Enviar Colaboração</a>
+            </div>
+
+            @if (Model.OtherNeighborhoods.Count > 0)
+            {
+                <div class="card" style="margin-top:20px;">
+                    <h4>Outros Bairros</h4>
+                    <ul style="padding-left:18px;margin:8px 0;">
+                        @foreach (var other in Model.OtherNeighborhoods)
+                        {
+                            <li><a href="/meu-bairro/@other.Slug">@other.Name</a></li>
+                        }
+                    </ul>
+                </div>
+            }
+        </div>
+    </div>
+</article>

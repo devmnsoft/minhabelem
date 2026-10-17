@@ -1,6 +1,77 @@
-@model IReadOnlyList<MinhaBelem.Web.Services.PlaceCard>
-<section class="section"><p class="eyebrow">EXPLORE BELÉM DO PARÁ</p><h1>Um guia da nossa cidade</h1><p>Encontre serviços, lazer e atrações. Os estabelecimentos exibidos são obtidos da API Google Places quando configurada. Informações como preço e horários devem ser confirmadas com o estabelecimento.</p>
-<nav class="categories" aria-label="Categorias do guia"><a href="/guia?categoria=tourist_attraction">Passeios</a><a href="/guia?categoria=restaurant">Restaurantes</a><a href="/guia?categoria=museum">Museus</a><a href="/guia?categoria=movie_theater">Cinemas</a><a href="/guia?categoria=park">Parques</a><a href="/guia?categoria=hospital">Saúde</a><a href="/guia?categoria=library">Bibliotecas</a><a href="/guia?categoria=lodging">Hospedagem</a><a href="/guia?categoria=stadium">Esportes</a></nav>
-@if(Model.Count==0){<div class="empty"><h2>Guia em preparação</h2><p>Configure a chave Google Places no servidor. Nenhuma localização ou serviço será inventado.</p></div>}
-else {<div class="grid">@foreach(var place in Model){<article class="card"><div class="eyebrow">@place.Category</div><h3>@place.Name</h3><p>@place.Address</p>@if(!string.IsNullOrWhiteSpace(place.MapsUrl)){<a href="@place.MapsUrl" target="_blank" rel="noopener noreferrer">Ver endereço e rota no Google Maps ↗</a>}</article>}</div>}
-<p class="small">Dados de estabelecimentos fornecidos pelo Google Maps Platform. O MinhaBelém não garante disponibilidade, preço ou horário sem confirmação.</p></section>
+@model IReadOnlyList<MinhaBelem.Core.Entities.Place>
+
+@{
+    ViewData["Title"] = Loc["Nav_Guide"].Value;
+}
+
+<section class="section">
+    <p class="eyebrow">EXPLORE A CIDADE</p>
+    <h1>@Loc["Nav_Guide"]</h1>
+    <p>Locais selecionados pela equipe editorial. Detalhes em tempo real integrados com o Google Places.</p>
+
+    <form method="get" class="filters" role="search">
+        <label>
+            Busca
+            <input name="busca" maxlength="120" placeholder="Ex: Ver-o-Peso, Mangal..." />
+        </label>
+        <label>
+            Bairro
+            <input name="bairro" maxlength="120" placeholder="Ex: Campina, Cidade Velha..." />
+        </label>
+        <label>
+            Município
+            <input name="municipio" maxlength="120" placeholder="Belém" />
+        </label>
+        <label>
+            Categoria
+            <select name="categoria">
+                <option value="">Todas</option>
+                <option value="restaurant">Restaurantes & Gastronomia</option>
+                <option value="museum">Museus & Teatros</option>
+                <option value="park">Parques & Praças</option>
+                <option value="tourist_attraction">Atrações Turísticas & Feiras</option>
+            </select>
+        </label>
+        <label>
+            Acessibilidade
+            <select name="acessibilidade">
+                <option value="">Todas</option>
+                @foreach (var feature in Enum.GetNames<MinhaBelem.Core.Taxonomy.AccessibilityFeature>())
+                {
+                    <option value="@feature">@feature</option>
+                }
+            </select>
+        </label>
+        <button type="submit">@Loc["Search_Button"]</button>
+    </form>
+
+    @if (Model.Count == 0)
+    {
+        <div class="empty">
+            <h2>@Loc["General_Empty"]</h2>
+            <p>Nenhum local encontrado para os filtros selecionados.</p>
+        </div>
+    }
+    else
+    {
+        <div class="grid">
+            @foreach (var place in Model)
+            {
+                <article class="card place-card">
+                    <span class="eyebrow">@place.PrimaryType</span>
+                    <h2><a asp-action="Detalhe" asp-route-id="@place.Id">@place.DisplayName</a></h2>
+                    <p>@place.DisplayEditorialNote</p>
+
+                    @if (!string.IsNullOrWhiteSpace(place.CulturalNotes))
+                    {
+                        <div class="cultural-badge">💡 @place.CulturalNotes</div>
+                    }
+
+                    <div class="place-meta small">
+                        <span>📍 @place.Neighborhood · @place.Municipality</span>
+                    </div>
+                </article>
+            }
+        </div>
+    }
+</section>

@@ -149,7 +149,11 @@ public sealed class IngestionRepository(MySqlDataSource dataSource) : IIngestion
                 Status = candidate.Status.ToString(), candidate.DuplicateOfId
             }, cancellationToken: ct));
 
-        if (affected > 0) return candidate;
+        if (affected > 0)
+        {
+            candidate.Id = await connection.ExecuteScalarAsync<long>(new CommandDefinition("SELECT LAST_INSERT_ID()", cancellationToken: ct));
+            return candidate;
+        }
         return await connection.QuerySingleOrDefaultAsync<IngestionCandidate>(
             new CommandDefinition($"{CandidateSelect} WHERE source_url_hash = @hash",
                 new { hash = Hashing.UrlHash(candidate.SourceUrl) }, cancellationToken: ct));
@@ -178,6 +182,8 @@ public sealed class IngestionRepository(MySqlDataSource dataSource) : IIngestion
     {
         var clauses = new List<string>();
         var parameters = new DynamicParameters();
+        if (query.OperationalOnly) clauses.Add("EXISTS (SELECT 1 FROM mb_ingestion_sources operational WHERE operational.id=mb_ingestion_candidates.source_id AND operational.enabled=1 AND operational.approved=1 AND TRIM(COALESCE(operational.license_note,''))<>'')");
+        if (query.OnlyUnimported) clauses.Add("content_id IS NULL");
         if (query.Status is not null)
         {
             clauses.Add("status = @status");

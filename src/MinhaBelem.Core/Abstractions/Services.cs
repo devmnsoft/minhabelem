@@ -29,7 +29,11 @@ public sealed record AiAnalysisInput(
     string Title,
     string Summary,
     string? SourceUrl,
-    IReadOnlyList<ContentItem> ComparisonItems);
+    IReadOnlyList<ContentItem> ComparisonItems)
+{
+    public long? TargetId { get; init; }
+    public long? ActorId { get; init; }
+}
 
 /// <summary>Serviço editorial de IA: classifica, geolocaliza, resume, detecta duplicidade e sinaliza risco.</summary>
 public interface IAiAnalysisService
@@ -57,6 +61,7 @@ public interface IPlacesClient
     bool IsConfigured { get; }
     Task<IReadOnlyList<Place>> SearchAsync(string placeType, double latitude, double longitude, double radiusMeters, int maxResults, CancellationToken ct);
     Task<Place?> GetDetailsAsync(string placeId, CancellationToken ct);
+    Task<string?> GetPhotoUriAsync(string? photoName, CancellationToken ct);
 }
 
 public interface ICurrentUserAccessor
@@ -68,3 +73,34 @@ public interface ICurrentUserAccessor
     IReadOnlyList<string> Permissions { get; }
     bool IsInRole(string role);
 }
+
+public sealed record ContentTranslationResult(
+    bool Success,
+    string? Title,
+    string? Summary,
+    string? Body,
+    string? CulturalNotes,
+    string? DetectedSourceLanguage,
+    string Provider,
+    string Model,
+    decimal CostUsd,
+    string? Error);
+
+public sealed record PlaceTranslationResult(
+    bool Success,
+    string? Name,
+    string? EditorialNote,
+    string? CulturalNotes,
+    string? DetectedSourceLanguage,
+    string Provider,
+    string Model,
+    decimal CostUsd,
+    string? Error);
+
+public interface IContentTranslationService
+{
+    Task<ContentTranslationResult> TranslateContentAsync(ContentItem content, string targetLanguage, long? actorId, CancellationToken ct);
+    Task<PlaceTranslationResult> TranslatePlaceAsync(Place place, string targetLanguage, long? actorId, CancellationToken ct);
+    Task<string> DetectLanguageAsync(string text, CancellationToken ct);
+}
+

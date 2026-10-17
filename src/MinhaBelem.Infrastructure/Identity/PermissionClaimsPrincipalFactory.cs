@@ -11,7 +11,7 @@ namespace MinhaBelem.Infrastructure.Identity;
 /// </summary>
 public sealed class PermissionClaimsPrincipalFactory(
     UserManager<ApplicationUser> userManager,
-    RoleManager<IdentityRole<long>> roleManager, IOptions<IdentityOptions> options)
+    RoleManager<IdentityRole<long>> roleManager, IOptions<IdentityOptions> options, Core.Abstractions.IAdministrationRepository admin)
     : UserClaimsPrincipalFactory<ApplicationUser, IdentityRole<long>>(userManager, roleManager, options)
 {
     public const string PermissionClaimType = "mb:permission";
@@ -23,10 +23,8 @@ public sealed class PermissionClaimsPrincipalFactory(
         var userId = await UserManager.GetUserIdAsync(user);
         identity.AddClaim(new Claim("mb:uid", userId));
 
-        var roles = await UserManager.GetRolesAsync(user);
-        var permissions = Permissions.ByRole
-            .Where(pair => roles.Contains(pair.Key, StringComparer.OrdinalIgnoreCase))
-            .SelectMany(pair => pair.Value)
+        var permissions = (await admin.PermissionsAsync(user.Id, default))
+            .Where(code => Permissions.All.Contains(code))
             .Distinct(StringComparer.Ordinal)
             .OrderBy(p => p, StringComparer.Ordinal)
             .ToArray();
@@ -34,7 +32,6 @@ public sealed class PermissionClaimsPrincipalFactory(
         foreach (var permission in permissions)
             identity.AddClaim(new Claim(PermissionClaimType, permission));
 
-        identity.AddClaim(new Claim(MfaClaimType, user.TwoFactorEnabled ? "1" : "0"));
         return identity;
     }
 }

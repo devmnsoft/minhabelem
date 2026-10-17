@@ -1,2 +1,130 @@
-@model MinhaBelem.Web.Models.ContentItem
-<article class="section article"><p class="eyebrow">@Model.Category</p><h1>@Model.Title</h1><p>@Model.Summary</p><p>Fonte: <a href="@Model.SourceUrl" target="_blank" rel="noopener noreferrer">@Model.SourceName</a></p><p>Autoria: @(Model.AuthorName ?? "Não informada")</p><p>Publicado em: @Model.PublishedAt.ToString("dd/MM/yyyy HH:mm")</p>@if(Model.TicketPrice is not null){<p>Valor informado: @Model.TicketPrice.Value.ToString("C")</p>}<button id="share" type="button">Compartilhar</button></article>
+@model MinhaBelem.Core.Entities.ContentItem
+@using MinhaBelem.Web.Models
+@using MinhaBelem.Core.Entities
+@using System.Globalization
+
+@{ 
+    ViewData["Title"] = Model.DisplayTitle;
+    var currentCulture = CultureInfo.CurrentUICulture;
+    var isPortuguese = currentCulture.TwoLetterISOLanguageName.Equals("pt", StringComparison.OrdinalIgnoreCase);
+    var hasTranslation = !string.IsNullOrWhiteSpace(Model.LocalizedTitle);
+}
+
+<article class="section article">
+    <p class="eyebrow">@MinhaBelem.Core.Taxonomy.Taxonomy.Info(Model.Category).Label</p>
+    <h1>@Model.DisplayTitle</h1>
+
+    @if (!isPortuguese && !hasTranslation)
+    {
+        <aside class="notice translation-notice" role="status">
+            <span>🌐 <strong>@Loc["Translation_OriginalLanguage"]:</strong> Português (pt-BR). @Loc["Translation_Status_Pending"].</span>
+        </aside>
+    }
+
+    @if (!string.IsNullOrWhiteSpace(Model.CulturalNotes))
+    {
+        <div class="cultural-badge-box">
+            <h4>💡 @Loc["Glossary_Title"]</h4>
+            <p>@Model.CulturalNotes</p>
+        </div>
+    }
+
+    @if (Model.Status == ContentStatus.Cancelled)
+    {
+        <p class="notice error-notice" role="status">Evento cancelado. Confira a fonte para orientações do organizador.</p>
+    }
+
+    <p class="lead">@(Model.LocalizedSummary ?? Model.Summary)</p>
+
+    @if (Model.EventStartAt is { } start)
+    {
+        <p>
+            <strong>Quando:</strong> @PortalTime.Local(start).ToString("g", currentCulture)
+            @if (Model.EventEndAt is { } end)
+            {
+                <span>até @PortalTime.Local(end).ToString("g", currentCulture)</span>
+            } 
+            (Belém - Horário de Brasília)
+        </p>
+    }
+
+    @if (Model.Address is not null)
+    {
+        <p><strong>Onde:</strong> @Model.Address · @Model.Neighborhood · @Model.Municipality</p>
+    }
+
+    @if (Model.Kind == ContentKind.Event)
+    {
+        <p>
+            <strong>Ingresso:</strong> 
+            @(Model.IsFree ? Loc["General_Save"].Value /* or Gratuito */ ?? "Gratuito" : Model.TicketPrice?.ToString("C", currentCulture) ?? "Consulte o organizador")
+        </p>
+    }
+
+    @if (Model.EventDetails?.Availability?.EndsWith("SoldOut", StringComparison.OrdinalIgnoreCase) == true)
+    {
+        <p class="notice">Ingressos esgotados conforme a fonte consultada. Confirme com o organizador.</p>
+    }
+
+    @if (Model.EventDetails is { } ev)
+    {
+        <p><strong>Organização:</strong> @(ev.Organizer ?? "Consulte a fonte")</p>
+        <p><strong>Classificação:</strong> @(ev.AgeRating ?? "Livre")</p>
+        @if (ev.Participants is not null)
+        {
+            <p><strong>Participantes:</strong> @ev.Participants</p>
+        }
+        @if (!string.IsNullOrWhiteSpace(ev.PublicUpdateNote))
+        {
+            <aside class="notice"><strong>Atualização:</strong> @ev.PublicUpdateNote</aside>
+        }
+    }
+
+    @if (!string.IsNullOrWhiteSpace(Model.LocalizedBody ?? Model.Body))
+    {
+        <div class="article-body">@(Model.LocalizedBody ?? Model.Body)</div>
+    }
+
+    <div class="article-meta">
+        <p>
+            <strong>@Loc["Explore_VerifiedSource"]:</strong> 
+            @if (MinhaBelem.Core.Security.SafeUrl.Validate(Model.SourceUrl).IsValid)
+            {
+                <a href="@Model.SourceUrl" target="_blank" rel="noopener noreferrer">@Model.SourceName</a>
+            }
+            else
+            {
+                <span>@Model.SourceName</span>
+            }
+        </p>
+        <p><strong>Autoria:</strong> @(Model.AuthorName ?? "Não informada")</p>
+        <p class="small">
+            Publicado em @PortalTime.Local(Model.PublishedAt).ToString("g", currentCulture) · 
+            Atualizado em @PortalTime.Local(Model.UpdatedAt).ToString("g", currentCulture) · 
+            Verificado em @PortalTime.Local(Model.LastVerifiedAt).ToString("g", currentCulture)
+        </p>
+    </div>
+
+    <div class="actions">
+        <button id="share" type="button">Compartilhar</button>
+        <a class="button secondary" href="https://wa.me/?text=@Uri.EscapeDataString(Model.DisplayTitle + " " + Context.Request.Scheme + "://" + Context.Request.Host + "/Home/Detalhe/" + Model.Id)" target="_blank" rel="noopener noreferrer">
+            Enviar pelo WhatsApp
+        </a>
+        <a class="button secondary" href="/explore">🌎 @Loc["Nav_Explore"]</a>
+        <a class="button secondary" href="/agenda">📅 @Loc["Nav_Agenda"]</a>
+    </div>
+    <p id="share-status" role="status" aria-live="polite"></p>
+</article>
+
+@if (ViewData["PublicHistory"] is (DateTime Date, string Note)[] history && history.Length > 0)
+{
+    <section class="section article">
+        <h2>Histórico de atualizações</h2>
+        <ul>
+            @foreach (var entry in history)
+            {
+                <li>@PortalTime.Local(entry.Date).ToString("g", currentCulture) · @entry.Note</li>
+            }
+        </ul>
+    </section>
+}

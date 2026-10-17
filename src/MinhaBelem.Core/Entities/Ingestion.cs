@@ -1,6 +1,6 @@
 namespace MinhaBelem.Core.Entities;
 
-public enum FeedProtocol { Rss, Atom, Json, Html }
+public enum FeedProtocol { Rss, Atom, Json, Html, ICalendar, JsonLd, WebDiscovery, Instagram, Facebook, TikTok, YouTube, GooglePlaces, GovernmentApi, Custom }
 
 /// <summary>Fonte de coleta. Só entra em operação com <see cref="Approved"/> verdadeiro.</summary>
 public sealed class IngestionSource

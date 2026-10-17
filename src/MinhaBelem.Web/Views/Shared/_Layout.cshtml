@@ -1,1 +1,178 @@
-<!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><meta name="description" content="MinhaBelém: cultura, notícias, serviços e mobilidade em Belém do Pará."/><title>MinhaBelém — Nossa cidade. Mil histórias.</title><link rel="stylesheet" href="~/css/site.css" asp-append-version="true"/></head><body><header class="header"><a class="brand" asp-controller="Home" asp-action="Index">✺ minha<span>belém</span></a><nav aria-label="Menu principal"><a href="/?categoria=cultura">Cultura</a><a href="/?categoria=lazer">Lazer</a><a href="/?categoria=politica">Cidadania</a><a href="/?categoria=transporte">Mobilidade</a><a href="/?categoria=saude">Saúde</a><a href="/guia">Guia da cidade</a></nav></header><main>@RenderBody()</main><footer><strong>MinhaBelém</strong><p>Nossa cidade. Mil histórias. Belém, Pará, Brasil. Conteúdos sujeitos à revisão editorial.</p></footer><script src="~/js/site.js" asp-append-version="true"></script>@await RenderSectionAsync("Scripts",required:false)</body></html>
+@using System.Globalization
+@{
+    var currentCulture = CultureInfo.CurrentUICulture.Name;
+    var returnUrl = Context.Request.Path + Context.Request.QueryString;
+    var canonicalUrl = $"{Context.Request.Scheme}://{Context.Request.Host}{Context.Request.Path}";
+    var languages = new[]
+    {
+        ("pt-BR", "Português", "🇧🇷"),
+        ("en", "English", "🇺🇸"),
+        ("fr", "Français", "🇫🇷"),
+        ("es", "Español", "🇪🇸"),
+        ("ru", "Русский", "🇷🇺"),
+        ("zh-Hans", "简体中文", "🇨🇳"),
+        ("ja", "日本語", "🇯🇵")
+    };
+}
+<!DOCTYPE html>
+<html lang="@currentCulture">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="@(ViewData["Description"] ?? Loc["Hero_Subtitle"].Value ?? "MinhaBelém: portal global de cultura, turismo, notícias e serviços de Belém do Pará.")" />
+    <title>@(ViewData["Title"] != null ? $"{ViewData["Title"]} — MinhaBelém" : Loc["Brand_Tagline"].Value ?? "MinhaBelém — Nossa cidade. Mil histórias.")</title>
+
+    <!-- SEO & Multilingual Alternate Hreflang -->
+    <link rel="canonical" href="@canonicalUrl" />
+    @foreach (var lang in languages)
+    {
+        <link rel="alternate" hreflang="@lang.Item1" href="@($"{Context.Request.Scheme}://{Context.Request.Host}/{lang.Item1}")" />
+    }
+    <link rel="alternate" hreflang="x-default" href="@($"{Context.Request.Scheme}://{Context.Request.Host}/pt-BR")" />
+
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body class="culture-@currentCulture.ToLowerInvariant()">
+    <a class="skip-link" href="#conteudo">@Loc["General_Back"]</a>
+
+    <header class="header">
+        <a class="brand" href="/">
+            <span class="brand-icon">✺</span> minha<span>belém</span>
+            <span class="brand-badge">Global</span>
+        </a>
+
+        <nav class="main-nav" aria-label="@Loc["Nav_Home"]">
+            <a href="/">@Loc["Nav_Home"]</a>
+            <a href="/explore" class="nav-highlight">🌎 @Loc["Nav_Explore"]</a>
+            <a href="/guia">@Loc["Nav_Guide"]</a>
+            <a href="/agenda">@Loc["Nav_Agenda"]</a>
+            <a href="/mobilidade">🚌 Mobilidade</a>
+            <a href="/meu-bairro">🏘️ Meu Bairro</a>
+            <a href="/parceiros">💼 Parceiros</a>
+            <a href="/explore/glossario">📖 @Loc["Glossary_Title"]</a>
+            @if (User.Identity?.IsAuthenticated == true)
+            {
+                <a href="/conta/perfil">@Loc["Nav_Account"]</a>
+            }
+            else
+            {
+                <a href="/conta/login" class="nav-login">@Loc["Nav_Login"]</a>
+            }
+        </nav>
+
+        <div class="header-tools">
+            <!-- Language Switcher Selector -->
+            <form action="/idioma/mudar" method="get" class="lang-selector-form" aria-label="@Loc["Language_Selector_Title"]">
+                <input type="hidden" name="retorno" value="@returnUrl" />
+                <span class="lang-icon" aria-hidden="true">🌐</span>
+                <select name="cultura" onchange="this.form.submit()" aria-label="@Loc["Language_Selector_Title"]" class="lang-select">
+                    @foreach (var lang in languages)
+                    {
+                        <!option value="@lang.Item1" @(string.Equals(currentCulture, lang.Item1, StringComparison.OrdinalIgnoreCase) ? "selected" : null)>
+                            @lang.Item3 @lang.Item2
+                        </!option>
+                    }
+                </select>
+                <noscript><button type="submit">OK</button></noscript>
+            </form>
+        </div>
+    </header>
+
+    @if (User.Identity?.IsAuthenticated == true)
+    {
+        <nav class="admin-nav" aria-label="Administração">
+            <span class="admin-nav-title">⚙️ Admin:</span>
+            @foreach (var link in new[] {
+                ("dashboard.read", "/admin", Loc["Admin_Dashboard"].Value),
+                ("content.read", "/admin/conteudo", "Matérias"),
+                ("content.read", "/editorial", "Editorial"),
+                ("source.manage", "/admin/fontes", "Fontes"),
+                ("place.manage", "/admin/lugares", "Lugares"),
+                ("settings.manage", "/admin/mobilidade", "Mobilidade"),
+                ("advertiser.manage", "/admin/anunciantes", "Anunciantes"),
+                ("translation.manage", "/admin/idiomas", Loc["Admin_Languages"].Value),
+                ("translation.read", "/admin/traducoes", Loc["Admin_Translations"].Value),
+                ("submission.moderate", "/admin/colaboracoes", "Colaborações"),
+                ("dashboard.read", "/admin/relatorios", "Relatórios"),
+                ("user.manage", "/admin/usuarios", "Usuários"),
+                ("settings.manage", "/admin/integracoes", "Integrações"),
+                ("audit.read", "/admin/auditoria", "Auditoria"),
+                ("settings.manage", "/admin/configuracoes", "Configurações")
+            })
+            {
+                if (User.HasClaim("mb:permission", link.Item1))
+                {
+                    <a href="@link.Item2">@link.Item3</a>
+                }
+            }
+            <a href="/conta/sessoes">Sessões</a>
+        </nav>
+    }
+
+    <main id="conteudo" tabindex="-1">
+        @if (TempData["Notice"] is string notice)
+        {
+            <div class="notice" role="status">
+                <span class="notice-icon">ℹ️</span>
+                <span>@notice</span>
+            </div>
+        }
+        @RenderBody()
+    </main>
+
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-col brand-col">
+                <strong class="footer-brand">✺ minha<span>belém</span></strong>
+                <p class="footer-tagline">@Loc["Brand_Tagline"]</p>
+                <p class="footer-sub">Belém do Pará, Amazônia, Brasil 🇧🇷</p>
+                <p class="small footer-copy">&copy; @DateTime.UtcNow.Year MNSOFT — @Loc["General_AllRightsReserved"]</p>
+            </div>
+            <div class="footer-col">
+                <h4>🌎 @Loc["Nav_Explore"]</h4>
+                <nav aria-label="@Loc["Nav_Explore"]">
+                    <a href="/explore">@Loc["Explore_Hero_Title"]</a>
+                    <a href="/explore/roteiro/belem-express-1-dia">1 Dia em Belém</a>
+                    <a href="/explore/roteiro/belem-cultural-2-dias">2 Dias Cultural</a>
+                    <a href="/explore/roteiro/belem-completa-3-dias">3 Dias Completa</a>
+                    <a href="/explore/roteiro/amazonia-urbana-ilhas-5-dias">5 Dias Ilhas e Natureza</a>
+                    <a href="/explore/glossario">@Loc["Glossary_Title"]</a>
+                </nav>
+            </div>
+            <div class="footer-col">
+                <h4>🏙️ @Loc["Nav_Guide"]</h4>
+                <nav aria-label="@Loc["Nav_Guide"]">
+                    <a href="/guia">@Loc["Nav_Guide"]</a>
+                    <a href="/agenda">@Loc["Nav_Agenda"]</a>
+                    <a href="/?categoria=cultura">@Loc["Category_Culture"]</a>
+                    <a href="/?categoria=gastronomia">@Loc["Category_Gastronomy"]</a>
+                    <a href="/?categoria=mobilidade">@Loc["Category_Mobility"]</a>
+                </nav>
+            </div>
+            <div class="footer-col">
+                <h4>⚖️ @Loc["Nav_Account"]</h4>
+                <nav aria-label="Institucional">
+                    <a href="/privacidade">@Loc["Nav_Privacy"]</a>
+                    <a href="/termos">@Loc["Nav_Terms"]</a>
+                    <a href="/sitemap.xml" target="_blank">Sitemap XML</a>
+                    <a href="/status">Status da Plataforma</a>
+                </nav>
+                <div class="footer-languages">
+                    <span class="small">@Loc["Language_Selector_Title"]:</span>
+                    <div class="footer-lang-links">
+                        @foreach (var lang in languages)
+                        {
+                            <a href="/idioma/mudar?cultura=@lang.Item1&retorno=@returnUrl" class="lang-pill @(string.Equals(currentCulture, lang.Item1, StringComparison.OrdinalIgnoreCase) ? "active" : "")">
+                                @lang.Item3 @lang.Item1
+                            </a>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

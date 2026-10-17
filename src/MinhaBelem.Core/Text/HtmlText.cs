@@ -33,9 +33,10 @@ public static partial class HtmlText
 
     public static string Truncate(string? value, int maxLength)
     {
+        if (maxLength <= 0) return string.Empty;
         if (string.IsNullOrEmpty(value)) return string.Empty;
         if (value.Length <= maxLength) return value;
-        var cut = value[..maxLength];
+        var cut = value[..(maxLength - 1)];
         var lastSpace = cut.LastIndexOf(' ');
         if (lastSpace > maxLength * 0.6) cut = cut[..lastSpace];
         return cut.TrimEnd(' ', '.', ',', ';', ':') + "…";

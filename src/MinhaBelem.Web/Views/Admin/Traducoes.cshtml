@@ -1,0 +1,200 @@
+@using MinhaBelem.Core.Entities
+@using MinhaBelem.Core.Abstractions
+
+@{
+    ViewData["Title"] = "Fila e Gestão de Traduções";
+    var selectedLang = ViewData["SelectedLanguage"] as string ?? "en";
+    var languages = ViewData["Languages"] as IReadOnlyList<Language> ?? Array.Empty<Language>();
+    var stats = ViewData["Stats"] as TranslationStats;
+    var pendingContent = ViewData["PendingContent"] as IReadOnlyList<ContentTranslation> ?? Array.Empty<ContentTranslation>();
+    var pendingPlaces = ViewData["PendingPlaces"] as IReadOnlyList<PlaceTranslation> ?? Array.Empty<PlaceTranslation>();
+    var untranslatedContent = ViewData["UntranslatedContent"] as IReadOnlyList<ContentItem> ?? Array.Empty<ContentItem>();
+    var untranslatedPlaces = ViewData["UntranslatedPlaces"] as IReadOnlyList<Place> ?? Array.Empty<Place>();
+}
+
+<section class="section">
+    <div class="sectionhead">
+        <div>
+            <span class="eyebrow">INTELIGÊNCIA DE CONTEÚDO MULTILÍNGUE</span>
+            <h1>📚 Gestão de Traduções</h1>
+        </div>
+        <div class="actions">
+            <a href="/admin/idiomas" class="button secondary">🌐 Gerenciar Idiomas</a>
+        </div>
+    </div>
+
+    @if (TempData["Notice"] is string notice)
+    {
+        <p class="notice" role="status">@notice</p>
+    }
+
+    @if (stats is not null)
+    {
+        <div class="grid stats-grid" style="margin-bottom: 24px;">
+            <div class="card stat-card">
+                <span class="small">✅ Traduções Aprovadas</span>
+                <h3>@stats.ApprovedTranslations</h3>
+            </div>
+            <div class="card stat-card">
+                <span class="small">🌐 Total de Traduções</span>
+                <h3>@stats.TotalTranslations</h3>
+            </div>
+            <div class="card stat-card">
+                <span class="small">⏳ Pendentes de Revisão</span>
+                <h3>@stats.PendingReviews</h3>
+            </div>
+            <div class="card stat-card">
+                <span class="small">📰 Total de Notícias</span>
+                <h3>@stats.TotalContent</h3>
+            </div>
+        </div>
+    }
+
+    <!-- Language Selector Tab -->
+    <div class="lang-filter-bar" style="margin: 20px 0; display:flex; gap: 8px; flex-wrap: wrap;">
+        @foreach (var l in languages.Where(x => !x.IsDefault))
+        {
+            <a href="/admin/traducoes?lang=@l.Code" class="button @(selectedLang == l.Code ? "" : "secondary") small">
+                @l.FlagEmoji @l.NativeName (@l.Code)
+            </a>
+        }
+    </div>
+
+    <!-- Pending Translations Awaiting Editorial Review -->
+    <h2>Traduções Aguardando Revisão (@(pendingContent.Count + pendingPlaces.Count))</h2>
+    @if (pendingContent.Count == 0 && pendingPlaces.Count == 0)
+    {
+        <div class="empty">
+            <p>Nenhuma tradução pendente de moderação editorial no momento.</p>
+        </div>
+    }
+    else
+    {
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Tipo</th>
+                        <th>ID</th>
+                        <th>Destino</th>
+                        <th>Título Traduzido</th>
+                        <th>Provedor IA</th>
+                        <th>Data</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var tr in pendingContent)
+                    {
+                        <tr>
+                            <td><span class="badge badge-info">Notícia</span></td>
+                            <td>#@tr.ContentId</td>
+                            <td><code>@tr.TargetLanguage</code></td>
+                            <td><strong>@tr.Title</strong></td>
+                            <td><small>@(tr.Provider) / @(tr.Model)</small></td>
+                            <td><small>@tr.CreatedAt.ToString("dd/MM/yyyy HH:mm")</small></td>
+                            <td style="display:flex;gap:6px;">
+                                <a href="/admin/traducoes/comparar/@tr.ContentId?targetLanguage=@tr.TargetLanguage" class="button small secondary">
+                                    Comparar
+                                </a>
+                                <form action="/admin/traducoes/conteudo/@tr.Id/revisar" method="post" style="display:inline;">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="approve" value="true" />
+                                    <button type="submit" class="button small" title="Aprovar">✓ Aprovar</button>
+                                </form>
+                                <form action="/admin/traducoes/conteudo/@tr.Id/revisar" method="post" style="display:inline;">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="approve" value="false" />
+                                    <button type="submit" class="button small secondary" title="Rejeitar">✗</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                    @foreach (var tr in pendingPlaces)
+                    {
+                        <tr>
+                            <td><span class="badge badge-primary">Lugar</span></td>
+                            <td>#@tr.PlaceId</td>
+                            <td><code>@tr.TargetLanguage</code></td>
+                            <td><strong>@tr.Name</strong></td>
+                            <td><small>@(tr.Provider) / @(tr.Model)</small></td>
+                            <td><small>@tr.CreatedAt.ToString("dd/MM/yyyy HH:mm")</small></td>
+                            <td style="display:flex;gap:6px;">
+                                <form action="/admin/traducoes/lugar/@tr.Id/revisar" method="post" style="display:inline;">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="approve" value="true" />
+                                    <button type="submit" class="button small" title="Aprovar">✓ Aprovar</button>
+                                </form>
+                                <form action="/admin/traducoes/lugar/@tr.Id/revisar" method="post" style="display:inline;">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="approve" value="false" />
+                                    <button type="submit" class="button small secondary" title="Rejeitar">✗</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+
+    <!-- Untranslated Content for Selected Language -->
+    @if (untranslatedContent.Count > 0 || untranslatedPlaces.Count > 0)
+    {
+        <h2 style="margin-top: 40px;">⚠️ Itens Sem Tradução para [<code>@selectedLang</code>]</h2>
+        <p class="small">Dispare a tradução automática através do orquestrador de IA com preservação de termos culturais.</p>
+        
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Tipo</th>
+                        <th>ID</th>
+                        <th>Título em Português</th>
+                        <th>Ação IA</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in untranslatedContent)
+                    {
+                        <tr>
+                            <td>Notícia</td>
+                            <td>#@item.Id</td>
+                            <td><strong>@item.Title</strong></td>
+                            <td>
+                                <form action="/admin/traducoes/solicitar-ia" method="post" style="display:inline;">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="type" value="content" />
+                                    <input type="hidden" name="id" value="@item.Id" />
+                                    <input type="hidden" name="targetLanguage" value="@selectedLang" />
+                                    <button type="submit" class="button small secondary">
+                                        🤖 Traduzir para @selectedLang
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                    @foreach (var place in untranslatedPlaces)
+                    {
+                        <tr>
+                            <td>Lugar Turístico</td>
+                            <td>#@place.Id</td>
+                            <td><strong>@place.Name</strong></td>
+                            <td>
+                                <form action="/admin/traducoes/solicitar-ia" method="post" style="display:inline;">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="type" value="place" />
+                                    <input type="hidden" name="id" value="@place.Id" />
+                                    <input type="hidden" name="targetLanguage" value="@selectedLang" />
+                                    <button type="submit" class="button small secondary">
+                                        🤖 Traduzir para @selectedLang
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</section>

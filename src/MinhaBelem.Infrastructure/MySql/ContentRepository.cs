@@ -3,6 +3,7 @@ using MinhaBelem.Core.Abstractions;
 using MinhaBelem.Core.Entities;
 using MinhaBelem.Core.Taxonomy;
 using MinhaBelem.Core.Text;
+using MinhaBelem.Core.Policies;
 
 namespace MinhaBelem.Infrastructure.MySql;
 
@@ -12,7 +13,7 @@ public sealed class ContentRepository(MySqlDataSource dataSource) : IContentRepo
         SELECT id AS Id, kind AS Kind, category AS Category, subject AS Subject, title AS Title, slug AS Slug,
                summary AS Summary, body AS Body, neighborhood AS Neighborhood, municipality AS Municipality,
                state AS State, address AS Address, latitude AS Latitude, longitude AS Longitude,
-               source_id AS SourceId, source_name AS SourceName, source_url AS SourceUrl,
+               source_id AS SourceId, source_name AS SourceName, source_url AS SourceUrl, source_url_hash AS SourceUrlHash,
                author_name AS AuthorName, source_published_at AS SourcePublishedAt,
                image_url AS ImageUrl, image_credit AS ImageCredit, image_license AS ImageLicense,
                event_start_at AS EventStartAt, event_end_at AS EventEndAt, ticket_price AS TicketPrice,
@@ -28,8 +29,14 @@ public sealed class ContentRepository(MySqlDataSource dataSource) : IContentRepo
         => (MySqlConnector.MySqlConnection)await dataSource.OpenConnectionAsync(ct);
 
     public async Task<IReadOnlyList<ContentItem>> SearchAsync(ContentQuery query, CancellationToken ct)
+        => await SearchInternalAsync(query, true, ct);
+
+    public Task<IReadOnlyList<ContentItem>> EditorialAsync(ContentQuery query, CancellationToken ct)
+        => SearchInternalAsync(query, false, ct);
+
+    private async Task<IReadOnlyList<ContentItem>> SearchInternalAsync(ContentQuery query, bool publicOnly, CancellationToken ct)
     {
-        var (where, parameters) = BuildFilter(query, publicOnly: true);
+        var (where, parameters) = BuildFilter(query, publicOnly);
         var order = query.Sort switch
         {
             ContentSort.Upcoming => "COALESCE(event_start_at, published_at) ASC",
@@ -44,7 +51,7 @@ public sealed class ContentRepository(MySqlDataSource dataSource) : IContentRepo
 
         await using var connection = await OpenAsync(ct);
         var rows = (await connection.QueryAsync<ContentItem>(new CommandDefinition(sql, parameters, cancellationToken: ct))).AsList();
-        await LoadChildrenAsync(connection, rows, ct);
+        await LoadChildrenAsync(connection, rows, query.Culture, ct);
         return rows;
     }
 
@@ -61,7 +68,7 @@ public sealed class ContentRepository(MySqlDataSource dataSource) : IContentRepo
         var parameters = new DynamicParameters();
 
         if (publicOnly)
-            clauses.Add("status = 'Published' AND (expires_at IS NULL OR expires_at > UTC_TIMESTAMP(6)) AND verification_status <> 'Outdated'");
+            clauses.Add("status IN ('Published','Cancelled') AND (expires_at IS NULL OR expires_at > UTC_TIMESTAMP(6)) AND verification_status <> 'Outdated'");
         else if (query.Status is not null)
         {
             clauses.Add("status = @status");
@@ -78,6 +85,7 @@ public sealed class ContentRepository(MySqlDataSource dataSource) : IContentRepo
             clauses.Add("subject = @subject");
             parameters.Add("subject", query.Subject.Trim());
         }
+        if (query.Subjects is { Count: > 0 }) { clauses.Add("subject IN @subjects"); parameters.Add("subjects", query.Subjects); }
         if (!string.IsNullOrWhiteSpace(query.Neighborhood))
         {
             clauses.Add("neighborhood = @neighborhood");
@@ -111,13 +119,20 @@ public sealed class ContentRepository(MySqlDataSource dataSource) : IContentRepo
             parameters.Add("dateTo", query.DateTo.Value.ToDateTime(TimeOnly.MinValue));
         }
         if (query.OnlyUpcomingEvents)
-            clauses.Add("event_start_at >= UTC_TIMESTAMP(6)");
+            clauses.Add("event_start_at IS NOT NULL AND COALESCE(event_end_at,event_start_at) >= UTC_TIMESTAMP(6)");
+        if (query.StartsFromUtc is { } from) { clauses.Add("event_start_at >= @startsFrom"); parameters.Add("startsFrom", from); }
+        if (query.StartsBeforeUtc is { } before) { clauses.Add("event_start_at < @startsBefore"); parameters.Add("startsBefore", before); }
+        if (query.AgeAtMost is { } age)
+        {
+            clauses.Add("EXISTS (SELECT 1 FROM mb_event_evidence ev WHERE ev.content_id=mb_content_items.id AND JSON_EXTRACT(ev.evidence,'$.AgeRating') IS NOT NULL AND CAST(JSON_UNQUOTE(JSON_EXTRACT(ev.evidence,'$.AgeRating')) AS UNSIGNED)<=@age)");
+            parameters.Add("age", age);
+        }
 
         if (!string.IsNullOrWhiteSpace(query.Search))
         {
             var term = query.Search.Trim();
             if (term.Length > 120) term = term[..120];
-            clauses.Add("(title LIKE @search OR summary LIKE @search OR neighborhood LIKE @search OR municipality LIKE @search OR subject LIKE @search)");
+            clauses.Add("(title LIKE @search OR summary LIKE @search OR neighborhood LIKE @search OR municipality LIKE @search OR subject LIKE @search OR EXISTS (SELECT 1 FROM mb_content_translations ct WHERE ct.content_id = mb_content_items.id AND (ct.title LIKE @search OR ct.summary LIKE @search)))");
             parameters.Add("search", $"%{EscapeLike(term)}%");
         }
 
@@ -134,7 +149,7 @@ public sealed class ContentRepository(MySqlDataSource dataSource) : IContentRepo
         await using var connection = await OpenAsync(ct);
         var item = await connection.QuerySingleOrDefaultAsync<ContentItem>(
             new CommandDefinition($"{Select} WHERE id = @id", new { id }, cancellationToken: ct));
-        if (item is not null) await LoadChildrenAsync(connection, [item], ct);
+        if (item is not null) await LoadChildrenAsync(connection, [item], null, ct);
         return item;
     }
 
@@ -143,14 +158,15 @@ public sealed class ContentRepository(MySqlDataSource dataSource) : IContentRepo
         await using var connection = await OpenAsync(ct);
         var item = await connection.QuerySingleOrDefaultAsync<ContentItem>(
             new CommandDefinition($"{Select} WHERE slug = @slug LIMIT 1", new { slug }, cancellationToken: ct));
-        if (item is not null) await LoadChildrenAsync(connection, [item], ct);
+        if (item is not null) await LoadChildrenAsync(connection, [item], null, ct);
         return item;
     }
 
-    private static async Task LoadChildrenAsync(MySqlConnector.MySqlConnection connection, IList<ContentItem> items, CancellationToken ct)
+    private static async Task LoadChildrenAsync(MySqlConnector.MySqlConnection connection, IList<ContentItem> items, string? culture, CancellationToken ct)
     {
         if (items.Count == 0) return;
         var ids = items.Select(i => i.Id).ToArray();
+        var evidenceRows = (await connection.QueryAsync<(long Id, string Evidence)>(new CommandDefinition("SELECT content_id AS Id,evidence AS Evidence FROM mb_event_evidence WHERE content_id IN @ids", new { ids }, cancellationToken: ct))).ToDictionary(x => x.Id, x => x.Evidence);
         var audiences = await connection.QueryAsync<(long ContentId, string Audience)>(new CommandDefinition(
             "SELECT content_id AS ContentId, audience AS Audience FROM mb_content_audiences WHERE content_id IN @ids", new { ids }, cancellationToken: ct));
         var features = await connection.QueryAsync<(long ContentId, string Feature)>(new CommandDefinition(
@@ -163,8 +179,34 @@ public sealed class ContentRepository(MySqlDataSource dataSource) : IContentRepo
                                  .GroupBy(a => a.ContentId)
                                  .ToDictionary(g => g.Key, g => (IReadOnlyList<AccessibilityFeature>)g.Select(x => Enum.Parse<AccessibilityFeature>(x.Feature, true)).ToArray());
 
+        if (!string.IsNullOrWhiteSpace(culture) && !culture.StartsWith("pt", StringComparison.OrdinalIgnoreCase))
+        {
+            var targetLang = culture.Trim();
+            var langPrefix = culture.Split('-')[0] + "%";
+            var translations = (await connection.QueryAsync<ContentTranslation>(new CommandDefinition("""
+                SELECT content_id AS ContentId, target_language AS TargetLanguage,
+                       title AS Title, summary AS Summary, body AS Body, cultural_notes AS CulturalNotes
+                FROM mb_content_translations
+                WHERE content_id IN @ids AND (target_language = @targetLang OR target_language LIKE @langPrefix) AND review_status = 'Approved'
+                ORDER BY version DESC
+                """, new { ids, targetLang, langPrefix }, cancellationToken: ct))).ToList();
+
+            var byContent = translations.GroupBy(t => t.ContentId).ToDictionary(g => g.Key, g => g.First());
+            foreach (var item in items)
+            {
+                if (byContent.TryGetValue(item.Id, out var trans))
+                {
+                    item.LocalizedTitle = trans.Title;
+                    item.LocalizedSummary = trans.Summary;
+                    item.LocalizedBody = trans.Body;
+                    item.CulturalNotes = trans.CulturalNotes;
+                }
+            }
+        }
+
         foreach (var item in items)
         {
+            if (evidenceRows.TryGetValue(item.Id, out var evidence)) item.EventDetails = System.Text.Json.JsonSerializer.Deserialize<Core.Services.EventEvidence>(evidence);
             if (byAudience.TryGetValue(item.Id, out var a)) item.Audiences = a;
             if (byFeature.TryGetValue(item.Id, out var f)) item.Accessibility = f;
         }
@@ -185,18 +227,19 @@ public sealed class ContentRepository(MySqlDataSource dataSource) : IContentRepo
             """
             INSERT INTO mb_content_items
               (kind, category, subject, title, slug, summary, body, neighborhood, municipality, state,
-               address, latitude, longitude, source_name, source_url, source_url_hash, fingerprint,
+               address, latitude, longitude, source_id, source_name, source_url, source_url_hash, fingerprint,
                author_name, source_published_at, image_url, image_credit, image_license,
                event_start_at, event_end_at, ticket_price, ticket_price_text, is_free, status,
                verification_status, flags, duplicate_of_id, requires_human_approval, published_at,
                expires_at, last_verified_at, reviewed_by_id, created_by_id, revision)
             VALUES
               (@Kind, @Category, @Subject, @Title, @Slug, @Summary, @Body, @Neighborhood, @Municipality, @State,
-               @Address, @Latitude, @Longitude, @SourceName, @SourceUrl, @SourceUrlHash, @Fingerprint,
+               @Address, @Latitude, @Longitude, @SourceId, @SourceName, @SourceUrl, @SourceUrlHash, @Fingerprint,
                @AuthorName, @SourcePublishedAt, @ImageUrl, @ImageCredit, @ImageLicense,
                @EventStartAt, @EventEndAt, @TicketPrice, @TicketPriceText, @IsFree, @Status,
                @VerificationStatus, @Flags, @DuplicateOfId, @RequiresHumanApproval, @PublishedAt,
                @ExpiresAt, @LastVerifiedAt, @ReviewedById, @CreatedById, @Revision);
+            SELECT LAST_INSERT_ID();
             """, ToParams(item), transaction, cancellationToken: ct));
 
         item.Id = checked((long)id);
@@ -218,15 +261,16 @@ public sealed class ContentRepository(MySqlDataSource dataSource) : IContentRepo
                 kind = @Kind, category = @Category, subject = @Subject, title = @Title, slug = @Slug,
                 summary = @Summary, body = @Body, neighborhood = @Neighborhood, municipality = @Municipality,
                 address = @Address, latitude = @Latitude, longitude = @Longitude,
-                author_name = @AuthorName, source_published_at = @SourcePublishedAt,
+                source_id = @SourceId, source_name = @SourceName, source_url = @SourceUrl, source_url_hash = @SourceUrlHash,
+                fingerprint = @Fingerprint, author_name = @AuthorName, source_published_at = @SourcePublishedAt,
                 image_url = @ImageUrl, image_credit = @ImageCredit, image_license = @ImageLicense,
                 event_start_at = @EventStartAt, event_end_at = @EventEndAt, ticket_price = @TicketPrice,
                 ticket_price_text = @TicketPriceText, is_free = @IsFree, status = @Status,
-                verification_status = @VerificationStatus, flags = @Flags,
+                verification_status = @VerificationStatus, flags = @Flags, duplicate_of_id = @DuplicateOfId,
                 requires_human_approval = @RequiresHumanApproval, expires_at = @ExpiresAt,
-                last_verified_at = @LastVerifiedAt, reviewed_by_id = @ReviewedById,
+                published_at = @PublishedAt, last_verified_at = @LastVerifiedAt, reviewed_by_id = @ReviewedById,
                 revision = revision + 1, updated_at = UTC_TIMESTAMP(6)
-            WHERE id = @Id
+            WHERE id = @Id AND revision = @Revision
             """, ToParams(item), transaction, cancellationToken: ct));
 
         if (affected == 0)
@@ -244,6 +288,8 @@ public sealed class ContentRepository(MySqlDataSource dataSource) : IContentRepo
 
     private static async Task ReplaceChildrenAsync(MySqlConnector.MySqlConnection connection, ContentItem item, MySqlConnector.MySqlTransaction tx, CancellationToken ct)
     {
+        if (item.EventDetails is not null)
+            await connection.ExecuteAsync(new CommandDefinition("INSERT INTO mb_event_evidence (content_id,evidence) VALUES (@id,@evidence) ON DUPLICATE KEY UPDATE evidence=VALUES(evidence)", new { id = item.Id, evidence = System.Text.Json.JsonSerializer.Serialize(item.EventDetails) }, tx, cancellationToken: ct));
         await connection.ExecuteAsync(new CommandDefinition(
             "DELETE FROM mb_content_audiences WHERE content_id = @id; DELETE FROM mb_content_accessibility WHERE content_id = @id;",
             new { id = item.Id }, tx, cancellationToken: ct));
@@ -259,12 +305,7 @@ public sealed class ContentRepository(MySqlDataSource dataSource) : IContentRepo
 
     private static async Task WriteRevisionAsync(MySqlConnector.MySqlConnection connection, ContentItem item, long? actorId, string summary, MySqlConnector.MySqlTransaction tx, CancellationToken ct)
     {
-        var snapshot = System.Text.Json.JsonSerializer.Serialize(new
-        {
-            item.Title, item.Summary, item.Body, item.Status, item.Category, item.Subject,
-            item.Neighborhood, item.Municipality, item.EventStartAt, item.VerificationStatus,
-            Flags = (int)item.Flags, item.SourceUrl, item.SourceName
-        });
+        var snapshot = System.Text.Json.JsonSerializer.Serialize(item);
         await connection.ExecuteAsync(new CommandDefinition(
             """
             INSERT INTO mb_content_revisions (content_id, revision, change_summary, snapshot, changed_by_id, changed_at)
@@ -273,6 +314,9 @@ public sealed class ContentRepository(MySqlDataSource dataSource) : IContentRepo
             """,
             new { id = item.Id, revision = item.Revision, summary = HtmlText.Truncate(summary, 480), snapshot, actor = actorId },
             tx, cancellationToken: ct));
+        await connection.ExecuteAsync(new CommandDefinition(
+            "INSERT INTO mb_audit_logs (actor_id, action, entity_type, entity_id, details) VALUES (@actor, 'content.revised', 'content', @id, @details)",
+            new { actor = actorId, id = item.Id, details = System.Text.Json.JsonSerializer.Serialize(new { revision = item.Revision, summary }) }, tx, cancellationToken: ct));
     }
 
     private static object ToParams(ContentItem item) => new
@@ -283,7 +327,7 @@ public sealed class ContentRepository(MySqlDataSource dataSource) : IContentRepo
         item.Subject, item.Title, item.Slug, item.Summary, item.Body,
         item.Neighborhood, item.Municipality, State = item.State,
         item.Address, item.Latitude, item.Longitude,
-        item.SourceName, item.SourceUrl,
+        item.SourceId, item.SourceName, item.SourceUrl,
         SourceUrlHash = item.SourceUrlHash ?? Hashing.UrlHash(item.SourceUrl),
         Fingerprint = Hashing.ContentFingerprint(item.Title, item.Summary),
         item.AuthorName, SourcePublishedAt = item.SourcePublishedAt,
@@ -301,14 +345,25 @@ public sealed class ContentRepository(MySqlDataSource dataSource) : IContentRepo
 
     public async Task<bool> SetStatusAsync(long id, ContentStatus status, long actorId, CancellationToken ct)
     {
-        await using var connection = await OpenAsync(ct);
-        var affected = await connection.ExecuteAsync(new CommandDefinition(
-            """
-            UPDATE mb_content_items SET status = @status, reviewed_by_id = @actor,
-                requires_human_approval = 0, updated_at = UTC_TIMESTAMP(6)
-            WHERE id = @id
-            """, new { id, status = status.ToString(), actor = actorId }, cancellationToken: ct));
-        return affected > 0;
+        var item = await GetAsync(id, ct);
+        if (item is null) return false;
+        if (status == ContentStatus.Cancelled && (item.Status != ContentStatus.Published || item.VerificationStatus != VerificationStatus.Verified)) return false;
+        if (status == ContentStatus.Published)
+        {
+            if (item.Status != ContentStatus.InReview || item.VerificationStatus != VerificationStatus.Verified ||
+                string.IsNullOrWhiteSpace(item.AuthorName) || string.IsNullOrWhiteSpace(item.SourceName) ||
+                !Core.Security.SafeUrl.Validate(item.SourceUrl).IsValid || item.DuplicateOfId is > 0 ||
+                item.Flags.HasFlag(ModerationFlag.Outdated) || item.IsExpired(DateTime.UtcNow) ||
+                (item.Kind == ContentKind.Event && item.EventStartAt is null) ||
+                !PublicationPolicy.Evaluate(item, DateTime.UtcNow, automated: false).Allowed) return false;
+            await using var historyConnection = await OpenAsync(ct);
+            var publishedBefore = await historyConnection.ExecuteScalarAsync<int>(new CommandDefinition("SELECT COUNT(*) FROM mb_content_revisions WHERE content_id=@id AND COALESCE(JSON_UNQUOTE(JSON_EXTRACT(snapshot,'$.Status')),JSON_UNQUOTE(JSON_EXTRACT(snapshot,'$.status'))) IN ('2','Published','published')", new { id }, cancellationToken: ct)) > 0;
+            if (!publishedBefore) item.PublishedAt = DateTime.UtcNow;
+            item.RequiresHumanApproval = false;
+        }
+        item.Status = status;
+        item.ReviewedById = actorId;
+        return await UpdateAsync(item, actorId, $"Estado editorial: {status}", ct);
     }
 
     public async Task<bool> DeleteAsync(long id, long actorId, CancellationToken ct)
@@ -375,11 +430,15 @@ public sealed class ContentRepository(MySqlDataSource dataSource) : IContentRepo
     public async Task<int> ExpireOldContentAsync(DateTime now, CancellationToken ct)
     {
         await using var connection = await OpenAsync(ct);
-        return await connection.ExecuteAsync(new CommandDefinition(
-            """
-            UPDATE mb_content_items
-            SET status = 'Archived', updated_at = UTC_TIMESTAMP(6)
-            WHERE status = 'Published' AND expires_at IS NOT NULL AND expires_at <= @now
-            """, new { now }, cancellationToken: ct));
+        var expired = (await connection.QueryAsync<ContentItem>(new CommandDefinition(
+            $"{Select} WHERE status IN ('Published','Cancelled') AND expires_at IS NOT NULL AND expires_at <= @now LIMIT 1000", new { now }, cancellationToken: ct))).AsList();
+        await LoadChildrenAsync(connection, expired, null, ct);
+        var count = 0;
+        foreach (var item in expired)
+        {
+            item.Status = ContentStatus.Archived;
+            if (await UpdateAsync(item, null, "Arquivamento por prazo de validade encerrado", ct)) count++;
+        }
+        return count;
     }
 }

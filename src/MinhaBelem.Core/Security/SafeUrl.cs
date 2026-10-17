@@ -104,8 +104,11 @@ public static class SafeUrl
             };
         }
 
-        return address.IsIPv6LinkLocal || address.IsIPv6Multicast || address.IsIPv6SiteLocal
-            ? false
-            : !address.Equals(IPAddress.IPv6None);
+        var v6 = address.GetAddressBytes();
+        // Apenas unicast global 2000::/3; bloqueia ULA, link-local, multicast e documentacao.
+        if ((v6[0] & 0xE0) != 0x20) return false;
+        if (v6[0] == 0x20 && v6[1] == 0x01 &&
+            ((v6[2] == 0x0d && v6[3] == 0xb8) || (v6[2] == 0 && v6[3] <= 0x2f))) return false;
+        return true;
     }
 }

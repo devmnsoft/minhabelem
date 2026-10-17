@@ -1,0 +1,2 @@
+<section class="section article"><h1>Confirme sua identidade</h1><p>Digite os seis números do aplicativo autenticador ou use um código de recuperação.</p><div asp-validation-summary="All" role="alert"></div>
+<form method="post" asp-action="Verificar"><label for="code">Código</label><input id="code" name="code" autocomplete="one-time-code" maxlength="30" required /><label><input type="checkbox" name="recovery" value="true" /> Estou usando um código de recuperação</label><button type="submit">Verificar</button></form></section>

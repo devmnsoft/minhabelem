@@ -1,0 +1,10 @@
+FROM mcr.microsoft.com/dotnet/sdk:8.0
+RUN apt-get update && apt-get install -y --no-install-recommends tesseract-ocr tesseract-ocr-por ffmpeg && rm -rf /var/lib/apt/lists/*
+WORKDIR /workspace
+COPY . .
+RUN dotnet restore MinhaBelem.sln && dotnet build MinhaBelem.sln -c Release --no-restore
+RUN mkdir /fixtures && ffmpeg -loglevel error -loop 1 -i tests/MinhaBelem.Tests/Fixtures/poster.png -t 1 -pix_fmt yuv420p -movflags +faststart /fixtures/poster.mp4
+ENV OCR_TEST_EXECUTABLE=/usr/bin/tesseract
+ENV OCR_TEST_FFMPEG=/usr/bin/ffmpeg
+ENV OCR_TEST_VIDEO=/fixtures/poster.mp4
+CMD ["dotnet", "test", "MinhaBelem.sln", "-c", "Release", "--no-build", "--logger", "trx", "--results-directory", "/tmp/test-results"]

@@ -49,7 +49,7 @@ public static class Taxonomy
     public static bool TryParseName(string? name, out ContentCategory category)
     {
         category = default;
-        return !string.IsNullOrWhiteSpace(name) && Enum.TryParse(name.Trim(), ignoreCase: true, out category);
+        return !string.IsNullOrWhiteSpace(name) && Enum.TryParse(name.Trim(), ignoreCase: true, out category) && Enum.IsDefined(category);
     }
 
     /// <summary>Converte entrada livre (slug ou nome) para categoria. Retorna null quando inválida.</summary>
@@ -58,7 +58,7 @@ public static class Taxonomy
         if (string.IsNullOrWhiteSpace(value)) return null;
         var key = value.Trim();
         if (BySlug.TryGetValue(key, out var bySlug)) return bySlug;
-        if (Enum.TryParse(key, ignoreCase: true, out ContentCategory byName)) return byName;
+        if (Enum.TryParse(key, ignoreCase: true, out ContentCategory byName) && Enum.IsDefined(byName)) return byName;
         return null;
     }
 

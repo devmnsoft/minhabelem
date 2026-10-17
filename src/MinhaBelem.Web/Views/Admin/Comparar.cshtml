@@ -1,0 +1,113 @@
+@using MinhaBelem.Core.Entities
+
+@{
+    ViewData["Title"] = "Comparar e Revisar Tradução";
+    var contentItem = ViewData["Content"] as ContentItem;
+    var translation = ViewData["Translation"] as ContentTranslation;
+    var targetLanguage = ViewData["TargetLanguage"] as string ?? "en";
+}
+
+<section class="section comparison-page">
+    <div class="sectionhead">
+        <div>
+            <a href="/admin/traducoes?lang=@targetLanguage" class="back-link">← Voltar para Fila de Traduções</a>
+            <span class="eyebrow">REVISÃO EDITORIAL HUMANA</span>
+            <h1>Comparativo: Original vs Tradução (@targetLanguage)</h1>
+        </div>
+        @if (translation is not null)
+        {
+            <div>
+                <span class="badge badge-@translation.ReviewStatus.ToString().ToLowerInvariant()">Status: @translation.ReviewStatus</span>
+                <span class="badge badge-info">IA: @(translation.Provider) (@(translation.Model))</span>
+            </div>
+        }
+    </div>
+
+    @if (TempData["Notice"] is string notice)
+    {
+        <p class="notice" role="status">@notice</p>
+    }
+
+    <div class="comparison-columns" style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin:24px 0;">
+        <!-- Column 1: Original (pt-BR) -->
+        <div class="card original-col" style="background:#f7faf8;">
+            <div class="col-header">
+                <span class="eyebrow">🇧🇷 TEXTO ORIGINAL (PORTUGUÊS)</span>
+                <h3>@(contentItem?.Title ?? "Conteúdo original")</h3>
+            </div>
+
+            <div class="field-preview" style="margin-top:14px;">
+                <label><strong>Resumo Original:</strong></label>
+                <p>@contentItem?.Summary</p>
+            </div>
+
+            @if (!string.IsNullOrWhiteSpace(contentItem?.Body))
+            {
+                <div class="field-preview" style="margin-top:14px;">
+                    <label><strong>Corpo Original:</strong></label>
+                    <div class="article-body">@contentItem.Body</div>
+                </div>
+            }
+
+            <div class="field-preview small" style="margin-top:14px;">
+                <p><strong>Categoria:</strong> @contentItem?.Category</p>
+                <p><strong>Bairro:</strong> @contentItem?.Neighborhood · @contentItem?.Municipality</p>
+            </div>
+        </div>
+
+        <!-- Column 2: Translated (Target Language) -->
+        <div class="card translated-col">
+            <div class="col-header">
+                <span class="eyebrow">🌐 TEXTO TRADUZIDO (@targetLanguage.ToUpperInvariant())</span>
+                <h3>@(translation?.Title ?? "Tradução ainda não gerada")</h3>
+            </div>
+
+            <div class="field-preview" style="margin-top:14px;">
+                <label><strong>Resumo Traduzido:</strong></label>
+                <p>@(translation?.Summary ?? "-")</p>
+            </div>
+
+            @if (!string.IsNullOrWhiteSpace(translation?.Body))
+            {
+                <div class="field-preview" style="margin-top:14px;">
+                    <label><strong>Corpo Traduzido:</strong></label>
+                    <div class="article-body">@translation.Body</div>
+                </div>
+            }
+
+            @if (!string.IsNullOrWhiteSpace(translation?.CulturalNotes))
+            {
+                <div class="cultural-badge-box" style="margin-top:14px;">
+                    <h4>💡 Preservação Cultural</h4>
+                    <p>@translation.CulturalNotes</p>
+                </div>
+            }
+        </div>
+    </div>
+
+    @if (translation is not null)
+    {
+        <div class="actions" style="margin-top:24px;">
+            <form action="/admin/traducoes/conteudo/@translation.Id/revisar" method="post" style="display:inline;">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="approve" value="true" />
+                <button type="submit" class="button">✅ Aprovar Tradução para Publicação</button>
+            </form>
+
+            <form action="/admin/traducoes/conteudo/@translation.Id/revisar" method="post" style="display:inline;">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="approve" value="false" />
+                <input type="text" name="notes" placeholder="Motivo da rejeição (opcional)" style="width:250px;display:inline-block;padding:8px 12px;margin-right:8px;" />
+                <button type="submit" class="button secondary">❌ Rejeitar Tradução</button>
+            </form>
+
+            <form action="/admin/traducoes/solicitar-ia" method="post" style="display:inline;">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="type" value="content" />
+                <input type="hidden" name="id" value="@contentItem?.Id" />
+                <input type="hidden" name="targetLanguage" value="@targetLanguage" />
+                <button type="submit" class="button secondary">🤖 Retraduzir com IA</button>
+            </form>
+        </div>
+    }
+</section>

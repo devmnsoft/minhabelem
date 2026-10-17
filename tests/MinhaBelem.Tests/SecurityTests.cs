@@ -48,6 +48,8 @@ public class SecurityTests
         }).Build();
         var services = new ServiceCollection();
         services.AddLogging();
+        services.AddSingleton<IConfiguration>(configuration);
+        services.AddAuthentication();
         services.AddMinhaBelemInfrastructure(configuration);
         using var provider = services.BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true, ValidateScopes = true });
         using var scope = provider.CreateScope();

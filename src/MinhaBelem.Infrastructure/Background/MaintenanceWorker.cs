@@ -56,9 +56,7 @@ public sealed class MaintenanceWorker(IServiceScopeFactory scopeFactory, ILogger
         var all = await sources.SourcesAsync(onlyOperational: false, ct);
         foreach (var source in all.Where(s => s.ConsecutiveFailures >= 10 && s.Enabled))
         {
-            await sources.UpdateSourceRuntimeAsync(source.Id, now, null,
-                $"Fonte desativada automaticamente após {source.ConsecutiveFailures} falhas consecutivas.", null, null, ct);
-            logger.LogWarning("Fonte {Source} desativada por falhas consecutivas.", source.Name);
+            logger.LogWarning("Fonte {SourceId} com falhas consecutivas. Confira o backoff e a autorização no monitoramento.", source.Id);
         }
     }
 }

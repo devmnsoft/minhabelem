@@ -56,7 +56,7 @@ public sealed class SchemaMigrator(MySqlDataSource dataSource, ILogger<SchemaMig
 
                 var migrationStart = DateTime.UtcNow;
                 // MySQL faz commit implicito em DDL; nao ha rollback transacional do esquema.
-                await connection.ExecuteAsync(new CommandDefinition(script, cancellationToken: ct));
+                await connection.ExecuteAsync(new CommandDefinition(script, commandTimeout: 180, cancellationToken: ct));
                 await connection.ExecuteAsync(new CommandDefinition(
                     "INSERT INTO schema_migrations (version, checksum, duration_ms) VALUES (@version, @checksum, @ms);",
                     new { version, checksum, ms = (int)(DateTime.UtcNow - migrationStart).TotalMilliseconds },
@@ -68,7 +68,7 @@ public sealed class SchemaMigrator(MySqlDataSource dataSource, ILogger<SchemaMig
         }
         finally
         {
-            await lockConn.ExecuteAsync(new CommandDefinition("SELECT RELEASE_LOCK(@name);", new { name = LockName }, cancellationToken: ct));
+            await lockConn.ExecuteAsync(new CommandDefinition("SELECT RELEASE_LOCK(@name);", new { name = LockName }, cancellationToken: CancellationToken.None));
         }
 
         return new MigrationResult(applied, skipped, DateTime.UtcNow - started);
@@ -87,6 +87,9 @@ public sealed class SchemaMigrator(MySqlDataSource dataSource, ILogger<SchemaMig
         using var stream = assembly.GetManifestResourceStream("MinhaBelem.Infrastructure.MINHABELEM.SQL")
             ?? throw new InvalidOperationException("Recurso MINHABELEM.SQL nao encontrado.");
         using var reader = new StreamReader(stream);
-        return new[] { ("MINHABELEM", reader.ReadToEnd()) };
+        var parts = System.Text.RegularExpressions.Regex.Split(reader.ReadToEnd(), @"(?m)^-- @migration ([a-zA-Z0-9_]+)[ \t]*\r?$");
+        var scripts = new List<(string Version, string Script)> { ("MINHABELEM", parts[0]) };
+        for (var i = 1; i < parts.Length; i += 2) scripts.Add((parts[i], parts[i + 1]));
+        return scripts;
     }
 }

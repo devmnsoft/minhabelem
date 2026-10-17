@@ -1,0 +1,66 @@
+@model MinhaBelem.Web.Models.ItineraryDetailViewModel
+@using System.Globalization
+
+@{
+    var currentCulture = CultureInfo.CurrentUICulture.Name;
+    ViewData["Title"] = $"{Model.Itinerary.GetTitle(currentCulture)} — {Loc["Explore_Itineraries"].Value}";
+    var stopsByDay = Model.Itinerary.Stops.GroupBy(s => s.DayNumber).OrderBy(g => g.Key);
+}
+
+<article class="section itinerary-detail-page">
+    <div class="itinerary-detail-header">
+        <a href="/explore" class="back-link">← Voltar para Explore Belém</a>
+        <div class="itinerary-meta-badges">
+            <span class="itinerary-duration-badge">⏱️ @Model.Itinerary.Days @(Model.Itinerary.Days == 1 ? "Dia" : "Dias")</span>
+            <span class="itinerary-category">@Model.Itinerary.Theme</span>
+        </div>
+        <h1>@Model.Itinerary.GetTitle(currentCulture)</h1>
+        <p class="lead">@Model.Itinerary.GetDescription(currentCulture)</p>
+    </div>
+
+    <!-- Stops Timeline / Day by Day -->
+    <div class="itinerary-timeline">
+        @foreach (var dayGroup in stopsByDay)
+        {
+            <div class="itinerary-day-section">
+                <div class="day-header">
+                    <h2>📅 Dia @dayGroup.Key</h2>
+                </div>
+
+                <div class="stops-list">
+                    @foreach (var stop in dayGroup.OrderBy(s => s.StopOrder))
+                    {
+                        <div class="stop-card card">
+                            <div class="stop-badge">Parada #@stop.StopOrder • @stop.PeriodOfDay</div>
+                            <div class="stop-main">
+                                <h3>@stop.GetTitle(currentCulture)</h3>
+                                
+                                @if (!string.IsNullOrWhiteSpace(stop.GetTip(currentCulture)))
+                                {
+                                    <div class="cultural-badge">💡 <strong>Dica:</strong> @stop.GetTip(currentCulture)</div>
+                                }
+
+                                <div class="stop-meta small">
+                                    @if (!string.IsNullOrWhiteSpace(stop.EstimatedDuration))
+                                    {
+                                        <span>⏱️ Tempo estimado: ~@stop.EstimatedDuration</span>
+                                    }
+                                    @if (stop.Place is not null && !string.IsNullOrWhiteSpace(stop.Place.GooglePlaceId))
+                                    {
+                                        <span>• <a href="https://www.google.com/maps/search/?api=1&query=@Uri.EscapeDataString(stop.Place.Name + " Belém Pará")" target="_blank" rel="noopener noreferrer">🗺️ Ver no Google Maps</a></span>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+
+    <div class="itinerary-actions actions">
+        <a href="/explore" class="button secondary">← @Loc["General_Back"]</a>
+        <a href="/agenda" class="button secondary">📅 @Loc["Nav_Agenda"]</a>
+        <a href="/explore/glossario" class="button secondary">📖 @Loc["Glossary_Title"]</a>
+    </div>
+</article>

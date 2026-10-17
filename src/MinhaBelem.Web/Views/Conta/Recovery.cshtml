@@ -1,0 +1,2 @@
+@model string[]
+<section class="section article"><h1>Guarde seus códigos de recuperação</h1><p>Estes códigos são mostrados uma vez. Cada um permite um acesso caso você perca o autenticador. Guarde-os fora deste dispositivo.</p><ul>@foreach(var code in Model){<li><code>@code</code></li>}</ul><p>O MFA está ativo. Entre novamente com sua senha e autenticador.</p><a href="/conta/login">Entrar novamente</a></section>

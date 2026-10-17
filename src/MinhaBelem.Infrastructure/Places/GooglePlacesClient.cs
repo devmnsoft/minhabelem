@@ -6,14 +6,15 @@ using MinhaBelem.Core.Entities;
 using MinhaBelem.Core.Security;
 using MinhaBelem.Core.Text;
 using MinhaBelem.Core.Taxonomy;
+using MinhaBelem.Infrastructure.Networking;
 
 namespace MinhaBelem.Infrastructure.Places;
 
 public sealed class GooglePlacesOptions
 {
     public string ApiKey { get; set; } = string.Empty;
-    public int CacheDays { get; set; } = 29;
     public int MaxResults { get; set; } = 20;
+    public int DailyRequestLimit { get; set; } = 50;
 }
 
 public sealed record PlaceQueryOptions(
@@ -24,16 +25,29 @@ public sealed record PlaceQueryOptions(
     int MaxResults);
 
 /// <summary>
-/// Cliente do Google Places (New). Conformidade com a política de armazenamento: guardamos o
-/// place_id e os dados retornados com prazo de expurgo; nada é enviado para Models.
-/// O preenchimento do cache é responsabilidade do serviço de guia.
+/// Cliente Google Places (New). Dados retornados sao transitorios por requisicao;
+/// o guia persiste apenas identificadores e informacoes editoriais proprias.
 /// </summary>
 public sealed class GooglePlacesClient(
     IHttpClientFactory httpClientFactory,
     GooglePlacesOptions options,
-    ILogger<GooglePlacesClient> logger) : IPlacesClient
+    ILogger<GooglePlacesClient> logger, ApiBudget budget) : IPlacesClient
 {
     public bool IsConfigured => !string.IsNullOrWhiteSpace(options.ApiKey);
+
+    public async Task<string?> GetPhotoUriAsync(string? photoName, CancellationToken ct)
+    {
+        if (!IsConfigured || photoName is null || !System.Text.RegularExpressions.Regex.IsMatch(photoName, @"^places/[A-Za-z0-9_-]+/photos/[A-Za-z0-9_-]+$")) return null;
+        if (!await budget.ReserveAsync("google-places", options.DailyRequestLimit, ct)) return null;
+        using var request = new HttpRequestMessage(HttpMethod.Get, $"https://places.googleapis.com/v1/{photoName}/media?maxWidthPx=800&skipHttpRedirect=true");
+        request.Headers.Add("X-Goog-Api-Key", options.ApiKey);
+        using var response = await httpClientFactory.CreateClient("places").SendAsync(request, ct);
+        if (!response.IsSuccessStatusCode) return null;
+        using var doc = JsonDocument.Parse(await response.Content.ReadAsStringAsync(ct));
+        var url = doc.RootElement.TryGetProperty("photoUri", out var value) ? value.GetString() : null;
+        var validation = SafeUrl.Validate(url);
+        return validation.IsValid && validation.Uri!.DnsSafeHost.EndsWith(".googleusercontent.com", StringComparison.OrdinalIgnoreCase) ? url : null;
+    }
 
     public async Task<IReadOnlyList<Place>> SearchAsync(string placeType, double latitude, double longitude, double radiusMeters, int maxResults, CancellationToken ct)
     {
@@ -79,6 +93,7 @@ public sealed class GooglePlacesClient(
     {
         try
         {
+            if (!await budget.ReserveAsync("google-places", options.DailyRequestLimit, ct)) return Array.Empty<Place>();
             var client = httpClientFactory.CreateClient("places");
             using var response = await client.SendAsync(request, ct);
             if (!response.IsSuccessStatusCode)
@@ -90,7 +105,7 @@ public sealed class GooglePlacesClient(
             using var document = JsonDocument.Parse(await response.Content.ReadAsStringAsync(ct));
             var root = document.RootElement;
             var now = DateTime.UtcNow;
-            var purgeAfter = now.AddDays(Math.Clamp(options.CacheDays, 1, 29));
+            var purgeAfter = now;
 
             if (single)
             {
@@ -155,11 +170,22 @@ public sealed class GooglePlacesClient(
         var openingHours = ReadOpeningHours(element);
 
         string? photoName = null, photoAttribution = null;
+        string? photoGoogleMapsUri = null;
+        var authors = new List<PhotoAuthor>();
         if (element.TryGetProperty("photos", out var photos) && photos.ValueKind == JsonValueKind.Array && photos.GetArrayLength() > 0)
         {
             photoName = GetString(photos[0], "name");
+            photoGoogleMapsUri = GetString(photos[0], "googleMapsUri");
             if (photos[0].TryGetProperty("authorAttributions", out var attributions) && attributions.ValueKind == JsonValueKind.Array && attributions.GetArrayLength() > 0)
-                photoAttribution = GetString(attributions[0], "displayName");
+            {
+                foreach (var attribution in attributions.EnumerateArray())
+                {
+                    var uri = GetString(attribution, "uri");
+                    if (uri?.StartsWith("//", StringComparison.Ordinal) == true) uri = "https:" + uri;
+                    if (SafeUrl.Validate(uri).IsValid) authors.Add(new PhotoAuthor(GetString(attribution, "displayName") ?? "Autor", uri!) { PhotoUri = SafeUrl.Validate(GetString(attribution, "photoUri")).IsValid ? GetString(attribution, "photoUri") : null });
+                }
+                photoAttribution = string.Join(", ", authors.Select(x => x.Name));
+            }
         }
 
         double? rating = element.TryGetProperty("rating", out var r) ? r.GetDouble() : null;
@@ -171,10 +197,8 @@ public sealed class GooglePlacesClient(
         bool? wheelchair = null;
         if (element.TryGetProperty("accessibilityOptions", out var access) && access.ValueKind == JsonValueKind.Object)
         {
-            if (access.TryGetProperty("wheelchairAccessible", out var wc) && wc.ValueKind == JsonValueKind.String)
-                wheelchair = wc.GetString() is "ACCESSIBLE" or "TRUE";
-            else if (access.TryGetProperty("wheelchairAccessibleEntrance", out var wcEnt) && wcEnt.ValueKind == JsonValueKind.String)
-                wheelchair = wcEnt.GetString() is "ACCESSIBLE" or "TRUE";
+            if (access.TryGetProperty("wheelchairAccessibleEntrance", out var entrance) && entrance.ValueKind is JsonValueKind.True or JsonValueKind.False)
+                wheelchair = entrance.GetBoolean();
         }
 
         var formattedAddress = GetString(element, "formattedAddress") ?? string.Join(", ", addressParts.Distinct());
@@ -203,6 +227,8 @@ public sealed class GooglePlacesClient(
             WheelchairAccessible = wheelchair,
             PhotoName = photoName,
             PhotoAttribution = photoName is null ? null : photoAttribution,
+            PhotoAuthors = authors,
+            PhotoGoogleMapsUri = photoGoogleMapsUri,
             IsPublished = true,
             CachedAt = now,
             PurgeAfter = purgeAfter,

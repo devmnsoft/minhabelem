@@ -1,0 +1,163 @@
+@model MinhaBelem.Web.Models.ExploreViewModel
+@using System.Globalization
+
+@{
+    ViewData["Title"] = Loc["Explore_Hero_Title"].Value;
+    var currentCulture = CultureInfo.CurrentUICulture.Name;
+}
+
+<div class="explore-portal">
+    <!-- Hero Section -->
+    <section class="explore-hero">
+        <div class="explore-hero-content">
+            <span class="eyebrow explore-badge">🌿 @Loc["Brand_Name"] GLOBAL</span>
+            <h1>@Loc["Explore_Hero_Title"]</h1>
+            <p class="lead">@Loc["Explore_Hero_Subtitle"]</p>
+            
+            <div class="explore-quick-actions">
+                <a href="#roteiros" class="btn btn-primary">🗺️ @Loc["Explore_Itineraries"]</a>
+                <a href="#atracoes" class="btn btn-secondary">🏛️ @Loc["Explore_Places"]</a>
+                <a href="/explore/glossario" class="btn btn-secondary">📖 @Loc["Glossary_Title"]</a>
+                <a href="#dicas-praticas" class="btn btn-secondary">💡 @Loc["Explore_Practical_Advice"]</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Itineraries Section -->
+    <section id="roteiros" class="section">
+        <div class="sectionhead">
+            <div>
+                <span class="eyebrow">ROTEIROS RECOMENDADOS</span>
+                <h2>@Loc["Explore_Itineraries"]</h2>
+            </div>
+            <p class="small">Roteiros curados para vivenciar o melhor da capital paraense de acordo com seu tempo disponível.</p>
+        </div>
+
+        <div class="grid itinerary-grid">
+            @foreach (var it in Model.Itineraries)
+            {
+                <article class="card itinerary-card">
+                    <div class="itinerary-header">
+                        <span class="itinerary-duration-badge">⏱️ @it.Days @(it.Days == 1 ? "Dia" : "Dias")</span>
+                        <span class="itinerary-category">@it.Theme</span>
+                    </div>
+                    <h3><a href="/explore/roteiro/@it.Slug">@it.GetTitle(currentCulture)</a></h3>
+                    <p>@it.GetSummary(currentCulture)</p>
+                    <div class="itinerary-footer">
+                        <span class="small">📍 @it.Stops.Count @Loc["Explore_Stops"]</span>
+                        <a href="/explore/roteiro/@it.Slug" class="button-link">Ver roteiro completo →</a>
+                    </div>
+                </article>
+            }
+        </div>
+    </section>
+
+    <!-- Featured Attractions & Places -->
+    <section id="atracoes" class="section">
+        <div class="sectionhead">
+            <div>
+                <span class="eyebrow">PONTOS TURÍSTICOS E CULTURAIS</span>
+                <h2>@Loc["Explore_Places"]</h2>
+            </div>
+            <p class="small">@Loc["Explore_VerifiedSource"]</p>
+        </div>
+
+        @if (Model.FeaturedPlaces.Count == 0)
+        {
+            <div class="empty">
+                <h3>@Loc["General_Empty"]</h3>
+                <p>Nenhum local cadastrado no momento. Acesse nosso <a href="/guia">Guia da Cidade</a> para mais opções.</p>
+            </div>
+        }
+        else
+        {
+            <div class="grid places-grid">
+                @foreach (var place in Model.FeaturedPlaces)
+                {
+                    <article class="card place-card-featured">
+                        <div class="place-type-badge">@place.PrimaryType</div>
+                        <h3><a href="/guia/@place.Id">@place.DisplayName</a></h3>
+                        <p>@place.DisplayEditorialNote</p>
+
+                        @if (!string.IsNullOrWhiteSpace(place.CulturalNotes))
+                        {
+                            <div class="cultural-badge">💡 @place.CulturalNotes</div>
+                        }
+
+                        <div class="place-meta small">
+                            <span>📍 @place.Neighborhood</span>
+                            @if (!string.IsNullOrWhiteSpace(place.GooglePlaceId))
+                            {
+                                <span>• 🗺️ Google Maps</span>
+                            }
+                        </div>
+                    </article>
+                }
+            </div>
+        }
+    </section>
+
+    <!-- Cultural Highlights & Glossary Teaser -->
+    @if (Model.CulturalTerms.Count > 0)
+    {
+        <section class="section cultural-glossary-teaser">
+            <div class="sectionhead">
+                <div>
+                    <span class="eyebrow">CULTURA E IDENTIDADE</span>
+                    <h2>@Loc["Glossary_Title"]</h2>
+                </div>
+                <a href="/explore/glossario" class="button secondary">Ver glossário completo →</a>
+            </div>
+
+            <div class="grid glossary-grid">
+                @foreach (var item in Model.CulturalTerms.Take(4))
+                {
+                    <div class="card glossary-card">
+                        <div class="glossary-card-top">
+                            <h3>@item.Term</h3>
+                        </div>
+                        <span class="eyebrow">@item.Category</span>
+                        <p>@item.GetExplanation(currentCulture)</p>
+                    </div>
+                }
+            </div>
+        </section>
+    }
+
+    <!-- Practical Advice Section: Climate, Safety, Accessibility -->
+    <section id="dicas-praticas" class="section practical-advice-section">
+        <div class="sectionhead">
+            <div>
+                <span class="eyebrow">INFORMAÇÕES ÚTEIS</span>
+                <h2>@Loc["Explore_Practical_Advice"]</h2>
+            </div>
+            <p class="small">Orientações verificadas para uma estada segura e memorável em Belém.</p>
+        </div>
+
+        <div class="grid advice-grid">
+            <article class="card advice-card">
+                <div class="advice-icon">☀️🌧️</div>
+                <h3>@Loc["Explore_Weather_Title"]</h3>
+                <p>Belém tem clima equatorial quente e úmido. A tradicional "chuva da tarde" é parte da vida paraense (especialmente entre 14h e 16h). Use roupas leves, hidrate-se e leve sempre um guarda-chuva.</p>
+            </article>
+
+            <article class="card advice-card">
+                <div class="advice-icon">🛡️</div>
+                <h3>@Loc["Explore_Safety_Title"]</h3>
+                <p>Nas feiras e áreas centrais como o Ver-o-Peso e Comércio, mantenha bolsas e celulares atentos. Em caso de emergência turística, contate a <strong>DEATur</strong> (Delegacia do Turista): (91) 3212-3977 ou <strong>Polícia 190</strong> / <strong>SAMU 192</strong>.</p>
+            </article>
+
+            <article class="card advice-card">
+                <div class="advice-icon">♿</div>
+                <h3>@Loc["Explore_Accessibility_Title"]</h3>
+                <p>Espaços como a Estação das Docas, Mangal das Garças e Parque da Residência possuem rampas e pisos regulares. Em calçadas históricas e paralelepípedos da Cidade Velha, recomenda-se calçado firme.</p>
+            </article>
+
+            <article class="card advice-card">
+                <div class="advice-icon">💳</div>
+                <h3>Moeda e Pagamentos</h3>
+                <p>A moeda oficial é o Real (BRL - R$). Quase todos os estabelecimentos, incluindo barracas de feira, aceitam cartões de crédito e Pix. Tenha algumas notas em espécie para pequenas compras de artesanato.</p>
+            </article>
+        </div>
+    </section>
+</div>

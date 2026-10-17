@@ -1,0 +1,63 @@
+@model MinhaBelem.Web.Models.TransitLineDetailViewModel
+
+@{
+    ViewData["Title"] = $"Linha {Model.Line.Code} - {Model.Line.Name}";
+}
+
+<article class="section line-detail-page">
+    <div class="sectionhead">
+        <div>
+            <a href="/mobilidade" class="back-link">← Voltar para Mobilidade</a>
+            <div style="display:flex;align-items:center;gap:12px;margin-top:10px;">
+                <span class="line-code-badge" style="background:var(--green);color:white;padding:8px 18px;border-radius:12px;font-weight:900;font-size:1.5rem;">
+                    @Model.Line.Code
+                </span>
+                <div>
+                    <span class="badge badge-info">@Model.Line.TransitType</span>
+                    <h1 style="margin:4px 0 0;">@Model.Line.Name</h1>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid" style="grid-template-columns:2fr 1fr;gap:24px;margin-top:24px;">
+        <div class="card">
+            <h3>Informações da Linha</h3>
+            <p><strong>Origem:</strong> @Model.Line.Origin</p>
+            <p><strong>Destino:</strong> @Model.Line.Destination</p>
+            <p><strong>Tarifa Oficial:</strong> R$ @Model.Line.Fare.ToString("F2") (Vigente Semob Belém)</p>
+            @if (!string.IsNullOrWhiteSpace(Model.Line.OperatorName))
+            {
+                <p><strong>Empresa Operadora:</strong> @Model.Line.OperatorName</p>
+            }
+
+            <div class="features-box" style="margin:20px 0;padding:16px;background:#f4f7f4;border-radius:10px;">
+                <h4>Equipamentos do Ônibus</h4>
+                <p>@(Model.Line.HasAirConditioning ? "✅ Com Ar-Condicionado" : "❌ Sem Ar-Condicionado")</p>
+                <p>@(Model.Line.HasWheelchairLift ? "✅ Elevador para Acessibilidade Cadeirante" : "❌ Sem elevador")</p>
+            </div>
+
+            @if (!string.IsNullOrWhiteSpace(Model.Line.ItinerarySummary))
+            {
+                <div class="itinerary-summary-box">
+                    <h4>Itinerário Resumido</h4>
+                    <p style="white-space:pre-wrap;line-height:1.7;">@Model.Line.ItinerarySummary</p>
+                </div>
+            }
+        </div>
+
+        <div class="side-info">
+            <div class="card notice">
+                <h4>⚠️ Dicas para o Passageiro</h4>
+                <p>Em Belém, o embarque pode ser realizado em dinheiro ou com o cartão Passe Fácil / Bilhete Único.</p>
+                <p>Para reclamações e fiscalização de frotas, utilize a <strong>Ouvidoria SEMOB</strong> no telefone 118.</p>
+            </div>
+
+            <div class="card" style="margin-top:20px;">
+                <h4>Integrações & Conexões</h4>
+                <p>Esta linha conecta-se com os terminais urbanos e com as principais vias arteriais de Belém.</p>
+                <a href="/mobilidade" class="button secondary small" style="margin-top:10px;">Ver todas as linhas</a>
+            </div>
+        </div>
+    </div>
+</article>

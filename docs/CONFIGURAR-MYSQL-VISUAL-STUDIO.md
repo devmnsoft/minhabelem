@@ -10,12 +10,11 @@ Abra `MinhaBelem.sln`, clique com botão direito em `MinhaBelem.Web` e escolha *
 {
   "ConnectionStrings": {
     "Default": "Server=minhabelem.mysql.dbaas.com.br;Port=3306;Database=minhabelem;User ID=SEU_USUARIO;Password=SUA_SENHA;SslMode=Required;MaximumPoolSize=5;"
-  },
-  "Editorial": { "AccessToken": "CONFIGURE_UMA_CHAVE_ALEATORIA_DE_32_OU_MAIS_CARACTERES" }
+  }
 }
 ```
 
-*Esse JSON é apenas modelo, não utilize a chave literal ilustrativa.*
+*Esse JSON é apenas modelo. A autenticação atual usa Identity e TOTP; não usa token editorial compartilhado.*
 
 Não envie senha por chat e não grave credenciais no `appsettings.json` versionado. Para o User Secrets funcionar, inicialize com `dotnet user-secrets init --project src/MinhaBelem.Web/MinhaBelem.Web.csproj` se necessário.
 
@@ -29,6 +28,6 @@ Não envie senha por chat e não grave credenciais no `appsettings.json` version
 
 ## Produção
 
-Na VPS Windows, configure `ConnectionStrings__Default` em variável de ambiente protegida, com credenciais de menor privilégio. **User Secrets não é repositório de segredos de produção**. Configure autenticação administrativa definitiva, Data Protection persistente, monitoramento, backup, MFA e proteção contra SSRF antes de liberar coleta automática.
+Na VPS Windows, configure `ConnectionStrings__Default` em variável protegida, com credenciais de menor privilégio. **User Secrets não é cofre de produção**. Configure Data Protection persistente, bootstrap Identity, TOTP, monitoramento e backup conforme [OPERACAO.md](OPERACAO.md). Homologue as fontes antes de habilitar coleta.
 
 Nota: este guia não comprova que a instância Locaweb autoriza conexões externas da aplicação.

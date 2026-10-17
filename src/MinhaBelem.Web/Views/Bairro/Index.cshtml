@@ -1,0 +1,52 @@
+@model MinhaBelem.Web.Models.BairroIndexViewModel
+
+@{
+    ViewData["Title"] = "Meu Bairro — A Belém de cada canto";
+}
+
+<section class="hero">
+    <div class="eyebrow">COMUNIDADE & IDENTIDADE LOCAL 🏘️</div>
+    <h1>Meu Bairro</h1>
+    <p>Conheça a história, os recantos, a culinária e a vida de cada bairro de Belém do Pará.</p>
+</section>
+
+<section class="section">
+    <div class="sectionhead">
+        <div>
+            <span class="eyebrow">GUIAS DE BAIRROS</span>
+            <h2>Bairros de Belém</h2>
+        </div>
+        <div class="filter-pills" style="display:flex;gap:8px;flex-wrap:wrap;">
+            <a href="/meu-bairro" class="button @(string.IsNullOrEmpty(Model.SelectedZone) ? "" : "secondary") small">Todos</a>
+            <a href="/meu-bairro?zona=Centro+Histórico" class="button @(Model.SelectedZone == "Centro Histórico" ? "" : "secondary") small">Centro Histórico</a>
+            <a href="/meu-bairro?zona=Região+Central" class="button @(Model.SelectedZone == "Região Central" ? "" : "secondary") small">Região Central</a>
+            <a href="/meu-bairro?zona=Zona+Sul" class="button @(Model.SelectedZone == "Zona Sul" ? "" : "secondary") small">Zona Sul</a>
+        </div>
+    </div>
+
+    <div class="grid neighborhoods-grid">
+        @foreach (var n in Model.Neighborhoods)
+        {
+            <article class="card neighborhood-card">
+                <span class="eyebrow">Região: @n.Zone</span>
+                <h3><a href="/meu-bairro/@n.Slug">@n.Name</a></h3>
+                <p>@n.HistorySummary</p>
+
+                <div class="cultural-badge">
+                    <strong>Cultura & Vida Local:</strong> @n.CulturalCharacteristics
+                </div>
+
+                @if (!string.IsNullOrWhiteSpace(n.PopularAttractions))
+                {
+                    <p class="small text-muted" style="margin-top:10px;">
+                        🏛️ <strong>Destaques:</strong> @n.PopularAttractions
+                    </p>
+                }
+
+                <div class="card-footer" style="margin-top:14px;border-top:1px solid #edf1ed;padding-top:10px;">
+                    <a href="/meu-bairro/@n.Slug" class="button-link">Explorar @n.Name →</a>
+                </div>
+            </article>
+        }
+    </div>
+</section>

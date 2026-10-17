@@ -33,9 +33,19 @@ public class Place
     public bool? WheelchairAccessible { get; set; }
     public string? PhotoName { get; set; }
     public string? PhotoAttribution { get; set; }
+    public string? PhotoGoogleMapsUri { get; set; }
+    public IReadOnlyList<PhotoAuthor> PhotoAuthors { get; set; } = Array.Empty<PhotoAuthor>();
     public bool IsPublished { get; set; }
     public string? EditorialNote { get; set; }
     public string? EditorialNoteSource { get; set; }
+
+    public string? LocalizedName { get; set; }
+    public string? LocalizedEditorialNote { get; set; }
+    public string? CulturalNotes { get; set; }
+
+    public string DisplayName => !string.IsNullOrWhiteSpace(LocalizedName) ? LocalizedName : Name;
+    public string DisplayEditorialNote => !string.IsNullOrWhiteSpace(LocalizedEditorialNote) ? LocalizedEditorialNote : (EditorialNote ?? string.Empty);
+
     public DateTime CachedAt { get; set; }
     public DateTime PurgeAfter { get; set; }
     public DateTime CreatedAt { get; set; }
@@ -48,6 +58,10 @@ public class Place
 }
 
 public sealed record OpeningHours(int DayOfWeek, string Label, string OpenTime, string CloseTime, bool Closed);
+public sealed record PhotoAuthor(string Name, string Uri)
+{
+    public string? PhotoUri { get; init; }
+}
 
 /// <summary>Filtro do guia combinando conteúdo editorial e lugares do Google Places.</summary>
 public sealed class GuideFilter

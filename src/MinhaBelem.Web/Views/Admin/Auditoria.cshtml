@@ -1,0 +1,2 @@
+@model IReadOnlyList<MinhaBelem.Core.Entities.AuditEntry>
+<section class="section"><h1>Trilha de auditoria</h1><div class="table-wrap"><table><thead><tr><th>Data (UTC)</th><th>Responsável</th><th>Ação</th><th>Registro</th><th>Detalhes</th></tr></thead><tbody>@foreach(var entry in Model){<tr><td>@entry.CreatedAt</td><td>@entry.ActorId · @entry.ActorName</td><td>@entry.Action</td><td>@entry.EntityType #@entry.EntityId</td><td>@entry.DetailsJson</td></tr>}</tbody></table></div></section>

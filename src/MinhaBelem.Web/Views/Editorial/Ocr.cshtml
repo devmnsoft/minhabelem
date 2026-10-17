@@ -1,0 +1,4 @@
+@model MinhaBelem.Core.Services.MediaAnalysisResult
+@using MinhaBelem.Core.Entities
+@{ var analysis = ViewData["Analysis"] as AiAnalysisResult; }
+<section class="section article"><h1>Texto extraído da mídia</h1><p>Resultado não verificado. Compare com a imagem e com a publicação original antes de usar qualquer informação.</p><figure><img src="@Model.ThumbnailDataUrl" alt="@Model.AccessibleDescription" /><figcaption>@Model.Credit · @Model.License</figcaption></figure><pre>@Model.Text</pre><h2>Sugestões da IA</h2><p>@analysis?.Classification?.Category · @analysis?.Classification?.Municipality</p><p>Possível evento: @analysis?.Event?.StartUtc UTC · @analysis?.Event?.Location</p><p>As evidências e a execução foram registradas. Nenhuma publicação foi feita por esta análise.</p><a href="/editorial">Voltar à central</a></section>

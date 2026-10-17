@@ -1,31 +1,182 @@
+using System.Globalization;
 using System.Threading.RateLimiting;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using MySqlConnector;
-using MinhaBelem.Web.Services;
-var builder=WebApplication.CreateBuilder(args);
-builder.Services.AddControllersWithViews();
-builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(o=>{o.Cookie.Name="MinhaBelem.Editor";o.Cookie.HttpOnly=true;o.Cookie.SecurePolicy=CookieSecurePolicy.Always;o.Cookie.SameSite=SameSiteMode.Strict;o.LoginPath="/editorial/login";o.ExpireTimeSpan=TimeSpan.FromHours(2);o.SlidingExpiration=false;});
-builder.Services.AddAuthorization();
-builder.Services.AddHttpClient("feed",c=>{c.Timeout=TimeSpan.FromSeconds(12);c.DefaultRequestHeaders.UserAgent.ParseAdd("MinhaBelemBot/1.0");});
-builder.Services.AddSingleton<MySqlDataSource>(_ => {
- var connection=builder.Configuration.GetConnectionString("Default");
- if(string.IsNullOrWhiteSpace(connection))throw new InvalidOperationException("Configure ConnectionStrings:Default com a conexão MySQL no User Secrets ou nas variáveis de ambiente. Nunca armazene senhas no GitHub.");
- return new MySqlDataSourceBuilder(connection).Build();
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Localization;
+using Microsoft.AspNetCore.Localization.Routing;
+using Microsoft.Extensions.Localization;
+using MinhaBelem.Core.Security;
+using MinhaBelem.Infrastructure.Identity;
+using MinhaBelem.Infrastructure.MySql;
+using MinhaBelem.Web.Resources;
+using MinhaBelem.Web.Security;
+
+var builder = WebApplication.CreateBuilder(args);
+CultureInfo.DefaultThreadCurrentCulture = CultureInfo.GetCultureInfo("pt-BR");
+CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.GetCultureInfo("pt-BR");
+
+builder.Services.AddLocalization(o => o.ResourcesPath = "Resources");
+builder.Services.AddSingleton<IStringLocalizerFactory, MinhaBelemStringLocalizerFactory>();
+builder.Services.AddTransient(typeof(IStringLocalizer<>), typeof(StringLocalizer<>));
+builder.Services.AddSingleton<IStringLocalizer, MinhaBelemStringLocalizer>();
+builder.Services.AddSingleton<IStringLocalizer<SharedResource>, MinhaBelemStringLocalizer>();
+
+builder.Services.AddControllersWithViews(o => o.Filters.Add(new Microsoft.AspNetCore.Mvc.AutoValidateAntiforgeryTokenAttribute()))
+    .AddViewLocalization()
+    .AddDataAnnotationsLocalization(o => {
+        o.DataAnnotationLocalizerProvider = (_, factory) => factory.Create(typeof(SharedResource));
+    });
+
+builder.Services.AddMinhaBelemInfrastructure(builder.Configuration);
+var keyProtection = builder.Services.AddDataProtection().SetApplicationName("MinhaBelem");
+if (builder.Configuration["DataProtection:KeysPath"] is { Length: > 0 } keysPath)
+{
+    keyProtection.PersistKeysToFileSystem(new DirectoryInfo(keysPath));
+    if (builder.Configuration["DataProtection:CertificatePath"] is { Length: > 0 } certificatePath)
+        keyProtection.ProtectKeysWithCertificate(new System.Security.Cryptography.X509Certificates.X509Certificate2(certificatePath, builder.Configuration["DataProtection:CertificatePassword"]));
+    else if (OperatingSystem.IsWindows()) keyProtection.ProtectKeysWithDpapi();
+}
+builder.Services.Configure<ForwardedHeadersOptions>(o =>
+{
+    o.ForwardedHeaders = Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedFor | Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedProto;
+    foreach (var proxy in builder.Configuration.GetSection("ReverseProxy:KnownProxies").Get<string[]>() ?? Array.Empty<string>())
+        if (System.Net.IPAddress.TryParse(proxy, out var address)) o.KnownProxies.Add(address);
 });
-builder.Services.AddScoped<ContentRepository>();
-builder.Services.AddScoped<EditorialRepository>();
-builder.Services.AddHttpClient("ai",c=>c.Timeout=TimeSpan.FromSeconds(25));
-builder.Services.AddScoped<AiAssistant>();
-builder.Services.AddHttpClient("places",c=>c.Timeout=TimeSpan.FromSeconds(12));
-builder.Services.AddScoped<PlacesService>();
-builder.Services.AddHostedService<FeedCollector>();
+builder.Services.AddAuthentication(o =>
+{
+    o.DefaultAuthenticateScheme = IdentityConstants.ApplicationScheme;
+    o.DefaultChallengeScheme = IdentityConstants.ApplicationScheme;
+    o.DefaultSignInScheme = IdentityConstants.ExternalScheme;
+}).AddIdentityCookies();
+builder.Services.Configure<IdentityOptions>(o =>
+{
+    o.Password.RequiredLength = 12; o.User.RequireUniqueEmail = true;
+    o.Lockout.MaxFailedAccessAttempts = 5; o.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
+});
+builder.Services.AddScoped<PortalCookieEvents>();
+builder.Services.ConfigureApplicationCookie(o =>
+{
+    o.Cookie.Name = "__Host-MinhaBelem.Editor"; o.Cookie.HttpOnly = true;
+    o.Cookie.SecurePolicy = CookieSecurePolicy.Always; o.Cookie.SameSite = SameSiteMode.Strict;
+    o.LoginPath = "/conta/login"; o.AccessDeniedPath = "/conta/acesso-negado";
+    o.ExpireTimeSpan = TimeSpan.FromHours(2); o.SlidingExpiration = false; o.EventsType = typeof(PortalCookieEvents);
+});
+builder.Services.Configure<Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationOptions>(IdentityConstants.TwoFactorUserIdScheme, o =>
+{
+    o.Cookie.Name = "__Host-MinhaBelem.Mfa"; o.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+    o.Cookie.SameSite = SameSiteMode.Strict; o.ExpireTimeSpan = TimeSpan.FromMinutes(5);
+});
+builder.Services.AddAntiforgery(o => { o.Cookie.Name = "__Host-MinhaBelem.Csrf"; o.Cookie.SecurePolicy = CookieSecurePolicy.Always; });
+builder.Services.AddAuthorization(o =>
+{
+    foreach (var permission in Permissions.All)
+        o.AddPolicy(permission, p => p.RequireAuthenticatedUser().RequireClaim("amr", "mfa").RequireClaim(PermissionClaimsPrincipalFactory.PermissionClaimType, permission));
+});
 builder.Services.AddHealthChecks();
-builder.Services.AddRateLimiter(o=>{o.RejectionStatusCode=429;o.AddPolicy("public",ctx=>RateLimitPartition.GetFixedWindowLimiter(ctx.Connection.RemoteIpAddress?.ToString()??"unknown",_=>new FixedWindowRateLimiterOptions{PermitLimit=60,Window=TimeSpan.FromMinutes(1),QueueLimit=0}));});
-var app=builder.Build();
-if(!app.Environment.IsDevelopment()){app.UseExceptionHandler("/Home/Error");app.UseHsts();}
-app.UseHttpsRedirection();app.UseStaticFiles();app.UseRouting();app.UseRateLimiter();app.UseAuthentication();app.UseAuthorization();
-app.Use(async(ctx,next)=>{ctx.Response.Headers["X-Content-Type-Options"]="nosniff";ctx.Response.Headers["Referrer-Policy"]="strict-origin-when-cross-origin";ctx.Response.Headers["X-Frame-Options"]="DENY";await next();});
+builder.Services.AddRateLimiter(o =>
+{
+    o.RejectionStatusCode = 429;
+    void Add(string name, int limit) => o.AddPolicy(name, ctx => RateLimitPartition.GetFixedWindowLimiter(
+        ctx.Connection.RemoteIpAddress?.ToString() ?? "unknown", _ => new FixedWindowRateLimiterOptions { PermitLimit = limit, Window = TimeSpan.FromMinutes(1), QueueLimit = 0 }));
+    Add("public", 120); Add("login", 12); Add("submission", 3);
+});
+
+var app = builder.Build();
+app.UseForwardedHeaders();
+
+// Operacao explicita. Nunca aplicar SQL no startup ou publish normal.
+if (args.Contains("--initialize-database"))
+{
+    using var scope = app.Services.CreateScope();
+    await scope.ServiceProvider.GetRequiredService<SchemaMigrator>().ApplyAsync();
+    return;
+}
+if (args.Contains("--bootstrap-admin"))
+{
+    using var scope = app.Services.CreateScope();
+    var email = builder.Configuration["Bootstrap:Email"] ?? throw new InvalidOperationException("Configure Bootstrap:Email em segredo do servidor.");
+    var password = builder.Configuration["Bootstrap:Password"] ?? throw new InvalidOperationException("Configure Bootstrap:Password em segredo do servidor.");
+    await scope.ServiceProvider.GetRequiredService<IdentitySeeder>().SeedAsync(new(email, password, "Administrador inicial"));
+    return;
+}
+if (args.Contains("--import-legacy"))
+{
+    using var scope = app.Services.CreateScope();
+    await scope.ServiceProvider.GetRequiredService<LegacyDataImporter>().ImportAsync();
+    return;
+}
+
+if (!app.Environment.IsDevelopment()) { app.UseExceptionHandler("/Home/Error"); app.UseHsts(); }
+
+var supportedCultures = SupportedCultures.All.Select(c => new CultureInfo(c)).ToList();
+var locOptions = new RequestLocalizationOptions
+{
+    DefaultRequestCulture = new RequestCulture(SupportedCultures.Portuguese),
+    SupportedCultures = supportedCultures,
+    SupportedUICultures = supportedCultures
+};
+locOptions.RequestCultureProviders.Insert(0, new CookieRequestCultureProvider { CookieName = ".AspNetCore.Culture" });
+app.UseRequestLocalization(locOptions);
+
+// Intercepta rotas com prefixo de cultura e ajusta a cultura na requisicao
+app.Use(async (ctx, next) =>
+{
+    var segments = ctx.Request.Path.Value?.Split('/', StringSplitOptions.RemoveEmptyEntries);
+    if (segments is { Length: > 0 } && SupportedCultures.All.Contains(segments[0], StringComparer.OrdinalIgnoreCase))
+    {
+        var cult = SupportedCultures.Normalize(segments[0]);
+        var ci = new CultureInfo(cult);
+        CultureInfo.CurrentCulture = ci;
+        CultureInfo.CurrentUICulture = ci;
+    }
+    await next();
+});
+
+app.Use(async (ctx, next) =>
+{
+    ctx.Response.Headers["X-Content-Type-Options"] = "nosniff";
+    ctx.Response.Headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
+    ctx.Response.Headers["X-Frame-Options"] = "DENY";
+    ctx.Response.Headers["Content-Security-Policy"] = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https:; connect-src 'self' https:; frame-ancestors 'none'; form-action 'self'; base-uri 'self'";
+    if (ctx.Request.Path.StartsWithSegments("/conta") || ctx.Request.Path.StartsWithSegments("/editorial") || ctx.Request.Path.StartsWithSegments("/admin")) ctx.Response.Headers.CacheControl = "no-store";
+    await next();
+});
+
+app.UseHttpsRedirection();
+app.UseStaticFiles();
+app.UseRouting();
+
+app.UseRateLimiter();
+app.UseAuthentication();
+app.UseAuthorization();
+
+app.UseWhen(ctx => HttpMethods.IsGet(ctx.Request.Method), branch => branch.UseStatusCodePagesWithReExecute("/Home/Status", "?code={0}"));
+
+app.MapGet("/idioma/mudar", (string cultura, string? returnUrl, HttpContext ctx) =>
+{
+    var normalized = SupportedCultures.Normalize(cultura);
+    ctx.Response.Cookies.Append(
+        CookieRequestCultureProvider.DefaultCookieName,
+        CookieRequestCultureProvider.MakeCookieValue(new RequestCulture(normalized)),
+        new CookieOptions { Expires = DateTimeOffset.UtcNow.AddYears(1), IsEssential = true, SameSite = SameSiteMode.Strict, Secure = true });
+
+    if (!string.IsNullOrWhiteSpace(returnUrl) && Uri.IsWellFormedUriString(returnUrl, UriKind.Relative))
+    {
+        var trimmed = returnUrl.TrimStart('/');
+        var parts = trimmed.Split('/', 2);
+        if (parts.Length > 0 && SupportedCultures.All.Contains(parts[0], StringComparer.OrdinalIgnoreCase))
+        {
+            returnUrl = "/" + normalized + (parts.Length > 1 ? "/" + parts[1] : "");
+        }
+        return Results.LocalRedirect(returnUrl);
+    }
+    return Results.LocalRedirect("/" + normalized);
+});
+
 app.MapHealthChecks("/health");
-app.MapControllerRoute("default","{controller=Home}/{action=Index}/{id?}").RequireRateLimiting("public");
+app.MapControllerRoute("localized", "{culture:regex(^(pt-BR|en|fr|es|ru|zh-Hans|ja)$)}/{controller=Home}/{action=Index}/{id?}").RequireRateLimiting("public");
+app.MapControllerRoute("default", "{controller=Home}/{action=Index}/{id?}").RequireRateLimiting("public");
+
 app.Run();
-public partial class Program {}
+public partial class Program { }
+
