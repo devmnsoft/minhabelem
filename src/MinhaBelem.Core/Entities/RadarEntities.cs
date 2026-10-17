@@ -105,6 +105,7 @@ public sealed class RadarDashboardStats
     public DateTime? LastCrawlAt { get; set; }
     public DateTime? NextCrawlDueAt { get; set; }
     public int SocialProfilesCount { get; set; }
+    public RadarHeartbeat? Heartbeat { get; set; }
 }
 
 public sealed class DiscoveredSourceQuery
@@ -115,4 +116,107 @@ public sealed class DiscoveredSourceQuery
     public string? Search { get; set; }
     public int Page { get; set; } = 1;
     public int PageSize { get; set; } = 20;
+}
+
+public enum WorkerStatus { Active, Delayed, Off, Error, Running, Unknown }
+
+public sealed class RadarHeartbeat
+{
+    public long Id { get; set; }
+    public string WorkerName { get; set; } = "RadarWorker";
+    public DateTime LastHeartbeatAt { get; set; }
+    public DateTime? LastCycleStartedAt { get; set; }
+    public DateTime? LastCycleFinishedAt { get; set; }
+    public string LastCycleStatus { get; set; } = "idle";
+    public string? LastCycleSummary { get; set; }
+    public string? LastError { get; set; }
+    public bool IsRunning { get; set; }
+    public int ConsecutiveErrors { get; set; }
+    public int TotalCyclesExecuted { get; set; }
+    public DateTime? NextCycleDueAt { get; set; }
+    public WorkerStatus Status => CalculateStatus();
+
+    public WorkerStatus CalculateStatus()
+    {
+        if (LastHeartbeatAt == default) return WorkerStatus.Unknown;
+        var diff = DateTime.UtcNow - LastHeartbeatAt;
+        if (IsRunning) return WorkerStatus.Running;
+        if (ConsecutiveErrors >= 3 || LastCycleStatus.Equals("failed", StringComparison.OrdinalIgnoreCase)) return WorkerStatus.Error;
+        if (diff > TimeSpan.FromMinutes(25)) return WorkerStatus.Off;
+        if (diff > TimeSpan.FromMinutes(12)) return WorkerStatus.Delayed;
+        return WorkerStatus.Active;
+    }
+
+    public string StatusBadgeClass => CalculateStatus() switch
+    {
+        WorkerStatus.Active => "badge-success",
+        WorkerStatus.Running => "badge-info",
+        WorkerStatus.Delayed => "badge-warning",
+        WorkerStatus.Error => "badge-danger",
+        WorkerStatus.Off => "badge-secondary",
+        _ => "badge-secondary"
+    };
+
+    public string StatusBadgeColor => CalculateStatus() switch
+    {
+        WorkerStatus.Active => "rgba(46,125,50,0.15)",
+        WorkerStatus.Running => "rgba(2,132,199,0.15)",
+        WorkerStatus.Delayed => "rgba(217,119,6,0.15)",
+        WorkerStatus.Error => "rgba(220,38,38,0.15)",
+        WorkerStatus.Off => "rgba(100,116,139,0.15)",
+        _ => "#f1f5f9"
+    };
+
+    public string StatusText => CalculateStatus() switch
+    {
+        WorkerStatus.Active => "Ativo (No Horário)",
+        WorkerStatus.Running => "Em Execução...",
+        WorkerStatus.Delayed => "Atrasado (>12m)",
+        WorkerStatus.Error => "Falha / Alerta",
+        WorkerStatus.Off => "Desligado (>25m)",
+        _ => "Sem Informação"
+    };
+}
+
+public sealed class SocialPost
+{
+    public long Id { get; set; }
+    public long ProfileId { get; set; }
+    public string? ExternalPostId { get; set; }
+    public string PostUrl { get; set; } = string.Empty;
+    public string Title { get; set; } = string.Empty;
+    public string? Caption { get; set; }
+    public string? AuthorHandle { get; set; }
+    public string Platform { get; set; } = "Instagram";
+    public string MediaType { get; set; } = "post";
+    public string? EmbedHtml { get; set; }
+    public DateTime? PublishedAt { get; set; }
+    public long? ContentId { get; set; }
+    public long? LinkedContentId => ContentId;
+    public string? CaptionSnippet => !string.IsNullOrWhiteSpace(Caption) ? (Caption.Length > 80 ? Caption.Substring(0, 80) + "..." : Caption) : (!string.IsNullOrWhiteSpace(Title) ? Title : "Publicação oficial");
+    public bool IsSponsored { get; set; }
+    public string? SponsorName { get; set; }
+    public DateTime CreatedAt { get; set; }
+}
+
+public sealed class RadarOperationalSource
+{
+    public IngestionSource Source { get; set; } = new();
+    public long Id => Source.Id;
+    public string SourceName => Source.Name;
+    public string Url => Source.FeedUrl;
+    public string Category => Source.Topics ?? "geral";
+    public string Municipality => Source.Municipality ?? "Belém";
+    public bool Enabled => Source.Enabled;
+    public bool Approved => Source.Approved;
+    public DateTime? LastCheckedAt => Source.LastCheckedAt;
+    public DateTime? LastSuccessAt => Source.LastSuccessAt;
+    public int AvgResponseTimeMs { get; set; }
+    public bool IsConfigured => !string.IsNullOrWhiteSpace(Source.FeedUrl);
+    public bool IsAuthorized => !string.IsNullOrWhiteSpace(Source.LicenseNote) && Source.Approved;
+    public bool IsConsulted => Source.LastCheckedAt.HasValue;
+    public bool IsOperational => Source.IsOperational;
+    public bool IsOutdated => (Source.LastSuccessAt.HasValue && (DateTime.UtcNow - Source.LastSuccessAt.Value).TotalDays > 7) || Source.ConsecutiveFailures >= 3;
+    public string? LastError => Source.LastError;
+    public int ConsecutiveFailures => Source.ConsecutiveFailures;
 }

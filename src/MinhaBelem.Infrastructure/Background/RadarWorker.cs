@@ -31,10 +31,14 @@ public sealed class RadarWorker(
             {
                 await using var scope = scopes.CreateAsyncScope();
                 var admin = scope.ServiceProvider.GetRequiredService<IAdministrationRepository>();
+                var radar = scope.ServiceProvider.GetRequiredService<IRadarRepository>();
                 var settings = await admin.SettingsAsync(ct);
 
                 var enabled = bool.TryParse(settings.GetValueOrDefault("radar.enabled"), out var v) ? v : options.Value.Enabled;
                 var minutes = int.TryParse(settings.GetValueOrDefault("radar.intervalMinutes"), out var m) ? Math.Clamp(m, 10, 180) : 10;
+
+                // Atualiza batimento cardíaco (Heartbeat) periódico mesmo enquanto ocioso
+                await radar.UpdateHeartbeatAsync("RadarWorker", "idle", $"Próximo ciclo programado para {last.AddMinutes(minutes).ToLocalTime():HH:mm:ss}", null, isRunning: false, ct);
 
                 if (enabled && DateTime.UtcNow >= last.AddMinutes(minutes))
                 {
@@ -76,18 +80,28 @@ public sealed class RadarWorker(
             return;
         }
 
+        await using var scope = scopes.CreateAsyncScope();
+        var radar = scope.ServiceProvider.GetRequiredService<IRadarRepository>();
+        var ingestion = scope.ServiceProvider.GetRequiredService<IIngestionRepository>();
+        var crawler = scope.ServiceProvider.GetRequiredService<IPublicWebCrawler>();
+
+        var startedAt = DateTime.UtcNow;
+        var sourcesChecked = 0;
+        var sourcesFailed = 0;
+        var totalItems = 0;
+        var totalEvents = 0;
+        string? cycleError = null;
+
         try
         {
-            await using var scope = scopes.CreateAsyncScope();
-            var ingestion = scope.ServiceProvider.GetRequiredService<IIngestionRepository>();
-            var crawler = scope.ServiceProvider.GetRequiredService<IPublicWebCrawler>();
-            var radar = scope.ServiceProvider.GetRequiredService<IRadarRepository>();
+            await radar.UpdateHeartbeatAsync("RadarWorker", "running", "Varredura autônoma em execução...", null, isRunning: true, token);
 
             var sources = await ingestion.SourcesAsync(onlyOperational: true, token);
             var eligibleSources = sources.Where(s => s.Protocol is FeedProtocol.Html or FeedProtocol.WebDiscovery or FeedProtocol.JsonLd).ToList();
 
             foreach (var source in eligibleSources)
             {
+                sourcesChecked++;
                 try
                 {
                     var crawlOptions = new CrawlerOptions
@@ -98,6 +112,9 @@ public sealed class RadarWorker(
                     };
 
                     var result = await crawler.CrawlAsync(source, crawlOptions, token);
+                    totalItems += result.ItemsDiscovered;
+                    totalEvents += result.EventsIdentified;
+
                     logger.LogInformation("Radar crawled {Source}: {Urls} urls, {Items} items, {Events} events.",
                         source.Name, result.UrlsCrawled, result.ItemsDiscovered, result.EventsIdentified);
 
@@ -105,6 +122,7 @@ public sealed class RadarWorker(
                 }
                 catch (Exception ex) when (ex is not OperationCanceledException)
                 {
+                    sourcesFailed++;
                     logger.LogWarning("Radar erro ao rastrear fonte {Source}: {Error}", source.Name, ex.Message);
                     await ingestion.UpdateSourceRuntimeAsync(source.Id, DateTime.UtcNow, null, ex.Message, null, null, token);
                 }
@@ -113,8 +131,18 @@ public sealed class RadarWorker(
             // Processa candidatos para IA e fila editorial (Descoberto -> Extraído -> Classificado -> Revisão)
             await ProcessPendingRadarCandidatesAsync(scope.ServiceProvider, token);
         }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            cycleError = ex.Message;
+            throw;
+        }
         finally
         {
+            var duration = DateTime.UtcNow - startedAt;
+            var finalStatus = cycleError is not null ? "failed" : sourcesFailed == 0 ? "success" : sourcesFailed == sourcesChecked ? "failed" : "partial";
+            var summary = $"{sourcesChecked} fontes ({sourcesFailed} falhas), {totalItems} matérias e {totalEvents} eventos em {duration.TotalSeconds:F1}s.";
+
+            await radar.UpdateHeartbeatAsync("RadarWorker", finalStatus, summary, cycleError, isRunning: false, CancellationToken.None);
             await conn.ExecuteAsync("SELECT RELEASE_LOCK('minhabelem_radar')");
         }
     }

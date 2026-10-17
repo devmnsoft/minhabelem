@@ -1377,5 +1377,60 @@ VALUES
  ('Theatro da Paz - Programação', 'https://theatrodapaz.com.br/programacao', UNHEX(SHA2('https://theatrodapaz.com.br/programacao', 256)), 'teatro', 'Belém', 'https://secult.pa.gov.br', 'approved', 'Espetáculos da Temporada de Ópera e concertos da OSTP.', 'html', 0.95),
  ('Portal Agência Pará', 'https://agenciapara.com.br/noticias', UNHEX(SHA2('https://agenciapara.com.br/noticias', 256)), 'noticias', 'Belém', 'https://pa.gov.br', 'pending', 'Canal oficial de notícias e serviços públicos estaduais.', 'html', 0.88);
 
+-- @migration 011_radar_operacao_portal_vivo
+-- SPRINT 09: Heartbeat persistido, postagens de redes sociais vinculadas e expansão do catálogo oficial
+CREATE TABLE IF NOT EXISTS mb_radar_heartbeats (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    worker_name VARCHAR(100) NOT NULL UNIQUE,
+    last_heartbeat_at DATETIME(6) NOT NULL,
+    last_cycle_started_at DATETIME(6) NULL,
+    last_cycle_finished_at DATETIME(6) NULL,
+    last_cycle_status ENUM('idle', 'running', 'success', 'partial', 'failed') NOT NULL DEFAULT 'idle',
+    last_cycle_summary VARCHAR(1000) NULL,
+    last_error TEXT NULL,
+    is_running BOOLEAN NOT NULL DEFAULT FALSE,
+    consecutive_errors INT NOT NULL DEFAULT 0,
+    total_cycles_executed INT NOT NULL DEFAULT 0,
+    updated_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS mb_radar_social_posts (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    profile_id BIGINT NOT NULL,
+    external_post_id VARCHAR(255) NULL,
+    post_url VARCHAR(1000) NOT NULL,
+    title VARCHAR(300) NOT NULL,
+    caption TEXT NULL,
+    media_type ENUM('image', 'video', 'carousel', 'reel', 'post') NOT NULL DEFAULT 'post',
+    embed_html TEXT NULL,
+    published_at DATETIME(6) NULL,
+    content_id BIGINT NULL,
+    is_sponsored BOOLEAN NOT NULL DEFAULT FALSE,
+    sponsor_name VARCHAR(150) NULL,
+    created_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+    INDEX idx_radar_sp_profile (profile_id, published_at),
+    INDEX idx_radar_sp_content (content_id),
+    FOREIGN KEY (profile_id) REFERENCES mb_radar_social_profiles(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Catálogo Expandido de Fontes Públicas Autorizadas sobre Belém e Pará (Fase 2)
+INSERT IGNORE INTO mb_radar_discovered_sources (source_name, url, url_hash, category, municipality, discovered_from_url, evaluation_status, evaluation_notes, feed_protocol_candidate, confidence_score)
+VALUES
+ ('UFPA - Eventos e Notícias Acadêmicas', 'https://ufpa.br/noticias', UNHEX(SHA2('https://ufpa.br/noticias', 256)), 'educacao', 'Belém', 'https://ufpa.br', 'approved', 'Portal oficial de notícias e extensão universitária da UFPA.', 'html', 0.95),
+ ('UEPA - Notícias e Editais Universitários', 'https://uepa.br/noticias', UNHEX(SHA2('https://uepa.br/noticias', 256)), 'educacao', 'Belém', 'https://uepa.br', 'approved', 'Agenda acadêmica, vestibular e eventos culturais da UEPA.', 'html', 0.93),
+ ('SEMOB - Trânsito e Transporte de Belém', 'https://semob.belem.pa.gov.br', UNHEX(SHA2('https://semob.belem.pa.gov.br', 256)), 'transito', 'Belém', 'https://belem.pa.gov.br', 'approved', 'Alertas viários, alterações de linhas e trânsito municipal.', 'html', 0.96),
+ ('SESPA - Vigilância e Saúde do Pará', 'https://saude.pa.gov.br', UNHEX(SHA2('https://saude.pa.gov.br', 256)), 'saude', 'Belém', 'https://pa.gov.br', 'approved', 'Boletins epidemiológicos, campanhas de vacinação e serviços.', 'html', 0.94),
+ ('SESAN - Obras e Saneamento de Belém', 'https://sesan.belem.pa.gov.br', UNHEX(SHA2('https://sesan.belem.pa.gov.br', 256)), 'saneamento', 'Belém', 'https://belem.pa.gov.br', 'approved', 'Obras de macrodrenagem e limpeza urbana na capital.', 'html', 0.90),
+ ('COSANPA - Abastecimento e Notícias', 'https://cosanpa.pa.gov.br/noticias', UNHEX(SHA2('https://cosanpa.pa.gov.br/noticias', 256)), 'saneamento', 'Belém', 'https://pa.gov.br', 'approved', 'Comunicados de manutenção e abastecimento de água.', 'html', 0.91),
+ ('SEEL - Mangueirão e Esporte Paraense', 'https://seel.pa.gov.br', UNHEX(SHA2('https://seel.pa.gov.br', 256)), 'esporte', 'Belém', 'https://pa.gov.br', 'approved', 'Agenda de jogos no Mangueirão e competições esportivas estaduais.', 'html', 0.94),
+ ('Círio de Nazaré - Programação Oficial', 'https://ciriodenazare.com.br', UNHEX(SHA2('https://ciriodenazare.com.br', 256)), 'religioso', 'Belém', 'https://basilicadenazare.com.br', 'approved', 'Romarias, ensaios e festividades oficiais do Círio de Nazaré.', 'html', 0.99),
+ ('Pará 2000 - Complexos Turísticos e Culturais', 'https://para2000.com.br', UNHEX(SHA2('https://para2000.com.br', 256)), 'turismo', 'Belém', 'https://estacaodasdocas.com.br', 'approved', 'Programação cultural da Estação das Docas, Mangal e Parque da Residência.', 'html', 0.96),
+ ('Ideflor-Bio - Parque do Utinga', 'https://ideflor.pa.gov.br/parque-do-utinga', UNHEX(SHA2('https://ideflor.pa.gov.br/parque-do-utinga', 256)), 'turismo', 'Belém', 'https://ideflor.pa.gov.br', 'approved', 'Ecoturismo, trilhas e horários de visitação do Parque do Utinga.', 'html', 0.95);
+
+-- Semente inicial de Heartbeat
+INSERT IGNORE INTO mb_radar_heartbeats (worker_name, last_heartbeat_at, last_cycle_status, last_cycle_summary, is_running)
+VALUES ('RadarWorker', UTC_TIMESTAMP(6), 'idle', 'Worker inicializado e aguardando ciclo de 10 minutos', FALSE);
+
+
 
 

@@ -22,6 +22,7 @@ public sealed class RadarRepository(MySqlDataSource data) : IRadarRepository
         var aiTokens = await db.ExecuteScalarAsync<long?>(new CommandDefinition("SELECT SUM(prompt_tokens + completion_tokens) FROM mb_ai_runs", cancellationToken: ct)) ?? 0L;
         var lastCrawl = await db.ExecuteScalarAsync<DateTime?>(new CommandDefinition("SELECT MAX(crawled_at) FROM mb_radar_crawl_history", cancellationToken: ct));
         var socialCount = await db.ExecuteScalarAsync<int>(new CommandDefinition("SELECT COUNT(*) FROM mb_radar_social_profiles WHERE is_active=TRUE", cancellationToken: ct));
+        var heartbeat = await GetHeartbeatAsync("RadarWorker", ct);
 
         return new RadarDashboardStats
         {
@@ -35,7 +36,8 @@ public sealed class RadarRepository(MySqlDataSource data) : IRadarRepository
             AiTokensConsumed = aiTokens,
             LastCrawlAt = lastCrawl,
             NextCrawlDueAt = lastCrawl?.AddMinutes(10) ?? DateTime.UtcNow.AddMinutes(10),
-            SocialProfilesCount = socialCount
+            SocialProfilesCount = socialCount,
+            Heartbeat = heartbeat
         };
     }
 
@@ -270,5 +272,95 @@ public sealed class RadarRepository(MySqlDataSource data) : IRadarRepository
         return await db.QueryFirstOrDefaultAsync<CrawlHistoryEntry>(new CommandDefinition(
             "SELECT id AS Id, source_id AS SourceId, url AS Url, status_code AS StatusCode, etag AS ETag, last_modified AS LastModified, content_hash AS ContentHash FROM mb_radar_crawl_history WHERE url_hash=@hash ORDER BY crawled_at DESC LIMIT 1",
             new { hash }, cancellationToken: ct));
+    }
+
+    public async Task UpdateHeartbeatAsync(string workerName, string status, string? summary, string? error, bool isRunning, CancellationToken ct)
+    {
+        await using var db = await data.OpenConnectionAsync(ct);
+        var sql = """
+            INSERT INTO mb_radar_heartbeats (worker_name, last_heartbeat_at, last_cycle_status, last_cycle_summary, last_error, is_running, total_cycles_executed)
+            VALUES (@workerName, UTC_TIMESTAMP(6), @status, @summary, @error, @isRunning, 1)
+            ON DUPLICATE KEY UPDATE
+                last_heartbeat_at = UTC_TIMESTAMP(6),
+                last_cycle_status = VALUES(last_cycle_status),
+                last_cycle_summary = VALUES(last_cycle_summary),
+                last_error = VALUES(last_error),
+                is_running = VALUES(is_running),
+                total_cycles_executed = total_cycles_executed + (CASE WHEN VALUES(last_cycle_status) IN ('success', 'partial', 'failed') THEN 1 ELSE 0 END),
+                consecutive_errors = (CASE WHEN VALUES(last_cycle_status) = 'failed' THEN consecutive_errors + 1 WHEN VALUES(last_cycle_status) = 'success' THEN 0 ELSE consecutive_errors END);
+            """;
+        await db.ExecuteAsync(new CommandDefinition(sql, new { workerName, status, summary, error, isRunning }, cancellationToken: ct));
+    }
+
+    public async Task<RadarHeartbeat?> GetHeartbeatAsync(string workerName, CancellationToken ct)
+    {
+        await using var db = await data.OpenConnectionAsync(ct);
+        var sql = """
+            SELECT id AS Id, worker_name AS WorkerName, last_heartbeat_at AS LastHeartbeatAt,
+                   last_cycle_started_at AS LastCycleStartedAt, last_cycle_finished_at AS LastCycleFinishedAt,
+                   last_cycle_status AS LastCycleStatus, last_cycle_summary AS LastCycleSummary,
+                   last_error AS LastError, is_running AS IsRunning, consecutive_errors AS ConsecutiveErrors,
+                   total_cycles_executed AS TotalCyclesExecuted
+            FROM mb_radar_heartbeats
+            WHERE worker_name = @workerName
+            LIMIT 1
+            """;
+        return await db.QueryFirstOrDefaultAsync<RadarHeartbeat>(new CommandDefinition(sql, new { workerName }, cancellationToken: ct));
+    }
+
+    public async Task<IReadOnlyList<SocialPost>> SocialPostsAsync(int limit, long? profileId, CancellationToken ct)
+    {
+        await using var db = await data.OpenConnectionAsync(ct);
+        var sql = """
+            SELECT id AS Id, profile_id AS ProfileId, external_post_id AS ExternalPostId,
+                   post_url AS PostUrl, title AS Title, caption AS Caption,
+                   media_type AS MediaType, embed_html AS EmbedHtml, published_at AS PublishedAt,
+                   content_id AS ContentId, is_sponsored AS IsSponsored, sponsor_name AS SponsorName,
+                   created_at AS CreatedAt
+            FROM mb_radar_social_posts
+            WHERE (@profileId IS NULL OR profile_id = @profileId)
+            ORDER BY published_at DESC, created_at DESC
+            LIMIT @limit
+            """;
+        var items = await db.QueryAsync<SocialPost>(new CommandDefinition(sql, new { limit, profileId }, cancellationToken: ct));
+        return items.ToList();
+    }
+
+    public async Task<long> InsertSocialPostAsync(SocialPost post, CancellationToken ct)
+    {
+        await using var db = await data.OpenConnectionAsync(ct);
+        var sql = """
+            INSERT INTO mb_radar_social_posts
+            (profile_id, external_post_id, post_url, title, caption, media_type, embed_html, published_at, content_id, is_sponsored, sponsor_name, created_at)
+            VALUES (@ProfileId, @ExternalPostId, @PostUrl, @Title, @Caption, @MediaType, @EmbedHtml, @PublishedAt, @ContentId, @IsSponsored, @SponsorName, UTC_TIMESTAMP(6));
+            SELECT LAST_INSERT_ID();
+            """;
+        return await db.ExecuteScalarAsync<long>(new CommandDefinition(sql, post, cancellationToken: ct));
+    }
+
+    public async Task<IReadOnlyList<RadarOperationalSource>> OperationalSourcesAsync(CancellationToken ct)
+    {
+        await using var db = await data.OpenConnectionAsync(ct);
+        var sql = """
+            SELECT id AS Id, source_name AS Name, feed_url AS FeedUrl, protocol AS Protocol,
+                   topics AS Topics, municipality AS Municipality, enabled AS Enabled,
+                   approved AS Approved, respect_robots AS RespectRobots, license_note AS LicenseNote,
+                   last_checked_at AS LastCheckedAt, last_success_at AS LastSuccessAt,
+                   last_error AS LastError, consecutive_failures AS ConsecutiveFailures,
+                   etag AS ETag, last_modified AS LastModified, created_at AS CreatedAt
+            FROM ingestion_sources
+            ORDER BY source_name ASC
+            """;
+        var sources = await db.QueryAsync<IngestionSource>(new CommandDefinition(sql, cancellationToken: ct));
+        return sources.Select(s => new RadarOperationalSource { Source = s }).ToList();
+    }
+
+    public async Task<bool> ToggleSourceStateAsync(long sourceId, bool enabled, CancellationToken ct)
+    {
+        await using var db = await data.OpenConnectionAsync(ct);
+        var rows = await db.ExecuteAsync(new CommandDefinition(
+            "UPDATE ingestion_sources SET enabled=@enabled WHERE id=@sourceId",
+            new { sourceId, enabled }, cancellationToken: ct));
+        return rows > 0;
     }
 }
