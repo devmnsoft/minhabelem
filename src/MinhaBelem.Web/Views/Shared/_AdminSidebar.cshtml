@@ -61,6 +61,9 @@
         <span class="admin-sidebar-heading">Inteligência & IA</span>
         @if (User.HasClaim("mb:permission", Permissions.SourceManage))
         {
+            <a href="/admin/radar" class="@(currentPath.StartsWith("/admin/radar") ? "active" : "")">
+                <span>🧭</span> MinhaBelém Radar
+            </a>
             <a href="/admin/fontes" class="@(currentPath.StartsWith("/admin/fontes") ? "active" : "")">
                 <span>📡</span> Fontes de Ingestão
             </a>
