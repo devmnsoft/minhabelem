@@ -18,7 +18,7 @@ namespace Microsoft.Extensions.DependencyInjection;
 
 public static class InfrastructureServiceCollectionExtensions
 {
-    public static IServiceCollection AddMinhaBelemInfrastructure(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddMinhaBelemInfrastructure(this IServiceCollection services, IConfiguration configuration, bool registerWorkers = true)
     {
         DapperTypes.Register();
 
@@ -141,6 +141,8 @@ public static class InfrastructureServiceCollectionExtensions
 
         services.AddScoped<IdentitySeeder>();
 
+        if (registerWorkers)
+        {
         services.AddSingleton<FeedCollectorWorker>();
         services.AddSingleton<ISourceCollection>(sp => sp.GetRequiredService<FeedCollectorWorker>());
         services.AddHostedService(sp => sp.GetRequiredService<FeedCollectorWorker>());
@@ -148,6 +150,7 @@ public static class InfrastructureServiceCollectionExtensions
         services.AddSingleton<RadarWorker>();
         services.AddSingleton<IRadarWorker>(sp => sp.GetRequiredService<RadarWorker>());
         services.AddHostedService(sp => sp.GetRequiredService<RadarWorker>());
+        }
 
         return services;
     }
