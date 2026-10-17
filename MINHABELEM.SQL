@@ -1300,4 +1300,82 @@ VALUES
  ('Umarizal', 'umarizal', 'Zona Sul', 'Antiga área de olarias e trapiches, hoje o principal polo gastronômico e boêmio moderno da capital.', 'Bares sofisticados, restaurantes de alta gastronomia amazônica contemporânea e edifícios modernos.', 'Muito movimentado à noite; utilize serviços de transporte ou valets credenciados.', 'Polo Gastronômico da Doca, Praça Brasil, Casa Cor Pará.', 4),
  ('Batista Campos', 'batista-campos', 'Região Central', 'Área residencial nobre e tradicional, célebre pela sua praça homônima premiada nacionalmente.', 'Clima bucólico familiar, quiosques de água de coco, sorveterias típicas e passeios ao amanhecer.', 'Bairro tranquilo, ideal para caminhadas diurnas e piqueniques na praça.', 'Praça Batista Campos (Castelinhos e lagos com vitórias-régias).', 5);
 
+-- @migration 010_radar_autonomo_descoberta
+-- SPRINT 08: MinhaBelém Radar - Robô autônomo de descoberta de informações e eventos
+CREATE TABLE IF NOT EXISTS mb_radar_discovered_sources (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    source_name VARCHAR(250) NOT NULL,
+    url VARCHAR(1500) NOT NULL,
+    url_hash BINARY(32) NOT NULL UNIQUE,
+    category VARCHAR(100) NOT NULL DEFAULT 'geral',
+    municipality VARCHAR(100) NOT NULL DEFAULT 'Belém',
+    discovered_from_url VARCHAR(1500) NULL,
+    evaluation_status ENUM('pending', 'approved', 'rejected') NOT NULL DEFAULT 'pending',
+    evaluation_notes TEXT NULL,
+    feed_protocol_candidate ENUM('rss', 'atom', 'html', 'jsonld', 'ical', 'sitemap') NOT NULL DEFAULT 'html',
+    confidence_score DECIMAL(5,2) NOT NULL DEFAULT 0.00,
+    discovered_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+    evaluated_at DATETIME(6) NULL,
+    evaluated_by_id BIGINT NULL,
+    INDEX idx_radar_disc_status (evaluation_status, discovered_at),
+    INDEX idx_radar_disc_cat (category, municipality)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS mb_radar_crawl_history (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    source_id BIGINT NULL,
+    url VARCHAR(1500) NOT NULL,
+    url_hash BINARY(32) NOT NULL,
+    status_code INT NOT NULL DEFAULT 0,
+    etag VARCHAR(200) NULL,
+    last_modified DATETIME(6) NULL,
+    content_hash CHAR(64) NULL,
+    discovered_items_count INT NOT NULL DEFAULT 0,
+    events_identified_count INT NOT NULL DEFAULT 0,
+    depth INT NOT NULL DEFAULT 0,
+    duration_ms INT NOT NULL DEFAULT 0,
+    error_message TEXT NULL,
+    crawled_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+    INDEX idx_radar_crawl_source (source_id, crawled_at),
+    INDEX idx_radar_crawl_url (url_hash, crawled_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS mb_radar_social_profiles (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    platform ENUM('instagram', 'facebook', 'tiktok', 'youtube') NOT NULL,
+    profile_handle VARCHAR(150) NOT NULL,
+    display_name VARCHAR(200) NOT NULL,
+    profile_url VARCHAR(1000) NOT NULL,
+    official_embed_url VARCHAR(1500) NULL,
+    category VARCHAR(100) NOT NULL DEFAULT 'cultura',
+    municipality VARCHAR(100) NOT NULL DEFAULT 'Belém',
+    license_notes VARCHAR(500) NOT NULL DEFAULT 'Conteúdo público oficial para divulgação cultural',
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    last_checked_at DATETIME(6) NULL,
+    created_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+    UNIQUE KEY uk_platform_handle (platform, profile_handle),
+    INDEX idx_radar_social_active (is_active, platform)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Seeds de Perfis Oficiais e Canais Públicos de Belém e Pará (Divulgação Cultural & Eventos)
+INSERT IGNORE INTO mb_radar_social_profiles (platform, profile_handle, display_name, profile_url, official_embed_url, category, municipality, license_notes, is_active)
+VALUES
+ ('instagram', 'theatrodapazoficial', 'Theatro da Paz (Secult/PA)', 'https://www.instagram.com/theatrodapazoficial/', 'https://www.instagram.com/theatrodapazoficial/embed', 'teatro', 'Belém', 'Programação teatral e concertos públicos oficiais.', TRUE),
+ ('instagram', 'secultpara', 'Secretaria de Cultura do Pará', 'https://www.instagram.com/secultpara/', 'https://www.instagram.com/secultpara/embed', 'cultura', 'Belém', 'Avisos e editais da cultura paraense.', TRUE),
+ ('instagram', 'fumbel.belem', 'Fundação Cultural de Belém (FUMBEL)', 'https://www.instagram.com/fumbel.belem/', 'https://www.instagram.com/fumbel.belem/embed', 'cultura', 'Belém', 'Editais, festivais e eventos municipais de Belém.', TRUE),
+ ('instagram', 'estacaodasdocas', 'Estação das Docas (Pará 2000)', 'https://www.instagram.com/estacaodasdocas/', 'https://www.instagram.com/estacaodasdocas/embed', 'turismo', 'Belém', 'Música ao vivo, feiras gastronômicas e pôr do som.', TRUE),
+ ('instagram', 'museugoeldi', 'Museu Paraense Emílio Goeldi', 'https://www.instagram.com/museugoeldi/', 'https://www.instagram.com/museugoeldi/embed', 'educacao', 'Belém', 'Exposições científicas e visitas educativas.', TRUE),
+ ('youtube', 'AgenciaBelem', 'Agência Belém de Notícias', 'https://www.youtube.com/@AgenciaBelem', 'https://www.youtube.com/embed?listType=user_uploads&list=AgenciaBelem', 'servicos', 'Belém', 'Coberturas oficiais e comunicados de trânsito/obras.', TRUE),
+ ('youtube', 'governopara', 'Governo do Estado do Pará', 'https://www.youtube.com/@governopara', 'https://www.youtube.com/embed?listType=user_uploads&list=governopara', 'servicos', 'Belém', 'Transmissões oficiais e serviços de saúde/segurança.', TRUE);
+
+-- Fontes públicas pré-catalogadas no Radar para descoberta e ingestão
+INSERT IGNORE INTO mb_radar_discovered_sources (source_name, url, url_hash, category, municipality, discovered_from_url, evaluation_status, evaluation_notes, feed_protocol_candidate, confidence_score)
+VALUES
+ ('Agência Belém - Notícias Oficiais', 'https://agenciabelem.com.br/Noticias', UNHEX(SHA2('https://agenciabelem.com.br/Noticias', 256)), 'noticias', 'Belém', 'https://belem.pa.gov.br', 'approved', 'Portal oficial de notícias do município de Belém.', 'html', 0.95),
+ ('Secult Pará - Agenda Cultural', 'https://secult.pa.gov.br/agenda', UNHEX(SHA2('https://secult.pa.gov.br/agenda', 256)), 'cultura', 'Belém', 'https://pa.gov.br', 'approved', 'Agenda de espetáculos e editais culturais do Estado.', 'jsonld', 0.98),
+ ('Fundação Cultural do Pará - Centur', 'https://fcp.pa.gov.br/eventos', UNHEX(SHA2('https://fcp.pa.gov.br/eventos', 256)), 'cultura', 'Belém', 'https://pa.gov.br', 'approved', 'Programação de cinema, teatro e oficinas do Centur.', 'html', 0.92),
+ ('Theatro da Paz - Programação', 'https://theatrodapaz.com.br/programacao', UNHEX(SHA2('https://theatrodapaz.com.br/programacao', 256)), 'teatro', 'Belém', 'https://secult.pa.gov.br', 'approved', 'Espetáculos da Temporada de Ópera e concertos da OSTP.', 'html', 0.95),
+ ('Portal Agência Pará', 'https://agenciapara.com.br/noticias', UNHEX(SHA2('https://agenciapara.com.br/noticias', 256)), 'noticias', 'Belém', 'https://pa.gov.br', 'pending', 'Canal oficial de notícias e serviços públicos estaduais.', 'html', 0.88);
+
+
 
