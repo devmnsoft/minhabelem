@@ -17,7 +17,8 @@ public sealed class HomeController(
     ITranslationRepository translationRepo,
     ITransitRepository? transitRepo = null,
     INeighborhoodRepository? neighborhoodRepo = null,
-    ITouristRepository? touristRepo = null) : Controller
+    ITouristRepository? touristRepo = null,
+    IRadarRepository? radarRepo = null) : Controller
 {
     public async Task<IActionResult> Index(
         string? categoria,
@@ -89,6 +90,11 @@ public sealed class HomeController(
                 if (touristRepo is not null)
                 {
                     ViewData["TouristItineraries"] = await touristRepo.GetItinerariesAsync(ct);
+                }
+
+                if (radarRepo is not null)
+                {
+                    ViewData["SocialVideos"] = await radarRepo.SocialPostsAsync(4, null, ct);
                 }
             }
             catch
