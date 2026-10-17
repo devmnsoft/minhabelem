@@ -7,6 +7,7 @@ using MinhaBelem.Core.Abstractions;
 using MinhaBelem.Core.Entities;
 using MinhaBelem.Core.Security;
 using MinhaBelem.Core.Services;
+using MinhaBelem.Core.Taxonomy;
 using MinhaBelem.Core.Text;
 using MinhaBelem.Infrastructure.Ai;
 using MinhaBelem.Infrastructure.Background;
@@ -17,7 +18,8 @@ namespace MinhaBelem.Web.Controllers;
 [Route("admin"), Authorize]
 public sealed class AdminController(IAdministrationRepository admin, IDashboardRepository dashboard, IIngestionRepository ingestion, IAuditRepository audit,
     IAiRunRepository aiRuns, UserManager<ApplicationUser> users, ICommunityRepository community, IPlaceRepository places, IPlacesClient google, IOptions<AiOptions> aiOptions,
-    IDiscoveryRepository discovery, ISourceCollection collector, ITranslationRepository translation, IContentTranslationService translationService, IContentRepository content) : Controller
+    IDiscoveryRepository discovery, ISourceCollection collector, ITranslationRepository translation, IContentTranslationService translationService, IContentRepository content,
+    ITransitRepository transit, IAdvertiserRepository advertisers, INeighborhoodRepository neighborhoods) : Controller
 {
     private long Actor => long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
     private Task Audit(string action, string type, long? id, CancellationToken ct) => audit.WriteAsync(new AuditEntry { ActorId = Actor, Action = action, EntityType = type, EntityId = id }, ct);
@@ -247,4 +249,185 @@ public sealed class AdminController(IAdministrationRepository admin, IDashboardR
         ViewData["TargetLanguage"] = targetLanguage;
         return View();
     }
+
+    [HttpGet("conteudo"), Authorize(Policy = Permissions.ContentRead)]
+    public async Task<IActionResult> Conteudo(string? status, string? categoria, string? busca, CancellationToken ct)
+    {
+        ContentStatus? parsedStatus = null;
+        if (!string.IsNullOrWhiteSpace(status) && Enum.TryParse<ContentStatus>(status, true, out var parsed))
+            parsedStatus = parsed;
+
+        ContentCategory? parsedCategory = null;
+        if (!string.IsNullOrWhiteSpace(categoria) && Enum.TryParse<ContentCategory>(categoria, true, out var cat))
+            parsedCategory = cat;
+
+        var items = await content.SearchAsync(new ContentQuery
+        {
+            Status = parsedStatus,
+            Category = parsedCategory,
+            Search = busca,
+            PageSize = 50
+        }, ct);
+
+        ViewData["CurrentStatus"] = status;
+        ViewData["CurrentCategoria"] = categoria;
+        ViewData["CurrentBusca"] = busca;
+        return View(items);
+    }
+
+    [HttpPost("conteudo"), Authorize(Policy = Permissions.ContentWrite)]
+    public async Task<IActionResult> CriarConteudo(string titulo, string resumo, string categoria, string? bairro, string? corpo, string? linkFonte, string? nomeFonte, CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(titulo) || string.IsNullOrWhiteSpace(resumo))
+        {
+            TempData["Notice"] = "Título e resumo são obrigatórios.";
+            return RedirectToAction(nameof(Conteudo));
+        }
+
+        if (!Enum.TryParse<ContentCategory>(categoria, true, out var cat))
+            cat = ContentCategory.Cultura;
+
+        var item = new ContentItem
+        {
+            Title = HtmlText.Clean(titulo, 250),
+            Summary = HtmlText.Clean(resumo, 500),
+            Body = !string.IsNullOrWhiteSpace(corpo) ? HtmlText.Clean(corpo, 10000) : null,
+            Category = cat,
+            Neighborhood = !string.IsNullOrWhiteSpace(bairro) ? HtmlText.Clean(bairro, 120) : "Belém",
+            Municipality = "Belém",
+            SourceName = !string.IsNullOrWhiteSpace(nomeFonte) ? HtmlText.Clean(nomeFonte, 150) : "Redação MinhaBelém",
+            SourceUrl = !string.IsNullOrWhiteSpace(linkFonte) ? linkFonte.Trim() : "https://minhabelem.com.br",
+            AuthorName = User.Identity?.Name ?? "Editor MinhaBelém",
+            Status = ContentStatus.Published,
+            VerificationStatus = VerificationStatus.Verified,
+            PublishedAt = DateTime.UtcNow,
+            Slug = "noticia-" + Guid.NewGuid().ToString("N")[..12]
+        };
+
+        var id = await content.InsertAsync(item, Actor, "Criação editorial manual", ct);
+        await Audit("content.created_manually", "content", id, ct);
+        TempData["Notice"] = $"Matéria '{item.Title}' publicada com sucesso!";
+        return RedirectToAction(nameof(Conteudo));
+    }
+
+    [HttpPost("conteudo/{id:long}/arquivar"), Authorize(Policy = Permissions.ContentPublish)]
+    public async Task<IActionResult> ArquivarConteudo(long id, CancellationToken ct)
+    {
+        await content.SetStatusAsync(id, ContentStatus.Archived, Actor, ct);
+        await Audit("content.archived", "content", id, ct);
+        TempData["Notice"] = $"Conteúdo #{id} foi arquivado.";
+        return RedirectToAction(nameof(Conteudo));
+    }
+
+    [HttpGet("mobilidade"), Authorize(Policy = Permissions.SettingsManage)]
+    public async Task<IActionResult> Mobilidade(CancellationToken ct)
+    {
+        ViewData["Lines"] = await transit.GetLinesAsync(null, ct);
+        ViewData["Alerts"] = await transit.GetActiveAlertsAsync(ct);
+        ViewData["RiverRoutes"] = await transit.GetRiverRoutesAsync(ct);
+        return View();
+    }
+
+    [HttpPost("mobilidade/alerta"), Authorize(Policy = Permissions.SettingsManage)]
+    public async Task<IActionResult> CriarAlerta(string titulo, string descricao, string? bairro, string gravidade, string tipo, CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(titulo) || string.IsNullOrWhiteSpace(descricao))
+        {
+            TempData["Notice"] = "Título e descrição do alerta são obrigatórios.";
+            return RedirectToAction(nameof(Mobilidade));
+        }
+
+        var alert = new TransitAlert
+        {
+            Title = HtmlText.Clean(titulo, 250),
+            Description = HtmlText.Clean(descricao, 2000),
+            Neighborhood = !string.IsNullOrWhiteSpace(bairro) ? HtmlText.Clean(bairro, 120) : null,
+            Severity = gravidade,
+            AlertType = tipo,
+            StartAt = DateTime.UtcNow,
+            IsActive = true,
+            CreatedByUserId = Actor
+        };
+
+        await transit.UpsertAlertAsync(alert, ct);
+        await Audit("transit.alert_created", "transit_alert", null, ct);
+        TempData["Notice"] = "Alerta de trânsito cadastrado e ativo!";
+        return RedirectToAction(nameof(Mobilidade));
+    }
+
+    [HttpPost("mobilidade/linha"), Authorize(Policy = Permissions.SettingsManage)]
+    public async Task<IActionResult> SalvarLinha(TransitLine line, CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(line.Code) || string.IsNullOrWhiteSpace(line.Name))
+        {
+            TempData["Notice"] = "Código e nome da linha são obrigatórios.";
+            return RedirectToAction(nameof(Mobilidade));
+        }
+
+        line.Code = line.Code.Trim().ToUpperInvariant();
+        line.Name = HtmlText.Clean(line.Name, 200);
+        line.Origin = HtmlText.Clean(line.Origin, 150);
+        line.Destination = HtmlText.Clean(line.Destination, 150);
+
+        await transit.UpsertLineAsync(line, ct);
+        await Audit("transit.line_saved", "transit_line", null, ct);
+        TempData["Notice"] = $"Linha {line.Code} salva com sucesso!";
+        return RedirectToAction(nameof(Mobilidade));
+    }
+
+    [HttpGet("anunciantes"), Authorize(Policy = Permissions.AdvertiserManage)]
+    public async Task<IActionResult> Anunciantes(CancellationToken ct)
+    {
+        var all = await advertisers.AllAsync(ct);
+        return View(all);
+    }
+
+    [HttpPost("anunciantes/{id:long}/estado"), Authorize(Policy = Permissions.AdvertiserManage)]
+    public async Task<IActionResult> EstadoAnunciante(long id, bool active, CancellationToken ct)
+    {
+        await advertisers.SetActiveAsync(id, active, ct);
+        await Audit("advertiser.state_changed", "campaign", id, ct);
+        TempData["Notice"] = active ? "Campanha ativada para veiculação." : "Campanha pausada.";
+        return RedirectToAction(nameof(Anunciantes));
+    }
+
+    [HttpGet("relatorios"), Authorize(Policy = Permissions.DashboardRead)]
+    public async Task<IActionResult> Relatorios(CancellationToken ct)
+    {
+        ViewData["Dashboard"] = await dashboard.BuildAsync(ct);
+        ViewData["TranslationStats"] = await translation.GetStatsAsync(ct);
+        ViewData["RecentAudit"] = await audit.RecentAsync(30, ct);
+        ViewData["AiCost"] = await aiRuns.CostSinceAsync(DateTime.UtcNow.AddMonths(-1), ct);
+        var stats = await aiRuns.StatsSinceAsync(DateTime.UtcNow.AddMonths(-1), ct);
+        ViewData["AiStats"] = stats;
+        return View();
+    }
+
+    [HttpGet("bairros"), Authorize(Policy = Permissions.PlaceManage)]
+    public async Task<IActionResult> Bairros(CancellationToken ct)
+    {
+        return View(await neighborhoods.GetNeighborhoodsAsync(ct));
+    }
+
+    [HttpPost("bairros"), Authorize(Policy = Permissions.PlaceManage)]
+    public async Task<IActionResult> SalvarBairro(NeighborhoodGuide guide, CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(guide.Name) || string.IsNullOrWhiteSpace(guide.Slug))
+        {
+            TempData["Notice"] = "Nome e slug do bairro são obrigatórios.";
+            return RedirectToAction(nameof(Bairros));
+        }
+
+        guide.Name = HtmlText.Clean(guide.Name, 120);
+        guide.Slug = HtmlText.Clean(guide.Slug.ToLowerInvariant(), 120);
+        guide.Zone = HtmlText.Clean(guide.Zone, 50);
+        guide.HistorySummary = HtmlText.Clean(guide.HistorySummary, 3000);
+        guide.CulturalCharacteristics = HtmlText.Clean(guide.CulturalCharacteristics, 3000);
+
+        await neighborhoods.UpsertNeighborhoodAsync(guide, ct);
+        await Audit("neighborhood.saved", "neighborhood", null, ct);
+        TempData["Notice"] = $"Guia do bairro '{guide.Name}' salvo com sucesso!";
+        return RedirectToAction(nameof(Bairros));
+    }
 }
+

@@ -1,0 +1,156 @@
+@model IReadOnlyList<MinhaBelem.Core.Entities.ContentItem>
+
+@{
+    ViewData["Title"] = "Gestão de Conteúdo e Notícias";
+    var currentStatus = ViewData["CurrentStatus"] as string;
+    var currentCat = ViewData["CurrentCategoria"] as string;
+    var currentBusca = ViewData["CurrentBusca"] as string;
+}
+
+<section class="section">
+    <div class="sectionhead">
+        <div>
+            <span class="eyebrow">ADMINISTRAÇÃO EDITORIAL</span>
+            <h1>📰 Matérias & Notícias</h1>
+        </div>
+        <a href="#nova-materia" class="button">+ Nova Matéria Manual</a>
+    </div>
+
+    @if (TempData["Notice"] is string notice)
+    {
+        <p class="notice" role="status">@notice</p>
+    }
+
+    <!-- Filtros -->
+    <form method="get" class="filters">
+        <label>
+            Status
+            <select name="status">
+                <!option value="" @(string.IsNullOrEmpty(currentStatus) ? "selected" : "")>Todos os status</!option>
+                <!option value="Published" @(currentStatus == "Published" ? "selected" : "")>Publicado</!option>
+                <!option value="InReview" @(currentStatus == "InReview" ? "selected" : "")>Em Revisão</!option>
+                <!option value="Draft" @(currentStatus == "Draft" ? "selected" : "")>Rascunho</!option>
+                <!option value="Archived" @(currentStatus == "Archived" ? "selected" : "")>Arquivado</!option>
+            </select>
+        </label>
+        <label>
+            Categoria
+            <select name="categoria">
+                <!option value="" @(string.IsNullOrEmpty(currentCat) ? "selected" : "")>Todas as categorias</!option>
+                @foreach (var c in MinhaBelem.Core.Taxonomy.Taxonomy.All)
+                {
+                    <!option value="@c.Category" @(currentCat == c.Category.ToString() ? "selected" : "")>@c.Label</!option>
+                }
+            </select>
+        </label>
+        <label>
+            Busca
+            <input name="busca" value="@currentBusca" placeholder="Título, resumo..." />
+        </label>
+        <button type="submit" class="button secondary">Filtrar</button>
+    </form>
+
+    <!-- Tabela de Conteúdos -->
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Título</th>
+                    <th>Categoria</th>
+                    <th>Status</th>
+                    <th>Bairro</th>
+                    <th>Publicado em</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Count == 0)
+                {
+                    <tr>
+                        <td colspan="7" style="text-align:center;padding:24px;">Nenhum conteúdo encontrado.</td>
+                    </tr>
+                }
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>#@item.Id</td>
+                        <td>
+                            <strong><a href="/Home/Detalhe/@item.Id" target="_blank">@item.Title</a></strong>
+                            <br /><small class="text-muted">Fonte: @item.SourceName</small>
+                        </td>
+                        <td><span class="badge badge-info">@item.Category</span></td>
+                        <td>
+                            <span class="badge badge-@(item.Status.ToString().ToLowerInvariant())">@item.Status</span>
+                        </td>
+                        <td>@item.Neighborhood</td>
+                        <td><small>@item.PublishedAt.ToString("dd/MM/yyyy HH:mm")</small></td>
+                        <td style="display:flex;gap:6px;">
+                            <a href="/editorial/editar/@item.Id" class="button small secondary">Editar</a>
+                            @if (item.Status != MinhaBelem.Core.Entities.ContentStatus.Archived)
+                            {
+                                <form action="/admin/conteudo/@item.Id/arquivar" method="post" style="display:inline;">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="button small secondary" title="Arquivar">Arquivar</button>
+                                </form>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Formulário de Criação Manual -->
+    <div id="nova-materia" class="card cta" style="margin-top:40px;">
+        <h2>Publicar Nova Matéria Manual</h2>
+        <p class="small">Use este formulário para produzir conteúdo exclusivo da redação ou informes oficiais verificados.</p>
+
+        <form action="/admin/conteudo" method="post">
+            @Html.AntiForgeryToken()
+            <label>
+                Título da Matéria *
+                <input name="titulo" maxlength="250" required placeholder="Título jornalístico claro..." />
+            </label>
+
+            <label>
+                Resumo / Subtítulo *
+                <textarea name="resumo" rows="2" maxlength="500" required placeholder="Breve resumo informativo..."></textarea>
+            </label>
+
+            <div class="grid" style="grid-template-columns:1fr 1fr;gap:16px;">
+                <label>
+                    Categoria *
+                    <select name="categoria">
+                        @foreach (var c in MinhaBelem.Core.Taxonomy.Taxonomy.All)
+                        {
+                            <option value="@c.Category">@c.Label</option>
+                        }
+                    </select>
+                </label>
+                <label>
+                    Bairro de Referência
+                    <input name="bairro" placeholder="Ex: Nazaré, Campina, Marco..." />
+                </label>
+            </div>
+
+            <label>
+                Corpo Completo da Matéria
+                <textarea name="corpo" rows="8" placeholder="Texto completo da reportagem ou comunicado..."></textarea>
+            </label>
+
+            <div class="grid" style="grid-template-columns:1fr 1fr;gap:16px;">
+                <label>
+                    Nome da Fonte
+                    <input name="nomeFonte" placeholder="Redação MinhaBelém / Assessoria Oficial" />
+                </label>
+                <label>
+                    Link Original da Fonte (se houver)
+                    <input type="url" name="linkFonte" placeholder="https://..." />
+                </label>
+            </div>
+
+            <button type="submit" style="margin-top:14px;">Publicar Matéria</button>
+        </form>
+    </div>
+</section>

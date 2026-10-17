@@ -181,3 +181,23 @@ public interface ITouristRepository
     Task<IReadOnlyList<Place>> GetFeaturedPlacesAsync(int take, CancellationToken ct);
 }
 
+public interface ITransitRepository
+{
+    Task<IReadOnlyList<TransitLine>> GetLinesAsync(string? transitType, CancellationToken ct);
+    Task<TransitLine?> GetLineByCodeAsync(string code, CancellationToken ct);
+    Task<IReadOnlyList<TransitLine>> SearchLinesAsync(string query, CancellationToken ct);
+    Task<IReadOnlyList<TransitStop>> GetStopsAsync(string? neighborhood, CancellationToken ct);
+    Task<IReadOnlyList<TransitAlert>> GetActiveAlertsAsync(CancellationToken ct);
+    Task<IReadOnlyList<RiverRoute>> GetRiverRoutesAsync(CancellationToken ct);
+    Task<long> UpsertAlertAsync(TransitAlert alert, CancellationToken ct);
+    Task<long> UpsertLineAsync(TransitLine line, CancellationToken ct);
+}
+
+public interface INeighborhoodRepository
+{
+    Task<IReadOnlyList<NeighborhoodGuide>> GetNeighborhoodsAsync(CancellationToken ct);
+    Task<NeighborhoodGuide?> GetBySlugAsync(string slug, CancellationToken ct);
+    Task<long> UpsertNeighborhoodAsync(NeighborhoodGuide guide, CancellationToken ct);
+}
+
+

@@ -1,0 +1,137 @@
+@using MinhaBelem.Core.Entities
+
+@{
+    ViewData["Title"] = "Gestão de Mobilidade & Trânsito";
+    var lines = ViewData["Lines"] as IReadOnlyList<TransitLine> ?? Array.Empty<TransitLine>();
+    var alerts = ViewData["Alerts"] as IReadOnlyList<TransitAlert> ?? Array.Empty<TransitAlert>();
+    var riverRoutes = ViewData["RiverRoutes"] as IReadOnlyList<RiverRoute> ?? Array.Empty<RiverRoute>();
+}
+
+<section class="section">
+    <div class="sectionhead">
+        <div>
+            <span class="eyebrow">ADMINISTRAÇÃO DE TRANSPORTE</span>
+            <h1>🚌 Mobilidade Urbana & Trânsito</h1>
+        </div>
+        <a href="#novo-alerta" class="button">+ Novo Alerta de Trânsito</a>
+    </div>
+
+    @if (TempData["Notice"] is string notice)
+    {
+        <p class="notice" role="status">@notice</p>
+    }
+
+    <!-- Alertas Ativos -->
+    <h2>Alertas e Interdições Ativas (@alerts.Count)</h2>
+    @if (alerts.Count == 0)
+    {
+        <div class="empty">
+            <p>Nenhum alerta de trânsito cadastrado no momento.</p>
+        </div>
+    }
+    else
+    {
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Título</th>
+                        <th>Gravidade</th>
+                        <th>Tipo</th>
+                        <th>Bairro</th>
+                        <th>Início</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var alert in alerts)
+                    {
+                        <tr>
+                            <td><strong>@alert.Title</strong><br /><small>@alert.Description</small></td>
+                            <td><span class="badge badge-rejected">@alert.Severity</span></td>
+                            <td>@alert.AlertType</td>
+                            <td>@(alert.Neighborhood ?? "Toda a cidade")</td>
+                            <td><small>@alert.StartAt.ToString("dd/MM/yyyy HH:mm")</small></td>
+                            <td><span class="badge badge-success">Ativo</span></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+
+    <!-- Novo Alerta Formulário -->
+    <div id="novo-alerta" class="card cta" style="margin:30px 0;">
+        <h3>Publicar Novo Alerta de Trânsito (Semob)</h3>
+        <form action="/admin/mobilidade/alerta" method="post">
+            @Html.AntiForgeryToken()
+            <label>
+                Título do Alerta *
+                <input name="titulo" required placeholder="Ex: Interdição parcial da Av. Almirante Barroso para obras..." />
+            </label>
+
+            <label>
+                Descrição com Orientações e Desvios *
+                <textarea name="descricao" rows="3" required placeholder="Descreva os desvios recomendados para motoristas e transporte coletivo..."></textarea>
+            </label>
+
+            <div class="grid" style="grid-template-columns:1fr 1fr 1fr;gap:16px;">
+                <label>
+                    Bairro Afetado
+                    <input name="bairro" placeholder="Ex: São Brás, Marco, Centro..." />
+                </label>
+                <label>
+                    Gravidade
+                    <select name="gravidade">
+                        <option value="Baixa">Baixa</option>
+                        <option value="Media" selected>Média</option>
+                        <option value="Alta">Alta</option>
+                        <option value="Critica">Crítica (Bloqueio Total)</option>
+                    </select>
+                </label>
+                <label>
+                    Tipo
+                    <select name="tipo">
+                        <option value="Obras">Obras</option>
+                        <option value="Interdicao">Interdição</option>
+                        <option value="Desvio">Desvio de Linha</option>
+                        <option value="Evento">Evento / Procissão</option>
+                        <option value="Clima">Alagamento / Maré Alta</option>
+                    </select>
+                </label>
+            </div>
+
+            <button type="submit" style="margin-top:14px;">Publicar Alerta</button>
+        </form>
+    </div>
+
+    <!-- Linhas Cadastradas -->
+    <h2>Linhas de Ônibus & BRT (@lines.Count)</h2>
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Código</th>
+                    <th>Nome</th>
+                    <th>Tipo</th>
+                    <th>Origem / Destino</th>
+                    <th>Tarifa</th>
+                    <th>Acessível</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var line in lines)
+                {
+                    <tr>
+                        <td><strong>@line.Code</strong></td>
+                        <td>@line.Name</td>
+                        <td><span class="badge badge-info">@line.TransitType</span></td>
+                        <td>@line.Origin ⇄ @line.Destination</td>
+                        <td>R$ @line.Fare.ToString("F2")</td>
+                        <td>@(line.HasWheelchairLift ? "♿ Sim" : "Não")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</section>

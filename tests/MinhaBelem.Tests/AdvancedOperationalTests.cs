@@ -135,7 +135,7 @@ public sealed class AdvancedOperationalTests(PortalFixture fixture)
         Assert.Equal(4, await db.ExecuteScalarAsync<int>("SELECT COUNT(*) FROM mb_roles"));
         Assert.Equal(17, await db.ExecuteScalarAsync<int>("SELECT COUNT(*) FROM mb_permissions"));
         Assert.Equal(38, await db.ExecuteScalarAsync<int>("SELECT COUNT(*) FROM mb_role_permissions"));
-        Assert.Equal(51, await db.ExecuteScalarAsync<int>("SELECT COUNT(*) FROM information_schema.tables WHERE table_schema=DATABASE()"));
+        Assert.Equal(57, await db.ExecuteScalarAsync<int>("SELECT COUNT(*) FROM information_schema.tables WHERE table_schema=DATABASE()"));
     }
     [MySqlFact]
     public async Task LegacyImportIsExplicitAdditiveAndKeepsPublicIds()

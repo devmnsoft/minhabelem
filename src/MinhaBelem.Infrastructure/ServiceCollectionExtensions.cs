@@ -113,6 +113,8 @@ public static class InfrastructureServiceCollectionExtensions
         services.AddScoped<IDashboardRepository, DashboardRepository>();
         services.AddScoped<ITranslationRepository, TranslationRepository>();
         services.AddScoped<ITouristRepository, TouristRepository>();
+        services.AddScoped<ITransitRepository, TransitRepository>();
+        services.AddScoped<INeighborhoodRepository, NeighborhoodRepository>();
 
         services.AddSingleton(sp => sp.GetRequiredService<IOptions<AiOptions>>().Value);
         services.AddScoped<AiRunLogger>();

@@ -1,0 +1,103 @@
+@model IReadOnlyList<MinhaBelem.Core.Entities.NeighborhoodGuide>
+
+@{
+    ViewData["Title"] = "Gestão de Guias de Bairros";
+}
+
+<section class="section">
+    <div class="sectionhead">
+        <div>
+            <span class="eyebrow">COMUNIDADE & GEOGRAFIA</span>
+            <h1>🏘️ Guias de Bairros de Belém</h1>
+        </div>
+        <a href="#novo-bairro" class="button">+ Novo Bairro</a>
+    </div>
+
+    @if (TempData["Notice"] is string notice)
+    {
+        <p class="notice" role="status">@notice</p>
+    }
+
+    <h2>Bairros Cadastrados (@Model.Count)</h2>
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Ordem</th>
+                    <th>Nome</th>
+                    <th>Slug</th>
+                    <th>Região / Zona</th>
+                    <th>Destaques</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var n in Model)
+                {
+                    <tr>
+                        <td>#@n.DisplayOrder</td>
+                        <td><strong>@n.Name</strong></td>
+                        <td><code>@n.Slug</code></td>
+                        <td><span class="badge badge-info">@n.Zone</span></td>
+                        <td><small>@(n.PopularAttractions ?? "-")</small></td>
+                        <td>
+                            <a href="/meu-bairro/@n.Slug" target="_blank" class="button small secondary">Ver Público ↗</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Novo Bairro Formulário -->
+    <div id="novo-bairro" class="card cta" style="margin-top:36px;">
+        <h3>Cadastrar / Atualizar Guia de Bairro</h3>
+        <form action="/admin/bairros" method="post">
+            @Html.AntiForgeryToken()
+            <div class="grid" style="grid-template-columns:1fr 1fr 1fr;gap:16px;">
+                <label>
+                    Nome do Bairro *
+                    <input name="Name" required placeholder="Ex: Marco, Guamá, Pedreira..." />
+                </label>
+                <label>
+                    Slug da URL *
+                    <input name="Slug" required placeholder="Ex: marco, guama, pedreira..." />
+                </label>
+                <label>
+                    Região / Zona *
+                    <select name="Zone">
+                        <option value="Centro Histórico">Centro Histórico</option>
+                        <option value="Região Central">Região Central</option>
+                        <option value="Zona Sul">Zona Sul</option>
+                        <option value="Zona Norte">Zona Norte</option>
+                        <option value="Zona Leste">Zona Leste</option>
+                        <option value="Ilhas e Distritos">Ilhas e Distritos</option>
+                    </select>
+                </label>
+            </div>
+
+            <label style="margin-top:14px;">
+                Resumo Histórico *
+                <textarea name="HistorySummary" rows="3" required placeholder="Origem e fundação do bairro..."></textarea>
+            </label>
+
+            <label style="margin-top:14px;">
+                Características Culturais e Gastronômicas *
+                <textarea name="CulturalCharacteristics" rows="3" required placeholder="Comércio típico, feiras, tradições, comida de rua..."></textarea>
+            </label>
+
+            <div class="grid" style="grid-template-columns:1fr 1fr;gap:16px;margin-top:14px;">
+                <label>
+                    Dicas de Segurança e Convivência
+                    <input name="SafetyTips" placeholder="Recomendações práticas para moradores e visitantes..." />
+                </label>
+                <label>
+                    Pontos Turísticos e Atrações
+                    <input name="PopularAttractions" placeholder="Ex: Bosque Rodrigues Alves, Praça Floriano Peixoto..." />
+                </label>
+            </div>
+
+            <button type="submit" style="margin-top:16px;">Salvar Guia de Bairro</button>
+        </form>
+    </div>
+</section>

@@ -1,0 +1,110 @@
+@model IReadOnlyList<MinhaBelem.Core.Entities.AdvertiserCampaign>
+
+@{
+    ViewData["Title"] = "MinhaBelém Parceiros — Publicidade & Negócios";
+}
+
+<section class="hero">
+    <div class="eyebrow">MINHABELÉM PARCEIROS & NEGÓCIOS 💼</div>
+    <h1>Conecte sua marca a quem vive e ama Belém.</h1>
+    <p>Publicidade ética, transparente e segmentada por bairro e categoria cultural para valorizar o comércio paraense.</p>
+</section>
+
+<section class="section">
+    <div class="sectionhead">
+        <div>
+            <span class="eyebrow">PLANOS COMERCIAIS</span>
+            <h2>Formatos de Parceria</h2>
+        </div>
+        <p class="small">Toda publicidade é claramente identificada, mantendo o respeito e a confiança da nossa comunidade leitora.</p>
+    </div>
+
+    <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px;">
+        <div class="card plan-card">
+            <span class="eyebrow">VITRINE LOCAL</span>
+            <h3>Guia Gastronômico & Comercial</h3>
+            <p>Destaque permanente para o seu restaurante, hotel, comércio ou atração no Guia de Belém com links e fotos oficiais.</p>
+            <ul style="padding-left:18px;margin:16px 0;font-size:0.95rem;line-height:1.7;">
+                <li>Perfil completo no Guia de Lugares</li>
+                <li>Integração verificada Google Places</li>
+                <li>Selo "Estabelecimento Parceiro"</li>
+                <li>Destaque nas buscas por bairro</li>
+            </ul>
+        </div>
+
+        <div class="card plan-card" style="border:2px solid var(--orange);">
+            <span class="eyebrow" style="color:var(--orange);">MAIS POPULAR</span>
+            <h3>Patrocínio de Categoria</h3>
+            <p>Sua marca associada às principais seções do portal: Cultura, Gastronomia, Turismo, Esportes ou Agenda de Fim de Semana.</p>
+            <ul style="padding-left:18px;margin:16px 0;font-size:0.95rem;line-height:1.7;">
+                <li>Banner editorial de topo de categoria</li>
+                <li>Identificação "Apoio Cultural"</li>
+                <li>Relatório mensal de cliques e impressões</li>
+                <li>Sem poluição visual ou pop-ups invasivos</li>
+            </ul>
+        </div>
+
+        <div class="card plan-card">
+            <span class="eyebrow">HIPERLOCAL</span>
+            <h3>Circuito "Meu Bairro"</h3>
+            <p>Comunicação focada nos moradores da sua região: Umarizal, Nazaré, Batista Campos, Cidade Velha, Marco ou Icoaraci.</p>
+            <ul style="padding-left:18px;margin:16px 0;font-size:0.95rem;line-height:1.7;">
+                <li>Presença no guia exclusivo do bairro</li>
+                <li>Promoção de eventos comunitários</li>
+                <li>Alcance direcionado aos vizinhos</li>
+            </ul>
+        </div>
+    </div>
+</section>
+
+<!-- Formulário de Proposta Comercial -->
+<section class="section cta" style="margin-top:40px;">
+    <h2>Solicite uma Proposta Personalizada</h2>
+    <p>Preencha os dados abaixo para receber nossa tabela comercial e plano de veiculação.</p>
+
+    @if (TempData["Notice"] is string notice)
+    {
+        <div class="notice" role="status">
+            <span>ℹ️ @notice</span>
+        </div>
+    }
+
+    <form asp-action="Anunciar" method="post">
+        @Html.AntiForgeryToken()
+        <div class="grid" style="grid-template-columns:1fr 1fr;gap:16px;">
+            <label>
+                Nome da Empresa / Estabelecimento *
+                <input name="empresa" maxlength="150" required placeholder="Ex: Restaurante Sabores do Pará" />
+            </label>
+            <label>
+                Nome do Responsável *
+                <input name="contato" maxlength="100" required placeholder="Seu nome" />
+            </label>
+            <label>
+                E-mail Corporativo *
+                <input type="email" name="email" maxlength="150" required placeholder="contato@empresa.com.br" />
+            </label>
+            <label>
+                Telefone / WhatsApp
+                <input name="telefone" maxlength="30" placeholder="(91) 99999-9999" />
+            </label>
+        </div>
+
+        <label style="margin-top:14px;">
+            Plano de Interesse
+            <select name="plano">
+                <option value="Guia">Vitrine do Guia de Estabelecimentos</option>
+                <option value="Categoria">Patrocínio de Categoria Editorial</option>
+                <option value="Bairro">Circuito Meu Bairro</option>
+                <option value="Personalizado">Projeto Especial / Evento</option>
+            </select>
+        </label>
+
+        <label style="margin-top:14px;">
+            Mensagem ou Detalhes da Campanha
+            <textarea name="mensagem" rows="3" placeholder="Conte-nos um pouco sobre o objetivo da sua campanha em Belém..."></textarea>
+        </label>
+
+        <button type="submit" style="margin-top:16px;">Enviar Solicitação Comercial</button>
+    </form>
+</section>

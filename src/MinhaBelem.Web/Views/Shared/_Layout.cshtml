@@ -46,8 +46,9 @@
             <a href="/explore" class="nav-highlight">🌎 @Loc["Nav_Explore"]</a>
             <a href="/guia">@Loc["Nav_Guide"]</a>
             <a href="/agenda">@Loc["Nav_Agenda"]</a>
-            <a href="/?categoria=cultura">@Loc["Category_Culture"]</a>
-            <a href="/?categoria=gastronomia">@Loc["Category_Gastronomy"]</a>
+            <a href="/mobilidade">🚌 Mobilidade</a>
+            <a href="/meu-bairro">🏘️ Meu Bairro</a>
+            <a href="/parceiros">💼 Parceiros</a>
             <a href="/explore/glossario">📖 @Loc["Glossary_Title"]</a>
             @if (User.Identity?.IsAuthenticated == true)
             {
@@ -83,12 +84,16 @@
             <span class="admin-nav-title">⚙️ Admin:</span>
             @foreach (var link in new[] {
                 ("dashboard.read", "/admin", Loc["Admin_Dashboard"].Value),
+                ("content.read", "/admin/conteudo", "Matérias"),
                 ("content.read", "/editorial", "Editorial"),
                 ("source.manage", "/admin/fontes", "Fontes"),
                 ("place.manage", "/admin/lugares", "Lugares"),
+                ("settings.manage", "/admin/mobilidade", "Mobilidade"),
+                ("advertiser.manage", "/admin/anunciantes", "Anunciantes"),
                 ("translation.manage", "/admin/idiomas", Loc["Admin_Languages"].Value),
                 ("translation.read", "/admin/traducoes", Loc["Admin_Translations"].Value),
                 ("submission.moderate", "/admin/colaboracoes", "Colaborações"),
+                ("dashboard.read", "/admin/relatorios", "Relatórios"),
                 ("user.manage", "/admin/usuarios", "Usuários"),
                 ("settings.manage", "/admin/integracoes", "Integrações"),
                 ("audit.read", "/admin/auditoria", "Auditoria"),

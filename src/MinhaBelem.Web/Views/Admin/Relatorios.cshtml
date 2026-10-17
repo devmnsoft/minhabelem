@@ -1,0 +1,79 @@
+@using MinhaBelem.Core.Entities
+@using MinhaBelem.Core.Abstractions
+
+@{
+    ViewData["Title"] = "Relatórios Executivos & Indicadores";
+    var dashboard = ViewData["Dashboard"] as DashboardSnapshot;
+    var transStats = ViewData["TranslationStats"] as TranslationStats;
+    var auditLogs = ViewData["RecentAudit"] as IReadOnlyList<AuditEntry> ?? Array.Empty<AuditEntry>();
+    var aiCost = ViewData["AiCost"] is decimal cost ? cost : 0m;
+    var (aiTotal, aiFailed) = ViewData["AiStats"] is (int t, int f) ? (t, f) : (0, 0);
+}
+
+<section class="section">
+    <div class="sectionhead">
+        <div>
+            <span class="eyebrow">GOVERNANÇA & INTELIGÊNCIA DE DADOS</span>
+            <h1>📊 Relatórios Executivos & Indicadores</h1>
+        </div>
+        <a href="/admin" class="button secondary">← Painel Principal</a>
+    </div>
+
+    <!-- Indicadores Principais -->
+    <div class="grid stats-grid" style="margin:24px 0;">
+        <div class="card stat-card">
+            <span class="small">📰 Conteúdos Publicados</span>
+            <h3>@(dashboard?.PublishedContent ?? 0)</h3>
+        </div>
+        <div class="card stat-card">
+            <span class="small">⏳ Fila Editorial em Revisão</span>
+            <h3>@(dashboard?.ContentInReview ?? 0)</h3>
+        </div>
+        <div class="card stat-card">
+            <span class="small">🌐 Traduções Aprovadas</span>
+            <h3>@(transStats?.ApprovedTranslations ?? 0)</h3>
+        </div>
+        <div class="card stat-card">
+            <span class="small">🤖 Chamadas de IA (30 dias)</span>
+            <h3>@aiTotal <span style="font-size:0.8rem;color:var(--muted);">(Falhas: @aiFailed)</span></h3>
+        </div>
+        <div class="card stat-card">
+            <span class="small">💵 Custo de IA Estimado</span>
+            <h3>$ @aiCost.ToString("F4") USD</h3>
+        </div>
+    </div>
+
+    <!-- Trilha Recente de Auditoria -->
+    <h2 style="margin-top:36px;">Trilha de Auditoria Recente (@auditLogs.Count)</h2>
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Data (UTC)</th>
+                    <th>Ação</th>
+                    <th>Entidade</th>
+                    <th>ID</th>
+                    <th>Ator (Usuário ID)</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (auditLogs.Count == 0)
+                {
+                    <tr>
+                        <td colspan="5" style="text-align:center;padding:20px;">Nenhum registro de auditoria disponível.</td>
+                    </tr>
+                }
+                @foreach (var log in auditLogs)
+                {
+                    <tr>
+                        <td><small>@log.CreatedAt.ToString("dd/MM/yyyy HH:mm:ss")</small></td>
+                        <td><code>@log.Action</code></td>
+                        <td>@log.EntityType</td>
+                        <td>@(log.EntityId?.ToString() ?? "-")</td>
+                        <td>#@log.ActorId</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</section>

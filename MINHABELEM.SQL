@@ -1188,3 +1188,116 @@ INSERT IGNORE INTO mb_tourist_itineraries (slug, days, theme, title_pt, title_en
  '5日間のベレン満喫旅：歴史遺産、コンブー島、ウチンガ公園、川波の寄せるモスケイロ島の淡水ビーチ、イコアラシ陶芸村の職人技見学。',
  4);
 
+-- @migration 009_mobilidade_comunidade_parceiros
+CREATE TABLE IF NOT EXISTS mb_transit_lines (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  code VARCHAR(30) NOT NULL,
+  name VARCHAR(200) NOT NULL,
+  origin VARCHAR(150) NOT NULL,
+  destination VARCHAR(150) NOT NULL,
+  fare DECIMAL(10,2) NOT NULL DEFAULT 4.00,
+  transit_type VARCHAR(50) NOT NULL DEFAULT 'Urbano',
+  operator_name VARCHAR(150) NULL,
+  has_air_conditioning BOOLEAN NOT NULL DEFAULT FALSE,
+  has_wheelchair_lift BOOLEAN NOT NULL DEFAULT TRUE,
+  itinerary_summary TEXT NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY uq_transit_line_code (code),
+  KEY idx_transit_type (transit_type)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS mb_transit_stops (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(200) NOT NULL,
+  address VARCHAR(300) NULL,
+  neighborhood VARCHAR(120) NOT NULL,
+  municipality VARCHAR(120) NOT NULL DEFAULT 'Belém',
+  latitude DOUBLE NULL,
+  longitude DOUBLE NULL,
+  stop_type VARCHAR(50) NOT NULL DEFAULT 'Parada',
+  is_accessible BOOLEAN NOT NULL DEFAULT TRUE,
+  lines_serviced VARCHAR(500) NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  KEY idx_transit_stop_neighborhood (neighborhood)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS mb_transit_alerts (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  title VARCHAR(250) NOT NULL,
+  description TEXT NOT NULL,
+  neighborhood VARCHAR(120) NULL,
+  severity VARCHAR(30) NOT NULL DEFAULT 'Media',
+  alert_type VARCHAR(50) NOT NULL DEFAULT 'Obras',
+  start_at DATETIME NOT NULL,
+  end_at DATETIME NULL,
+  is_active BOOLEAN NOT NULL DEFAULT TRUE,
+  created_by_user_id BIGINT NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  KEY idx_transit_alerts_active (is_active, start_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS mb_river_routes (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(200) NOT NULL,
+  departure_port VARCHAR(200) NOT NULL,
+  destination_port VARCHAR(200) NOT NULL,
+  destination_island VARCHAR(100) NOT NULL,
+  estimated_duration_minutes INT NOT NULL DEFAULT 15,
+  fare DECIMAL(10,2) NOT NULL DEFAULT 10.00,
+  vessel_type VARCHAR(80) NOT NULL DEFAULT 'Popopô / Barco Regional',
+  operating_hours VARCHAR(250) NOT NULL DEFAULT 'Diário das 07h às 19h',
+  operator_notes TEXT NULL,
+  is_active BOOLEAN NOT NULL DEFAULT TRUE,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  KEY idx_river_destination (destination_island)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS mb_neighborhood_guides (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(120) NOT NULL,
+  slug VARCHAR(120) NOT NULL,
+  zone VARCHAR(50) NOT NULL,
+  history_summary TEXT NOT NULL,
+  cultural_characteristics TEXT NOT NULL,
+  safety_tips TEXT NULL,
+  popular_attractions TEXT NULL,
+  display_order INT NOT NULL DEFAULT 0,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY uq_neighborhood_slug (slug),
+  KEY idx_neighborhood_zone (zone)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS mb_campaign_metrics (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  campaign_id BIGINT NOT NULL,
+  metric_date DATE NOT NULL,
+  impressions INT NOT NULL DEFAULT 0,
+  clicks INT NOT NULL DEFAULT 0,
+  category VARCHAR(50) NULL,
+  neighborhood VARCHAR(120) NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY uq_campaign_metric (campaign_id, metric_date, category, neighborhood),
+  KEY idx_metric_date (metric_date)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Seeds de Mobilidade Urbana Paraense (Linhas expressas, BRT e travessias fluviais)
+INSERT IGNORE INTO mb_transit_lines (code, name, origin, destination, fare, transit_type, operator_name, has_air_conditioning, has_wheelchair_lift, itinerary_summary)
+VALUES
+ ('BRT-01', 'BRT Expresso Maracangalha — São Brás', 'Terminal Maracangalha', 'Terminal São Brás', 4.00, 'BRT', 'Consórcio Sistema Integrado Belém', TRUE, TRUE, 'Canal exclusivo da Av. Augusto Montenegro e Almirante Barroso.'),
+ ('LINE-226', 'Maró / Pedreira — Presidente Vargas', 'Pedreira', 'Centro / Ver-o-Peso', 4.00, 'Urbano', 'Viação Forte', FALSE, TRUE, 'Atende Pedro Miranda, Senador Lemos, Presidente Vargas e Ver-o-Peso.'),
+ ('LINE-758', 'Satélite — Pte. Vargas', 'Conjunto Satélite', 'Praça da República', 4.00, 'Urbano', 'Guajará Transportes', TRUE, TRUE, 'Via Mário Covas, Almirante Barroso e Av. Presidente Vargas.'),
+ ('RIV-01', 'Travessia Fluvial Praça do Pescador — Ilha do Combu', 'Porto da Praça do Pescador (Ver-o-Peso)', 'Furos e Restaurantes do Combu', 12.00, 'Fluvial', 'Cooperativa dos Barqueiros do Combu (Coopbarco)', FALSE, TRUE, 'Acesso aos restaurantes ribeirinhos e produção de cacau/chocolate artesanal.'),
+ ('RIV-02', 'Travessia Trapiche de Icoaraci — Ilha de Cotijuba', 'Trapiche de Icoaraci', 'Ilha de Cotijuba (Praia do Vai-Quem-Quer)', 10.00, 'Fluvial', 'Navio Municipal SEMOB / Barcos Particulares', FALSE, TRUE, 'Transporte diário com saídas regulares pela manhã e tarde.');
+
+-- Seeds de Bairros de Belém ("Meu Bairro")
+INSERT IGNORE INTO mb_neighborhood_guides (name, slug, zone, history_summary, cultural_characteristics, safety_tips, popular_attractions, display_order)
+VALUES
+ ('Cidade Velha', 'cidade-velha', 'Centro Histórico', 'Berço da fundação de Belém em 1616 por Francisco Caldeira Castelo Branco ao erguer o Forte do Presépio.', 'Ruas de pedra, casarões azulejados portugueses, culinária ribeirinha e festas de carimbó.', 'Atenção aos pertences à noite em ruas desertas.', 'Forte do Presépio, Catedral da Sé, Casa das Onze Janelas, Museu de Arte Sacra.', 1),
+ ('Campina / Comércio', 'campina', 'Centro Histórico', 'Primeiro bairro comercial de Belém, famoso pelas feiras de rua e arquitetura do Ciclo da Borracha.', 'Comércio vibrante, bancas de ervas aromáticas, garrafadas de cheiro do Pará e artesanato miriti.', 'Mantenha bolsas à frente e celulares guardados ao caminhar nas aglomerações da feira.', 'Ver-o-Peso, Praça do Relógio, Solar da Baronesa, Igreja de Sant''Ana.', 2),
+ ('Nazaré', 'nazare', 'Região Central', 'Coração da fé católica paraense, onde converge o Círio de Nazaré todo segundo domingo de outubro.', 'Túneis de mangueiras centenárias, cafés modernos, praças floridas e a grandiosa Basílica.', 'Bairro com boa iluminação e policiamento turístico permanente.', 'Basílica Santuário de Nazaré, Praça Santuário, Museu Memória de Nazaré.', 3),
+ ('Umarizal', 'umarizal', 'Zona Sul', 'Antiga área de olarias e trapiches, hoje o principal polo gastronômico e boêmio moderno da capital.', 'Bares sofisticados, restaurantes de alta gastronomia amazônica contemporânea e edifícios modernos.', 'Muito movimentado à noite; utilize serviços de transporte ou valets credenciados.', 'Polo Gastronômico da Doca, Praça Brasil, Casa Cor Pará.', 4),
+ ('Batista Campos', 'batista-campos', 'Região Central', 'Área residencial nobre e tradicional, célebre pela sua praça homônima premiada nacionalmente.', 'Clima bucólico familiar, quiosques de água de coco, sorveterias típicas e passeios ao amanhecer.', 'Bairro tranquilo, ideal para caminhadas diurnas e piqueniques na praça.', 'Praça Batista Campos (Castelinhos e lagos com vitórias-régias).', 5);
+
+

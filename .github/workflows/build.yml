@@ -16,7 +16,7 @@ jobs:
           dotnet-version: 8.0.x
       - run: dotnet restore MinhaBelem.sln
       - run: dotnet build MinhaBelem.sln --no-restore --configuration Release
-      - run: dotnet test MinhaBelem.sln --no-build --configuration Release --filter "FullyQualifiedName~SecurityTests|FullyQualifiedName~DiscoveryTests" --logger trx --results-directory TestResults
+      - run: dotnet test MinhaBelem.sln --no-build --configuration Release --filter "FullyQualifiedName~SecurityTests|FullyQualifiedName~DiscoveryTests|FullyQualifiedName~InternationalizationTests|FullyQualifiedName~MobilityAndCommunityTests" --logger trx --results-directory TestResults
   mysql-http:
     runs-on: ubuntu-latest
     services:
