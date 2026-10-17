@@ -7,14 +7,18 @@
     var riverRoutes = ViewData["RiverRoutes"] as IReadOnlyList<RiverRoute> ?? Array.Empty<RiverRoute>();
 }
 
-<section class="section">
-    <div class="sectionhead">
-        <div>
-            <span class="eyebrow">ADMINISTRAÇÃO DE TRANSPORTE</span>
-            <h1>🚌 Mobilidade Urbana & Trânsito</h1>
+<div class="admin-shell">
+    <partial name="_AdminSidebar" />
+
+    <main class="admin-content">
+        <div class="admin-header">
+            <div>
+                <span class="eyebrow">ADMINISTRAÇÃO DE TRANSPORTE</span>
+                <h1 style="font-size:2.2rem;margin-top:4px;">Mobilidade Urbana & Trânsito</h1>
+                <p class="small text-muted">Gestão de itinerários de ônibus, alertas da Semob e transporte fluvial ribeirinho.</p>
+            </div>
+            <a href="#novo-alerta" class="button small">➕ Novo Alerta de Trânsito</a>
         </div>
-        <a href="#novo-alerta" class="button">+ Novo Alerta de Trânsito</a>
-    </div>
 
     @if (TempData["Notice"] is string notice)
     {
@@ -134,4 +138,5 @@
             </tbody>
         </table>
     </div>
-</section>
+    </main>
+</div>

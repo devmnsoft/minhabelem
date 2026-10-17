@@ -1,2 +1,67 @@
 @model IReadOnlyList<MinhaBelem.Core.Entities.CommunitySubmission>
-<section class="section"><h1>Colaborações da comunidade</h1><p>A aprovação registra a avaliação. Não publica automaticamente o texto enviado.</p><div class="grid">@foreach(var submission in Model){<article class="card"><h2>@submission.DisplayName</h2><p>@submission.Message</p><p>@submission.Status · @submission.CreatedAt UTC</p><form method="post" asp-action="Moderar" asp-route-id="@submission.Id"><button name="approve" value="true">Aprovar avaliação</button><button name="approve" value="false">Rejeitar</button></form></article>}</div></section>
+
+@{
+    ViewData["Title"] = "Moderação de Colaborações da Comunidade";
+}
+
+<div class="admin-shell">
+    <partial name="_AdminSidebar" />
+
+    <main class="admin-content">
+        <div class="admin-header">
+            <div>
+                <span class="eyebrow">PARTICIPAÇÃO CIDADÃ & MODERAÇÃO</span>
+                <h1 style="font-size:2.2rem;margin-top:4px;">Colaborações da Comunidade</h1>
+                <p class="small text-muted">Mensagens, sugestões de eventos e relatos enviados por moradores através do formulário público. A aprovação não expõe dados sensíveis sem consentimento (LGPD).</p>
+            </div>
+        </div>
+
+        @if (TempData["Notice"] is string notice)
+        {
+            <div class="notice" role="status">
+                <span>ℹ️ @notice</span>
+            </div>
+        }
+
+        <h2 style="font-size:1.4rem;margin:24px 0 14px;">Envios Pendentes e Recentes (@Model.Count)</h2>
+        <div class="grid">
+            @if (Model.Count == 0)
+            {
+                <div class="card empty" style="grid-column:1/-1;">
+                    <p>Nenhuma colaboração da comunidade registrada no momento.</p>
+                </div>
+            }
+            @foreach (var submission in Model)
+            {
+                <article class="card">
+                    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;">
+                        <span class="eyebrow">ENVIADO POR</span>
+                        <span class="badge @(submission.Status.ToString() == "Approved" ? "badge-success" : submission.Status.ToString() == "Rejected" ? "badge-rejected" : "badge-pending")">
+                            @submission.Status
+                        </span>
+                    </div>
+
+                    <h3 style="margin:6px 0 10px;">@submission.DisplayName</h3>
+                    <p style="background:var(--creme);padding:14px;border-radius:var(--radius-sm);border:1px solid var(--border-subtle);font-size:0.95rem;">
+                        @submission.Message
+                    </p>
+
+                    <div class="card-meta">
+                        <span>🕒 Recebido em @submission.CreatedAt.ToString("dd/MM/yyyy HH:mm") UTC</span>
+                    </div>
+
+                    <div style="margin-top:14px;display:flex;gap:10px;">
+                        <form method="post" asp-action="Moderar" asp-route-id="@submission.Id" style="display:inline;">
+                            @Html.AntiForgeryToken()
+                            <button name="approve" value="true" class="button small">✓ Aprovar</button>
+                        </form>
+                        <form method="post" asp-action="Moderar" asp-route-id="@submission.Id" style="display:inline;">
+                            @Html.AntiForgeryToken()
+                            <button name="approve" value="false" class="button secondary small">✕ Rejeitar</button>
+                        </form>
+                    </div>
+                </article>
+            }
+        </div>
+    </main>
+</div>

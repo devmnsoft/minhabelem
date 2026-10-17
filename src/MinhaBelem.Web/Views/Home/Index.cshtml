@@ -1,15 +1,74 @@
 @model IReadOnlyList<MinhaBelem.Core.Entities.ContentItem>
 @using System.Globalization
+@using MinhaBelem.Core.Entities
+@using MinhaBelem.Web.Models
 
 @{
     ViewData["Title"] = Loc["Nav_Home"].Value;
     var currentCulture = CultureInfo.CurrentUICulture;
+    var upcomingEvents = ViewData["UpcomingEvents"] as IReadOnlyList<ContentItem>;
+    var places = ViewData["Places"] as IReadOnlyList<Place>;
+    var gastroPlaces = ViewData["GastronomyPlaces"] as IReadOnlyList<Place>;
+    var transitAlerts = ViewData["TransitAlerts"] as IReadOnlyList<TransitAlert>;
+    var transitLines = ViewData["TransitLines"] as IReadOnlyList<TransitLine>;
+    var neighborhoods = ViewData["Neighborhoods"] as IReadOnlyList<NeighborhoodGuide>;
+    var itineraries = ViewData["TouristItineraries"] as IReadOnlyList<TouristItinerary>;
+
+    var isFiltered = ViewData["Category"] != null || ViewData["Search"] != null || (int)(ViewData["Page"] ?? 1) > 1;
+    var leadStory = Model.Count > 0 ? Model[0] : null;
+    var secondaryStories = Model.Count > 1 ? Model.Skip(1).Take(4).ToList() : new List<ContentItem>();
+    var otherStories = Model.Count > 5 ? Model.Skip(5).ToList() : new List<ContentItem>();
 }
 
-@if (ViewData["Places"] is IReadOnlyList<MinhaBelem.Core.Entities.Place> places && places.Count > 0)
+<!-- HERO EDITORIAL VISUAL DE BELÉM -->
+<section class="hero" aria-labelledby="hero-title">
+    <div class="hero-content">
+        <span class="eyebrow">✺ BELÉM DO PARÁ • AMAZÔNIA BRASIL 🇧🇷</span>
+        <h1 id="hero-title">@Loc["Hero_Title"]</h1>
+        <p>@Loc["Hero_Subtitle"]</p>
+        
+        <form method="get" action="/" class="search" role="search" aria-label="@Loc["Search_Placeholder"]">
+            <label for="busca" class="sr-only">@Loc["Search_Placeholder"]</label>
+            <input id="busca" name="busca" maxlength="120" placeholder="@Loc["Search_Placeholder"]" value="@ViewData["Search"]" />
+            <button type="submit">@Loc["Search_Button"]</button>
+        </form>
+
+        <div class="hero-quick-tags" aria-label="Tópicos Populares">
+            <span>🔍 Tópicos em alta:</span>
+            <a href="/?busca=Círio" class="quick-pill">Círio de Nazaré</a>
+            <a href="/?busca=Ver-o-Peso" class="quick-pill">Ver-o-Peso</a>
+            <a href="/?busca=Tacacá" class="quick-pill">Tacacá & Gastronomia</a>
+            <a href="/explore/roteiro/belem-express-1-dia" class="quick-pill">Roteiro 1 Dia</a>
+            <a href="/mobilidade" class="quick-pill">Ônibus & Ilhas</a>
+            <a href="/meu-bairro" class="quick-pill">Bairros Históricos</a>
+        </div>
+    </div>
+</section>
+
+<!-- SELEÇÃO RÁPIDA DE CATEGORIAS -->
+<section class="section" style="margin-top:20px;margin-bottom:20px;" aria-label="Categorias Editoriais">
+    <div class="categories-pills">
+        <a href="/" class="category-pill @(ViewData["Category"] == null ? "active" : "")">Todas as Notícias</a>
+        @foreach (var category in MinhaBelem.Core.Taxonomy.Taxonomy.All)
+        {
+            <a href="/?categoria=@category.Slug" class="category-pill @(string.Equals((string?)ViewData["Category"], category.Slug, StringComparison.OrdinalIgnoreCase) ? "active" : "")">
+                @category.Label
+            </a>
+        }
+    </div>
+</section>
+
+<!-- RESULTADOS DA BUSCA (SE HOUVER PESQUISA ESPECÍFICA) -->
+@if (places is { Count: > 0 })
 {
-    <section class="section search-results-places">
-        <h2>@Loc["Explore_Places"]</h2>
+    <section class="section search-results-places" aria-label="Lugares encontrados">
+        <div class="sectionhead">
+            <div>
+                <span class="eyebrow">GUIA DA CIDADE</span>
+                <h2>Lugares e Atrações Encontrados</h2>
+            </div>
+            <span class="small">Curadoria verificada MinhaBelém</span>
+        </div>
         <div class="grid">
             @foreach (var place in places)
             {
@@ -21,59 +80,118 @@
                     {
                         <div class="cultural-badge">💡 @place.CulturalNotes</div>
                     }
-                    <span class="small">📍 @place.Neighborhood, @place.Municipality</span>
+                    <div class="card-meta">
+                        <span>📍 @place.Neighborhood, @place.Municipality</span>
+                    </div>
                 </article>
             }
         </div>
     </section>
 }
 
-<section class="hero">
-    <div class="eyebrow">BELÉM • PARÁ • AMAZÔNIA 🇧🇷</div>
-    <h1>@Loc["Hero_Title"]</h1>
-    <p>@Loc["Hero_Subtitle"]</p>
-    
-    <form method="get" action="/" class="search" role="search">
-        <label for="busca" class="sr-only">@Loc["Search_Placeholder"]</label>
-        <input id="busca" name="busca" maxlength="120" placeholder="@Loc["Search_Placeholder"]" value="@ViewData["Search"]" />
-        <button type="submit">@Loc["Search_Button"]</button>
-    </form>
-</section>
-
-<section class="categories" aria-label="Categorias">
-    @foreach (var category in MinhaBelem.Core.Taxonomy.Taxonomy.All)
-    {
-        <a href="/?categoria=@category.Slug">@category.Label</a>
-    }
-</section>
-
-<section class="section">
+<!-- MANCHETES & HIERARQUIA VISUAL EDITORIAL -->
+<section class="section" aria-label="Notícias Principais">
     <div class="sectionhead">
         <div>
-            <span class="eyebrow">@Loc["Explore_VerifiedSource"]</span>
+            <span class="eyebrow">JORNALISMO & CIDANIA</span>
             <h2>@Loc["Home_LatestNews"]</h2>
         </div>
-        <span class="small">@Loc["Explore_VerifiedSource"]</span>
+        <span class="small">Revisão editorial e fontes identificadas</span>
     </div>
 
     @if (Model.Count == 0)
     {
-        <div class="empty">
+        <div class="card empty" style="text-align:center;padding:48px 24px;">
+            <div style="font-size:3rem;margin-bottom:12px;">🌿</div>
             <h3>@Loc["General_Empty"]</h3>
-            <p>@Loc["Explore_VerifiedSource"]</p>
-            <p>
-                Consulte os <a href="https://seguranca.belem.pa.gov.br/servicos-semob/" target="_blank" rel="noopener noreferrer">serviços oficiais de mobilidade</a> 
-                e a <a href="https://secult.belem.pa.gov.br/" target="_blank" rel="noopener noreferrer">Secretaria de Cultura</a>.
+            <p>Nenhuma publicação encontrada para o filtro selecionado.</p>
+            <p class="small text-muted" style="margin-top:16px;">
+                Consulte os <a href="https://seguranca.belem.pa.gov.br/servicos-semob/" target="_blank" rel="noopener noreferrer">serviços oficiais da Semob</a> 
+                e a <a href="https://secult.belem.pa.gov.br/" target="_blank" rel="noopener noreferrer">Secretaria de Cultura do Pará</a>.
             </p>
+            <div style="margin-top:20px;">
+                <a href="/" class="button secondary">Ver todas as notícias</a>
+            </div>
         </div>
+    }
+    else if (!isFiltered && leadStory is not null)
+    {
+        <!-- GRADE COM HIERARQUIA EDITORIAL (LEAD STORY + SECUNDÁRIAS) -->
+        <div class="editorial-hero-grid">
+            <article class="lead-story-card">
+                <div>
+                    <span class="eyebrow">★ DESTAQUE EDITORIAL • @MinhaBelem.Core.Taxonomy.Taxonomy.Info(leadStory.Category).Label</span>
+                    <h3><a asp-action="Detalhe" asp-route-id="@leadStory.Id">@leadStory.DisplayTitle</a></h3>
+                    <p class="lead-summary">@(leadStory.LocalizedSummary ?? leadStory.Summary)</p>
+                    
+                    @if (!string.IsNullOrWhiteSpace(leadStory.CulturalNotes))
+                    {
+                        <div class="cultural-badge">🌿 @leadStory.CulturalNotes</div>
+                    }
+                </div>
+                
+                <div class="card-meta">
+                    <span>📰 <strong>Fonte:</strong> @leadStory.SourceName</span>
+                    <span>•</span>
+                    <time datetime="@leadStory.PublishedAt.ToString("O")">
+                        @PortalTime.Local(leadStory.PublishedAt).ToString("d", currentCulture)
+                    </time>
+                    <span style="margin-left:auto;">
+                        <a asp-action="Detalhe" asp-route-id="@leadStory.Id" class="button-link">Ler matéria completa →</a>
+                    </span>
+                </div>
+            </article>
+
+            <div class="secondary-stories">
+                @foreach (var item in secondaryStories)
+                {
+                    <article class="secondary-story-card">
+                        <span class="eyebrow">@MinhaBelem.Core.Taxonomy.Taxonomy.Info(item.Category).Label</span>
+                        <h4 style="margin:6px 0 8px;font-size:1.15rem;">
+                            <a asp-action="Detalhe" asp-route-id="@item.Id">@item.DisplayTitle</a>
+                        </h4>
+                        <p class="small" style="line-height:1.5;">@(item.LocalizedSummary ?? item.Summary)</p>
+                        <div class="card-meta" style="margin-top:10px;padding-top:8px;">
+                            <span>📰 @item.SourceName</span>
+                            <span>•</span>
+                            <time datetime="@item.PublishedAt.ToString("O")">
+                                @PortalTime.Local(item.PublishedAt).ToString("d", currentCulture)
+                            </time>
+                        </div>
+                    </article>
+                }
+            </div>
+        </div>
+
+        @if (otherStories.Count > 0)
+        {
+            <div class="grid" style="margin-top:30px;">
+                @foreach (var item in otherStories)
+                {
+                    <article class="card">
+                        <span class="eyebrow">@MinhaBelem.Core.Taxonomy.Taxonomy.Info(item.Category).Label</span>
+                        <h3><a asp-action="Detalhe" asp-route-id="@item.Id">@item.DisplayTitle</a></h3>
+                        <p>@(item.LocalizedSummary ?? item.Summary)</p>
+                        <div class="card-meta">
+                            <span>📰 @item.SourceName</span>
+                            <span>•</span>
+                            <time datetime="@item.PublishedAt.ToString("O")">
+                                @PortalTime.Local(item.PublishedAt).ToString("d", currentCulture)
+                            </time>
+                        </div>
+                    </article>
+                }
+            </div>
+        }
     }
     else
     {
+        <!-- GRADE COMUM (QUANDO FILTRADO POR CATEGORIA/BUSCA) -->
         <div class="grid">
             @foreach (var item in Model)
             {
                 <article class="card news-card">
-                    <div class="eyebrow">@MinhaBelem.Core.Taxonomy.Taxonomy.Info(item.Category).Label</div>
+                    <span class="eyebrow">@MinhaBelem.Core.Taxonomy.Taxonomy.Info(item.Category).Label</span>
                     <h3><a asp-action="Detalhe" asp-route-id="@item.Id">@item.DisplayTitle</a></h3>
                     <p>@(item.LocalizedSummary ?? item.Summary)</p>
                     
@@ -82,11 +200,11 @@
                         <div class="cultural-badge">🌿 @item.CulturalNotes</div>
                     }
 
-                    <div class="card-meta small">
+                    <div class="card-meta">
                         <span>📰 @item.SourceName</span>
                         <span>•</span>
                         <time datetime="@item.PublishedAt.ToString("O")">
-                            @MinhaBelem.Web.Models.PortalTime.Local(item.PublishedAt).ToString("d", currentCulture)
+                            @PortalTime.Local(item.PublishedAt).ToString("d", currentCulture)
                         </time>
                     </div>
                 </article>
@@ -95,28 +213,266 @@
     }
 </section>
 
-<section class="section cta">
-    <h2>@Loc["Collab_Title"]</h2>
-    <p>@Loc["Collab_Subtitle"]</p>
-    
-    @if (TempData["Notice"] is string notice)
+<!-- SEÇÃO AGENDA CULTURAL & O QUE FAZER NA CIDADE -->
+@if (upcomingEvents is { Count: > 0 })
+{
+    <section class="section" aria-label="Agenda da Cidade">
+        <div class="sectionhead">
+            <div>
+                <span class="eyebrow">PROGRAMAÇÃO & CULTURA</span>
+                <h2>Agenda de Eventos em Belém</h2>
+            </div>
+            <div>
+                <a href="/agenda" class="button secondary small">Ver agenda completa (365 dias) →</a>
+            </div>
+        </div>
+
+        <div class="grid">
+            @foreach (var ev in upcomingEvents)
+            {
+                <article class="card event-card">
+                    <div class="event-date-row">
+                        <div class="event-date-badge">
+                            @if (ev.EventStartAt is { } dt)
+                            {
+                                <span>@PortalTime.Local(dt).ToString("dd MMM", currentCulture).ToUpper()</span>
+                            }
+                            else
+                            {
+                                <span>EM BREVE</span>
+                            }
+                        </div>
+                        <span class="eyebrow">@MinhaBelem.Core.Taxonomy.Taxonomy.Info(ev.Category).Label</span>
+                    </div>
+
+                    <h3><a asp-action="Detalhe" asp-route-id="@ev.Id">@ev.DisplayTitle</a></h3>
+                    <p>@(ev.LocalizedSummary ?? ev.Summary)</p>
+
+                    @if (ev.Address is not null)
+                    {
+                        <p class="small text-muted">📍 @ev.Address</p>
+                    }
+
+                    <div class="card-meta">
+                        <span>@(ev.IsFree ? "🎟️ Gratuito" : ev.TicketPrice?.ToString("C", currentCulture) ?? "🎟️ Consulte")</span>
+                        <span style="margin-left:auto;">
+                            <a asp-action="Detalhe" asp-route-id="@ev.Id" class="button-link">Detalhes →</a>
+                        </span>
+                    </div>
+                </article>
+            }
+        </div>
+    </section>
+}
+
+<!-- SEÇÃO TURISMO & ROTEIROS EXPLORE BELÉM -->
+<section class="section" aria-label="Turismo e Roteiros">
+    <div class="sectionhead">
+        <div>
+            <span class="eyebrow">TURISMO & DESCOBERTAS</span>
+            <h2>Explore Belém: Roteiros Inesquecíveis</h2>
+        </div>
+        <div>
+            <a href="/explore" class="button secondary small">Ver todos os roteiros →</a>
+        </div>
+    </div>
+
+    <div class="grid">
+        <article class="card">
+            <span class="eyebrow">ROTEIRO EXPRESSO</span>
+            <h3><a href="/explore/roteiro/belem-express-1-dia">Belém em 1 Dia: Do Ver-o-Peso ao Pôr do Sol</a></h3>
+            <p>O essencial da capital paraense: café com castanha, mercado histórico, Complexo Feliz Lusitânia e estação das docas.</p>
+            <div class="card-meta">
+                <span>⏱️ Duração: 8 horas</span>
+                <span>•</span>
+                <span>🚶 5 paradas a pé</span>
+            </div>
+        </article>
+
+        <article class="card">
+            <span class="eyebrow">ROTEIRO CULTURAL</span>
+            <h3><a href="/explore/roteiro/belem-cultural-2-dias">2 Dias: Fé, Tradição e Arquitetura da Borracha</a></h3>
+            <p>Basílica de Nazaré, Theatro da Paz, Palacete Bolonha e Parque da Residência.</p>
+            <div class="card-meta">
+                <span>⏱️ Duração: 2 dias</span>
+                <span>•</span>
+                <span>🏛️ História & Arte</span>
+            </div>
+        </article>
+
+        <article class="card">
+            <span class="eyebrow">ROTEIRO NATUREZA & ILHAS</span>
+            <h3><a href="/explore/roteiro/amazonia-urbana-ilhas-5-dias">5 Dias: Rios, Ilha do Combu e Sabores Amazônicos</a></h3>
+            <p>Travessia fluvial, restaurantes ribeirinhos, chocolate artesanal da dona Nena e ecoturismo urbano.</p>
+            <div class="card-meta">
+                <span>⏱️ Duração: 5 dias</span>
+                <span>•</span>
+                <span>🚤 Barcos & Gastronomia</span>
+            </div>
+        </article>
+    </div>
+</section>
+
+<!-- SEÇÃO MOBILIDADE URBANA & ALERTAS SEMOB -->
+<section class="section" aria-label="Mobilidade Urbana">
+    <div class="sectionhead">
+        <div>
+            <span class="eyebrow">TRANSPORTE & TRÂNSITO</span>
+            <h2>MinhaBelém Mobilidade</h2>
+        </div>
+        <div>
+            <a href="/mobilidade" class="button secondary small">Acessar hub de mobilidade →</a>
+        </div>
+    </div>
+
+    @if (transitAlerts is { Count: > 0 })
     {
-        <p class="notice" role="status">@notice</p>
+        @foreach (var alert in transitAlerts.Take(2))
+        {
+            <div class="transit-alert-box" role="alert">
+                <strong>⚠️ Alerta de Trânsito (@alert.Severity):</strong> @alert.Title — @alert.Description
+                @if (!string.IsNullOrWhiteSpace(alert.Neighborhood))
+                {
+                    <span style="display:block;margin-top:4px;font-size:0.88rem;">📍 <em>Região afetada: @alert.Neighborhood</em></span>
+                }
+            </div>
+        }
     }
 
-    <form asp-controller="Home" asp-action="Colaborar" method="post">
-        <label>
-            @Loc["Collab_Name"]
-            <input name="nome" maxlength="100" required />
-        </label>
-        <label>
-            @Loc["Collab_Message"]
-            <textarea name="mensagem" maxlength="2500" rows="4" required></textarea>
-        </label>
-        <label class="checkbox-label">
-            <input type="checkbox" name="consentimento" value="true" required /> 
-            <span>@Loc["Collab_Consent"] (<a href="/privacidade" target="_blank">@Loc["Nav_Privacy"]</a>)</span>
-        </label>
-        <button type="submit">@Loc["Collab_Submit"]</button>
-    </form>
+    <div class="grid">
+        <article class="card transit-line-card">
+            <span class="transit-badge">ÔNIBUS MUNICIPAL & BRT</span>
+            <h3>Linhas de Ônibus</h3>
+            <p>Consulte itinerários de ida e volta, paradas georreferenciadas, tarifa atualizada (R$ 4,00) e frotas adaptadas para cadeirantes.</p>
+            <div style="margin-top:auto;padding-top:14px;">
+                <a href="/mobilidade" class="button-link">Consultar linhas e rotas →</a>
+            </div>
+        </article>
+
+        <article class="card transit-line-card">
+            <span class="transit-badge" style="background:#eafaf1;color:#1b4d3e;">TRANSPORTE FLUVIAL</span>
+            <h3>Travessias para as Ilhas</h3>
+            <p>Horários e pontos de embarque para Ilha do Combu, Ilha de Cotijuba e Mosqueiro partindo da Praça Princesa Isabel e Icoaraci.</p>
+            <div style="margin-top:auto;padding-top:14px;">
+                <a href="/mobilidade/fluvial" class="button-link">Guia de transporte fluvial →</a>
+            </div>
+        </article>
+
+        <article class="card transit-line-card">
+            <span class="transit-badge" style="background:#fff3cd;color:#856404;">ALERTAS OPERACIONAIS</span>
+            <h3>Boletim de Trânsito Semob</h3>
+            <p>Avisos oficiais sobre interdições temporárias, obras na pista, procissões e desvios de linhas em Belém.</p>
+            <div style="margin-top:auto;padding-top:14px;">
+                <a href="/mobilidade/alertas" class="button-link">Ver boletim em tempo real →</a>
+            </div>
+        </article>
+    </div>
+</section>
+
+<!-- SEÇÃO MEU BAIRRO -->
+<section class="section" aria-label="Comunidade Meu Bairro">
+    <div class="sectionhead">
+        <div>
+            <span class="eyebrow">IDENTIDADE & COMUNIDADE</span>
+            <h2>Meu Bairro: A Cidade por Quem Vive Nela</h2>
+        </div>
+        <div>
+            <a href="/meu-bairro" class="button secondary small">Explorar todos os bairros →</a>
+        </div>
+    </div>
+
+    <div class="grid">
+        <article class="card neighborhood-card">
+            <span class="eyebrow">CENTRO HISTÓRICO</span>
+            <h3><a href="/meu-bairro/cidade-velha">Cidade Velha</a></h3>
+            <p>O berço de Belém. Casarões coloniais de azulejos portugueses, o Forte do Presépio e a Sé Catedral.</p>
+            <span class="button-link" style="margin-top:auto;">Conhecer o bairro →</span>
+        </article>
+
+        <article class="card neighborhood-card">
+            <span class="eyebrow">REGIÃO CENTRAL</span>
+            <h3><a href="/meu-bairro/campina">Campina (Comércio)</a></h3>
+            <p>Coração comercial da cidade com o Mercado de Ferro do Ver-o-Peso, Theatro da Paz e Praça da República.</p>
+            <span class="button-link" style="margin-top:auto;">Conhecer o bairro →</span>
+        </article>
+
+        <article class="card neighborhood-card">
+            <span class="eyebrow">REGIÃO CENTRAL</span>
+            <h3><a href="/meu-bairro/nazare">Nazaré</a></h3>
+            <p>O centro da devoção mariana paraense. Abriga a imponente Basílica Santuário e os túneis de mangueiras centenárias.</p>
+            <span class="button-link" style="margin-top:auto;">Conhecer o bairro →</span>
+        </article>
+
+        <article class="card neighborhood-card">
+            <span class="eyebrow">ZONA SUL</span>
+            <h3><a href="/meu-bairro/umarizal">Umarizal</a></h3>
+            <p>Polo gastronômico e cultural sofisticado com bistrôs modernos, bares tradicionais e vida noturna agitada.</p>
+            <span class="button-link" style="margin-top:auto;">Conhecer o bairro →</span>
+        </article>
+    </div>
+</section>
+
+<!-- ESPAÇO PUBLICIDADE VERIFICADA & PARCEIROS (DISCRETO E AUDITÁVEL) -->
+<section class="section" aria-label="Parceiros Comerciais">
+    <div class="sponsor-card">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;">
+            <div>
+                <span class="sponsor-tag">💼 PUBLICIDADE VERIFICADA • MINHABELÉM PARCEIROS</span>
+                <h3 style="margin:4px 0 6px;">Destaque o seu estabelecimento para moradores e turistas</h3>
+                <p class="small text-muted" style="margin:0;">Planos comerciais transparentes, com métricas reais de visualizações e cliques para bares, restaurantes e atrações culturais.</p>
+            </div>
+            <div>
+                <a href="/parceiros" class="button small">Conhecer planos para anunciantes →</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- TELEFONES E SERVIÇOS PÚBLICOS DE UTILIDADE -->
+<section class="section" aria-label="Serviços Úteis">
+    <div class="card" style="background:#f4f8f5;border-color:#c8ded0;">
+        <span class="eyebrow">UTILIDADE PÚBLICA & CIDADANIA</span>
+        <h3 style="margin-bottom:12px;">Telefones Úteis e Emergências em Belém</h3>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:16px;font-size:0.92rem;">
+            <div>🚑 <strong>SAMU:</strong> 192</div>
+            <div>🚒 <strong>Bombeiros:</strong> 193</div>
+            <div>🚓 <strong>Polícia Militar:</strong> 190</div>
+            <div>🏖️ <strong>DEATur (Delegacia do Turista):</strong> (91) 3212-3212</div>
+            <div>🚌 <strong>Semob Belém:</strong> 118</div>
+            <div>⚡ <strong>Defesa Civil Belém:</strong> 199</div>
+        </div>
+    </div>
+</section>
+
+<!-- COLABORAÇÃO CIDADÃ -->
+<section class="section cta" aria-label="Participação Social">
+    <div class="card" style="padding:36px;border-top:5px solid var(--terracotta);">
+        <h2>@Loc["Collab_Title"]</h2>
+        <p>@Loc["Collab_Subtitle"]</p>
+        
+        @if (TempData["Notice"] is string notice)
+        {
+            <div class="notice" role="status">
+                <span>ℹ️ @notice</span>
+            </div>
+        }
+
+        <form asp-controller="Home" asp-action="Colaborar" method="post" style="max-width:700px;margin-top:20px;">
+            <label>
+                @Loc["Collab_Name"]
+                <input name="nome" maxlength="100" required placeholder="Seu nome completo ou organização" />
+            </label>
+            <label>
+                @Loc["Collab_Message"]
+                <textarea name="mensagem" maxlength="2500" rows="4" required placeholder="Compartilhe uma notícia do seu bairro, evento cultural ou relato histórico..."></textarea>
+            </label>
+            <label class="checkbox-label" style="display:flex;align-items:center;gap:8px;font-size:0.88rem;color:var(--text-secondary);">
+                <input type="checkbox" name="consentimento" value="true" required style="width:auto;margin:0;" /> 
+                <span>@Loc["Collab_Consent"] (<a href="/privacidade" target="_blank">@Loc["Nav_Privacy"]</a>)</span>
+            </label>
+            <div style="margin-top:16px;">
+                <button type="submit">@Loc["Collab_Submit"]</button>
+            </div>
+        </form>
+    </div>
 </section>

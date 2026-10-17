@@ -1,21 +1,266 @@
 @model MinhaBelem.Web.Models.ContentInput
 @using MinhaBelem.Core.Entities
 @using MinhaBelem.Core.Taxonomy
-<section class="section article"><p class="eyebrow">EDIÇÃO EDITORIAL · @ViewData["Status"]</p><h1>Editar conteúdo</h1><p>Sinalizações: @ViewData["Flags"]. Datas deste formulário usam UTC.</p><div asp-validation-summary="All" role="alert"></div>
-<form method="post" asp-action="Editar" asp-route-id="@Model.Id"><input asp-for="Id" type="hidden" /><input asp-for="Revision" type="hidden" />
-<label>Título<input asp-for="Title" maxlength="300" required /></label><label>Resumo<textarea asp-for="Summary" maxlength="2500" rows="5" required></textarea></label><label>Texto (sem HTML)<textarea asp-for="Body" rows="8" maxlength="20000"></textarea></label>
-<label>Categoria<select asp-for="Category" asp-items="Html.GetEnumSelectList<ContentCategory>()"></select></label><label>Tipo<select asp-for="Kind" asp-items="Html.GetEnumSelectList<ContentKind>()"></select></label>
-<label>Assunto<select asp-for="Subject"><option value="">Sem assunto específico</option>@foreach(var subject in MinhaBelem.Core.Taxonomy.Taxonomy.Subjects){<option value="@subject.Key">@subject.Label</option>}</select></label>
-<label>Organizador<input asp-for="Organizer" maxlength="240" /></label><label>Artistas e participantes<input asp-for="Participants" maxlength="500" /></label><label>Classificação mínima (0 = livre)<input asp-for="MinimumAge" type="number" min="0" max="18" /></label>
-<label>Resumo público da atualização<input asp-for="PublicUpdateNote" maxlength="300" /></label>
-<label><input asp-for="ResolveDuplicate" /> Conferi a indicação de duplicidade e confirmei que este é um conteúdo distinto (explique na descrição da alteração)</label>
-<fieldset><legend>Públicos</legend>@foreach(var audience in Enum.GetValues<Audience>()){<label><input name="Audiences" type="checkbox" value="@audience" checked="@Model.Audiences.Contains(audience)" /> @audience</label>}</fieldset>
-<fieldset><legend>Acessibilidade confirmada</legend>@foreach(var feature in Enum.GetValues<AccessibilityFeature>()){<label><input name="Accessibility" type="checkbox" value="@feature" checked="@Model.Accessibility.Contains(feature)" /> @feature</label>}</fieldset>
-<label>Nome da fonte<input asp-for="SourceName" required /></label><label>URL original<input asp-for="SourceUrl" type="url" required /></label><label>Autoria<input asp-for="AuthorName" required /></label>
-<label>Município<input asp-for="Municipality" /></label><label>Bairro<input asp-for="Neighborhood" /></label><label>Endereço<input asp-for="Address" /></label>
-<label>Início do evento (UTC)<input asp-for="EventStartAt" type="datetime-local" /></label><label>Término (UTC)<input asp-for="EventEndAt" type="datetime-local" /></label><label>Expiração (UTC)<input asp-for="ExpiresAt" type="datetime-local" /></label>
-<label>Valor<input asp-for="TicketPrice" type="number" step="0.01" min="0" /></label><label><input asp-for="IsFree" /> Gratuito</label><label><input asp-for="Verified" /> Conferi os dados na fonte original</label>
-<label>Descrição da alteração<input asp-for="ChangeSummary" maxlength="480" required /></label><button>Salvar e enviar à revisão</button></form>
-<div class="actions"><form method="post" asp-action="Analisar" asp-route-id="@Model.Id"><button>Analisar com IA</button></form><form method="post" asp-action="Publicar" asp-route-id="@Model.Id"><label><input type="checkbox" name="confirmSensitive" value="true" /> Revisei as evidências e as sinalizações de conteúdo sensível</label><button>Aprovar e publicar</button></form><form method="post" asp-action="Arquivar" asp-route-id="@Model.Id"><button class="secondary">Arquivar</button></form></div>
-<h2>Histórico</h2><ul>@foreach(var revision in ViewData["Revisions"] as IReadOnlyList<ContentRevision> ?? Array.Empty<ContentRevision>()){<li>Revisão @revision.Revision · @revision.ChangedAt.ToString("g") UTC · editor @revision.ChangedById — @revision.ChangeSummary</li>}</ul></section>
-<section class="section article"><h2>Situação especial</h2><form method="post" asp-action="Situacao" asp-route-id="@Model.Id"><label>Estado<select name="status"><option value="Cancelled">Cancelado</option><option value="Postponed">Adiado</option><option value="UncertainDate">Data incerta</option><option value="AwaitingOrganizer">Aguardando organizador</option><option value="Completed">Evento encerrado</option></select></label><p>Confirme o estado na fonte antes de registrar. Cancelamentos publicados continuam acessíveis com aviso.</p><button>Registrar situação</button></form></section>
+
+@{
+    ViewData["Title"] = $"Editar Conteúdo #{Model.Id} — Central Editorial";
+}
+
+<div class="admin-shell">
+    <partial name="_AdminSidebar" />
+
+    <main class="admin-content">
+        <div class="admin-header">
+            <div>
+                <span class="eyebrow">EDIÇÃO EDITORIAL • STATUS: @ViewData["Status"]</span>
+                <h1 style="font-size:2.2rem;margin-top:4px;">Editar Conteúdo #@Model.Id</h1>
+                <p class="small text-muted">Sinalizações: @(ViewData["Flags"] ?? "Nenhuma flag crítica"). Datas utilizam fuso UTC no formulário de persistência.</p>
+            </div>
+            <a href="/editorial" class="button secondary small">← Voltar à Fila Editorial</a>
+        </div>
+
+        <div asp-validation-summary="All" class="notice error-notice" role="alert"></div>
+
+        @if (TempData["Notice"] is string notice)
+        {
+            <div class="notice" role="status">
+                <span>ℹ️ @notice</span>
+            </div>
+        }
+
+        <div class="card" style="border-top:4px solid var(--green-forest);margin-bottom:30px;">
+            <form method="post" asp-action="Editar" asp-route-id="@Model.Id">
+                @Html.AntiForgeryToken()
+                <input asp-for="Id" type="hidden" />
+                <input asp-for="Revision" type="hidden" />
+
+                <label>
+                    Título Editorial *
+                    <input asp-for="Title" maxlength="300" required />
+                </label>
+
+                <label>
+                    Resumo Lead (sem HTML) *
+                    <textarea asp-for="Summary" maxlength="2500" rows="3" required></textarea>
+                </label>
+
+                <label>
+                    Texto Completo da Matéria (sem HTML)
+                    <textarea asp-for="Body" rows="8" maxlength="20000"></textarea>
+                </label>
+
+                <div class="grid" style="grid-template-columns:1fr 1fr 1fr;gap:16px;">
+                    <label>
+                        Categoria *
+                        <select asp-for="Category" asp-items="Html.GetEnumSelectList<ContentCategory>()"></select>
+                    </label>
+
+                    <label>
+                        Tipo *
+                        <select asp-for="Kind" asp-items="Html.GetEnumSelectList<ContentKind>()"></select>
+                    </label>
+
+                    <label>
+                        Assunto Temático
+                        <select asp-for="Subject">
+                            <option value="">Sem assunto específico</option>
+                            @foreach (var subject in MinhaBelem.Core.Taxonomy.Taxonomy.Subjects)
+                            {
+                                <option value="@subject.Key">@subject.Label</option>
+                            }
+                        </select>
+                    </label>
+                </div>
+
+                <div class="grid" style="grid-template-columns:1fr 1fr 1fr;gap:16px;">
+                    <label>
+                        Nome da Fonte *
+                        <input asp-for="SourceName" required />
+                    </label>
+
+                    <label>
+                        URL Original da Matéria *
+                        <input asp-for="SourceUrl" type="url" required />
+                    </label>
+
+                    <label>
+                        Autoria do Texto *
+                        <input asp-for="AuthorName" required />
+                    </label>
+                </div>
+
+                <div class="grid" style="grid-template-columns:1fr 1fr 1fr;gap:16px;">
+                    <label>
+                        Município
+                        <input asp-for="Municipality" />
+                    </label>
+
+                    <label>
+                        Bairro
+                        <input asp-for="Neighborhood" />
+                    </label>
+
+                    <label>
+                        Endereço / Logradouro
+                        <input asp-for="Address" />
+                    </label>
+                </div>
+
+                <div class="grid" style="grid-template-columns:1fr 1fr 1fr;gap:16px;">
+                    <label>
+                        Início do Evento (UTC)
+                        <input asp-for="EventStartAt" type="datetime-local" />
+                    </label>
+
+                    <label>
+                        Término do Evento (UTC)
+                        <input asp-for="EventEndAt" type="datetime-local" />
+                    </label>
+
+                    <label>
+                        Expiração do Conteúdo (UTC)
+                        <input asp-for="ExpiresAt" type="datetime-local" />
+                    </label>
+                </div>
+
+                <div class="grid" style="grid-template-columns:1fr 1fr 1fr;gap:16px;">
+                    <label>
+                        Valor do Ingresso (R$)
+                        <input asp-for="TicketPrice" type="number" step="0.01" min="0" />
+                    </label>
+
+                    <label>
+                        Organizador / Produtora
+                        <input asp-for="Organizer" maxlength="240" />
+                    </label>
+
+                    <label>
+                        Classificação Mínima (0 = Livre)
+                        <input asp-for="MinimumAge" type="number" min="0" max="18" />
+                    </label>
+                </div>
+
+                <label>
+                    Artistas e Participantes
+                    <input asp-for="Participants" maxlength="500" />
+                </label>
+
+                <label>
+                    Nota Pública de Atualização (exibida aos leitores)
+                    <input asp-for="PublicUpdateNote" maxlength="300" />
+                </label>
+
+                <fieldset style="border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px 18px;margin:16px 0;">
+                    <legend style="padding:0 8px;font-weight:700;color:var(--green-deep);font-size:0.88rem;">Públicos Confirmados</legend>
+                    <div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:6px;">
+                        @foreach (var audience in Enum.GetValues<Audience>())
+                        {
+                            <label style="display:flex;align-items:center;gap:6px;margin:0;font-size:0.86rem;font-weight:normal;">
+                                <input name="Audiences" type="checkbox" value="@audience" checked="@Model.Audiences.Contains(audience)" style="width:auto;margin:0;" /> @audience
+                            </label>
+                        }
+                    </div>
+                </fieldset>
+
+                <fieldset style="border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px 18px;margin:16px 0;">
+                    <legend style="padding:0 8px;font-weight:700;color:var(--green-deep);font-size:0.88rem;">Acessibilidade Confirmada</legend>
+                    <div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:6px;">
+                        @foreach (var feature in Enum.GetValues<AccessibilityFeature>())
+                        {
+                            <label style="display:flex;align-items:center;gap:6px;margin:0;font-size:0.86rem;font-weight:normal;">
+                                <input name="Accessibility" type="checkbox" value="@feature" checked="@Model.Accessibility.Contains(feature)" style="width:auto;margin:0;" /> @feature
+                            </label>
+                        }
+                    </div>
+                </fieldset>
+
+                <div style="display:flex;gap:20px;flex-wrap:wrap;margin:16px 0;">
+                    <label class="checkbox-label" style="display:flex;align-items:center;gap:8px;font-weight:600;">
+                        <input asp-for="IsFree" style="width:auto;margin:0;" /> 
+                        <span>Evento Gratuito</span>
+                    </label>
+
+                    <label class="checkbox-label" style="display:flex;align-items:center;gap:8px;font-weight:600;">
+                        <input asp-for="Verified" style="width:auto;margin:0;" /> 
+                        <span>Conferi os dados na fonte original</span>
+                    </label>
+
+                    <label class="checkbox-label" style="display:flex;align-items:center;gap:8px;font-weight:600;">
+                        <input asp-for="ResolveDuplicate" style="width:auto;margin:0;" /> 
+                        <span>Conteúdo verificado como não duplicado</span>
+                    </label>
+                </div>
+
+                <label>
+                    Descrição da Alteração Realizada nesta Revisão *
+                    <input asp-for="ChangeSummary" maxlength="480" required placeholder="Ex: Correção de datas e inclusão de participantes" />
+                </label>
+
+                <div style="margin-top:20px;">
+                    <button type="submit">Salvar e Enviar à Revisão</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- AÇÕES DE FLUXO EDITORIAL -->
+        <div class="card" style="margin-bottom:30px;">
+            <h3 style="font-size:1.2rem;margin-bottom:14px;">Ações Editoriais</h3>
+            <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+                <form method="post" asp-action="Analisar" asp-route-id="@Model.Id" style="display:inline;">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="button secondary small">🤖 Analisar com IA</button>
+                </form>
+
+                <form method="post" asp-action="Publicar" asp-route-id="@Model.Id" style="display:inline-flex;align-items:center;gap:10px;">
+                    @Html.AntiForgeryToken()
+                    <label class="checkbox-label" style="display:flex;align-items:center;gap:6px;font-size:0.86rem;margin:0;">
+                        <input type="checkbox" name="confirmSensitive" value="true" style="width:auto;margin:0;" /> 
+                        <span>Revisei evidências e alertas de conteúdo sensível</span>
+                    </label>
+                    <button type="submit" class="button small">✓ Aprovar e Publicar</button>
+                </form>
+
+                <form method="post" asp-action="Arquivar" asp-route-id="@Model.Id" style="display:inline;">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="button outline small">📦 Arquivar</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- SITUAÇÃO ESPECIAL (CANCELAMENTO / ADIAMENTO) -->
+        <div class="card" style="margin-bottom:30px;border-left:4px solid var(--terracotta);">
+            <h3 style="font-size:1.2rem;margin-bottom:8px;">Situação Especial do Evento</h3>
+            <p class="small text-muted" style="margin-bottom:14px;">
+                Confirme o estado oficial na fonte antes de registrar. Cancelamentos publicados continuam acessíveis ao público com tarja informativa.
+            </p>
+            <form method="post" asp-action="Situacao" asp-route-id="@Model.Id" style="max-width:500px;">
+                @Html.AntiForgeryToken()
+                <label>
+                    Novo Estado Operacional
+                    <select name="status">
+                        <option value="Cancelled">Cancelado</option>
+                        <option value="Postponed">Adiado</option>
+                        <option value="UncertainDate">Data incerta</option>
+                        <option value="AwaitingOrganizer">Aguardando organizador</option>
+                        <option value="Completed">Evento encerrado</option>
+                    </select>
+                </label>
+                <button type="submit" class="button secondary small" style="margin-top:10px;">Registrar Situação</button>
+            </form>
+        </div>
+
+        <!-- HISTÓRICO DE REVISÕES -->
+        <div class="card">
+            <h3 style="font-size:1.2rem;margin-bottom:12px;">Histórico de Revisões Deste Conteúdo</h3>
+            <ul style="padding-left:20px;font-size:0.9rem;color:var(--text-secondary);display:grid;gap:6px;">
+                @foreach (var revision in ViewData["Revisions"] as IReadOnlyList<ContentRevision> ?? Array.Empty<ContentRevision>())
+                {
+                    <li>
+                        <strong>Revisão @revision.Revision</strong> · @revision.ChangedAt.ToString("dd/MM/yyyy HH:mm") UTC · 
+                        Editor #@revision.ChangedById — <em>@revision.ChangeSummary</em>
+                    </li>
+                }
+            </ul>
+        </div>
+    </main>
+</div>

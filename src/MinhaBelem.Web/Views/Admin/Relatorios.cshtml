@@ -10,14 +10,18 @@
     var (aiTotal, aiFailed) = ViewData["AiStats"] is (int t, int f) ? (t, f) : (0, 0);
 }
 
-<section class="section">
-    <div class="sectionhead">
-        <div>
-            <span class="eyebrow">GOVERNANÇA & INTELIGÊNCIA DE DADOS</span>
-            <h1>📊 Relatórios Executivos & Indicadores</h1>
+<div class="admin-shell">
+    <partial name="_AdminSidebar" />
+
+    <main class="admin-content">
+        <div class="admin-header">
+            <div>
+                <span class="eyebrow">GOVERNANÇA & INTELIGÊNCIA DE DADOS</span>
+                <h1 style="font-size:2.2rem;margin-top:4px;">Relatórios Executivos & Indicadores</h1>
+                <p class="small text-muted">Métricas consolidadas de redação, idiomas, chamadas de IA e trilha de auditoria.</p>
+            </div>
+            <a href="/admin" class="button secondary small">← Dashboard Principal</a>
         </div>
-        <a href="/admin" class="button secondary">← Painel Principal</a>
-    </div>
 
     <!-- Indicadores Principais -->
     <div class="grid stats-grid" style="margin:24px 0;">
@@ -76,4 +80,5 @@
             </tbody>
         </table>
     </div>
-</section>
+    </main>
+</div>

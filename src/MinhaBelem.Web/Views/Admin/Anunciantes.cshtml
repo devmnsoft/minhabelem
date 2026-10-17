@@ -4,14 +4,18 @@
     ViewData["Title"] = "Gestão de Anunciantes & Parceiros";
 }
 
-<section class="section">
-    <div class="sectionhead">
-        <div>
-            <span class="eyebrow">MONETIZAÇÃO ÉTICA</span>
-            <h1>💼 Anunciantes & Campanhas</h1>
+<div class="admin-shell">
+    <partial name="_AdminSidebar" />
+
+    <main class="admin-content">
+        <div class="admin-header">
+            <div>
+                <span class="eyebrow">MONETIZAÇÃO ÉTICA & PARCERIAS</span>
+                <h1 style="font-size:2.2rem;margin-top:4px;">Anunciantes & Campanhas</h1>
+                <p class="small text-muted">Acompanhamento de planos comerciais, ativação de banners e prestação de contas.</p>
+            </div>
+            <a href="/parceiros" class="button secondary small" target="_blank">Página de Planos Públicos ↗</a>
         </div>
-        <a href="/parceiros" class="button secondary" target="_blank">Página de Planos Públicos ↗</a>
-    </div>
 
     @if (TempData["Notice"] is string notice)
     {
@@ -79,4 +83,5 @@
             </table>
         </div>
     }
-</section>
+    </main>
+</div>

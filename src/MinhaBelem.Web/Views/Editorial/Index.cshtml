@@ -1,5 +1,117 @@
 @model MinhaBelem.Web.Models.EditorialIndex
-<section class="section"><p class="eyebrow">CENTRAL EDITORIAL</p><h1>Revisão e publicação</h1><p>Uma fonte identificada, edição humana e verificação precedem cada publicação.</p>
-<h2>Candidatos recebidos</h2>@if(Model.Candidates.Count == 0){<p class="empty">Nenhum candidato pendente. Consulte <a href="/admin/fontes">Fontes e monitoramento</a>.</p>}
-<div class="grid">@foreach(var item in Model.Candidates){<article class="card"><p class="eyebrow">@item.SourceName</p><h3>@item.Title</h3><p>@item.Summary</p><a href="/editorial/comparar/@item.Id">Comparar dados e atualizações</a><a href="@(MinhaBelem.Core.Security.SafeUrl.Validate(item.SourceUrl).IsValid ? item.SourceUrl : null)" target="_blank" rel="noopener noreferrer">Conferir original</a><form method="post" asp-action="Importar" asp-route-id="@item.Id"><button>Importar para edição</button></form><form method="post" asp-action="Rejeitar" asp-route-id="@item.Id"><button class="secondary">Rejeitar</button></form></article>}</div>
-<h2>Conteúdos editoriais</h2><div class="table-wrap"><table><thead><tr><th>Título</th><th>Estado</th><th>Atualização (UTC)</th><th>Edição</th></tr></thead><tbody>@foreach(var item in Model.Content){<tr><td>@item.Title</td><td>@item.Status</td><td>@item.UpdatedAt.ToString("g")</td><td><a asp-action="Editar" asp-route-id="@item.Id">Abrir</a></td></tr>}</tbody></table></div></section>
+
+@{
+    ViewData["Title"] = "Mesa Editorial & Moderação";
+}
+
+<div class="admin-shell">
+    <partial name="_AdminSidebar" />
+
+    <main class="admin-content">
+        <div class="admin-header">
+            <div>
+                <span class="eyebrow">CENTRAL EDITORIAL & JORNALISMO</span>
+                <h1 style="font-size:2.2rem;margin-top:4px;">Revisão Editorial & Publicação</h1>
+                <p class="small text-muted">Fontes autorizadas, conferência de fatos e revisão humana precedem toda publicação pública.</p>
+            </div>
+            <div style="display:flex;gap:10px;">
+                <a href="/admin/conteudo" class="button small">➕ Nova Matéria Manual</a>
+                <a href="/admin/fontes" class="button secondary small">📡 Status das Fontes</a>
+            </div>
+        </div>
+
+        @if (TempData["Notice"] is string notice)
+        {
+            <div class="notice" role="status">
+                <span>ℹ️ @notice</span>
+            </div>
+        }
+
+        <!-- CANDIDATOS DESCOBERTOS PELA INGESTÃO -->
+        <h2 style="font-size:1.4rem;margin:24px 0 14px;">Candidatos Descobertos Aguardando Decisão (@Model.Candidates.Count)</h2>
+        @if (Model.Candidates.Count == 0)
+        {
+            <div class="card empty" style="text-align:center;padding:32px;">
+                <p>Nenhum candidato pendente no momento. As fontes estão operando normalmente.</p>
+                <a href="/admin/fontes" class="button secondary small" style="margin-top:10px;">Verificar Fontes e Monitoramento</a>
+            </div>
+        }
+        else
+        {
+            <div class="grid" style="margin-bottom:34px;">
+                @foreach (var item in Model.Candidates)
+                {
+                    <article class="card">
+                        <span class="eyebrow">@item.SourceName</span>
+                        <h3>@item.Title</h3>
+                        <p>@item.Summary</p>
+
+                        <div style="margin:10px 0;display:flex;gap:12px;font-size:0.88rem;">
+                            <a href="/editorial/comparar/@item.Id" class="button-link">🔍 Comparar dados</a>
+                            @if (MinhaBelem.Core.Security.SafeUrl.Validate(item.SourceUrl).IsValid)
+                            {
+                                <a href="@item.SourceUrl" target="_blank" rel="noopener noreferrer" style="color:var(--text-muted);">Conferir original ↗</a>
+                            }
+                        </div>
+
+                        <div style="display:flex;gap:8px;margin-top:auto;padding-top:14px;border-top:1px solid var(--border-subtle);">
+                            <form method="post" asp-action="Importar" asp-route-id="@item.Id" style="display:inline;flex:1;">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="button small" style="width:100%;">Importar</button>
+                            </form>
+                            <form method="post" asp-action="Rejeitar" asp-route-id="@item.Id" style="display:inline;flex:1;">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="button secondary small" style="width:100%;">Rejeitar</button>
+                            </form>
+                        </div>
+                    </article>
+                }
+            </div>
+        }
+
+        <!-- MATÉRIAS EM FLUXO EDITORIAL -->
+        <h2 style="font-size:1.4rem;margin:30px 0 14px;">Conteúdos Editoriais em Processamento (@Model.Content.Count)</h2>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Título da Publicação</th>
+                        <th>Estado / Situação</th>
+                        <th>Última Atualização</th>
+                        <th>Ação</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Content.Count == 0)
+                    {
+                        <tr>
+                            <td colspan="4" style="text-align:center;padding:24px;">Nenhuma matéria no fluxo editorial.</td>
+                        </tr>
+                    }
+                    @foreach (var item in Model.Content)
+                    {
+                        <tr>
+                            <td>
+                                <strong>@item.Title</strong>
+                                <div class="small text-muted">Categoria: @item.Category · Fonte: @item.SourceName</div>
+                            </td>
+                            <td>
+                                <span class="badge @(item.Status.ToString() == "Published" ? "badge-success" : item.Status.ToString() == "Archived" ? "badge-muted" : "badge-pending")">
+                                    @item.Status
+                                </span>
+                            </td>
+                            <td>
+                                <small>@item.UpdatedAt.ToString("dd/MM/yyyy HH:mm") UTC</small>
+                            </td>
+                            <td>
+                                <a asp-action="Editar" asp-route-id="@item.Id" class="button small secondary">
+                                    ✏️ Abrir Edição
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </main>
+</div>
