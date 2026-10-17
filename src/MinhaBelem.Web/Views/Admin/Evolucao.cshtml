@@ -109,17 +109,33 @@
         <table class="table" style="width:100%; border-collapse:collapse; font-size:0.85rem;">
             <thead>
                 <tr style="border-bottom:2px solid var(--border-color); text-align:left; color:var(--text-muted);">
-                    <th style="padding:10px 12px; width:220px;">Módulo</th>
+                    <th style="padding:10px 12px; width:130px;">Categoria</th>
+                    <th style="padding:10px 12px; width:200px;">Módulo</th>
                     <th style="padding:10px 12px;">Descrição do Requisito</th>
-                    <th style="padding:10px 12px; width:130px;">Progresso</th>
-                    <th style="padding:10px 12px; width:120px;">Status</th>
+                    <th style="padding:10px 12px; width:110px;">Progresso</th>
+                    <th style="padding:10px 12px; width:170px;">Classificação</th>
                     <th style="padding:10px 12px;">Evidência Técnica</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach (var mod in Model.Modules)
                 {
+                    var badgeStyle = mod.Status switch {
+                        "Operacional em produção" => "background:#ecfdf5; color:#059669; border:1px solid #a7f3d0;",
+                        "Homologado" => "background:#eff6ff; color:#2563eb; border:1px solid #bfdbfe;",
+                        "Testado" => "background:#f5f3ff; color:#7c3aed; border:1px solid #ddd6fe;",
+                        "Implementado" => "background:#f0fdf4; color:#16a34a; border:1px solid #bbf7d0;",
+                        "Em desenvolvimento" => "background:#fffbeb; color:#d97706; border:1px solid #fde68a;",
+                        "Bloqueado" => "background:#fef2f2; color:#dc2626; border:1px solid #fecaca;",
+                        _ => "background:#f1f5f9; color:#475569; border:1px solid #cbd5e1;"
+                    };
+
                     <tr style="border-bottom:1px solid var(--border-color);">
+                        <td style="padding:12px; font-weight:600; color:var(--text-muted);">
+                            <span class="badge" style="background:#f1f5f9; color:#334155; font-size:0.75rem; padding:2px 6px; border-radius:4px;">
+                                @(string.IsNullOrEmpty(mod.Category) ? "Geral" : mod.Category)
+                            </span>
+                        </td>
                         <td style="padding:12px; font-weight:700; color:var(--text-primary);">
                             @mod.ModuleName
                         </td>
@@ -127,13 +143,13 @@
                             @mod.Description
                         </td>
                         <td style="padding:12px;">
-                            <div style="background:#e2e8f0; border-radius:10px; height:8px; overflow:hidden; width:100px;">
+                            <div style="background:#e2e8f0; border-radius:10px; height:8px; overflow:hidden; width:80px;">
                                 <div style="background:#16a34a; width:@mod.ProgressPercent%; height:100%;"></div>
                             </div>
                             <span style="font-size:0.75rem; color:var(--text-muted); font-weight:700;">@mod.ProgressPercent%</span>
                         </td>
                         <td style="padding:12px;">
-                            <span class="badge" style="background:#ecfdf5; color:#059669; border:1px solid #a7f3d0; padding:3px 8px; border-radius:6px; font-weight:700; font-size:0.75rem;">
+                            <span class="badge" style="@badgeStyle padding:3px 8px; border-radius:6px; font-weight:700; font-size:0.75rem; white-space:nowrap;">
                                 ✓ @mod.Status
                             </span>
                         </td>
