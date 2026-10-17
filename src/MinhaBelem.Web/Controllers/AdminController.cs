@@ -134,9 +134,11 @@ public sealed class AdminController(IAdministrationRepository admin, IDashboardR
     [HttpPost("configuracoes"), Authorize(Policy = Permissions.SettingsManage)]
     public async Task<IActionResult> SalvarConfiguracoes(bool collectorEnabled, int intervalMinutes, CancellationToken ct)
     {
-        if (intervalMinutes is < 10 or > 240) return BadRequest();
+        if (intervalMinutes is < 1 or > 240) return BadRequest();
         await admin.SetSettingAsync("collector.enabled", collectorEnabled ? "true" : "false", Actor, ct);
         await admin.SetSettingAsync("collector.intervalMinutes", intervalMinutes.ToString(System.Globalization.CultureInfo.InvariantCulture), Actor, ct);
+        await admin.SetSettingAsync("radar.enabled", collectorEnabled ? "true" : "false", Actor, ct);
+        await admin.SetSettingAsync("radar.intervalMinutes", intervalMinutes.ToString(System.Globalization.CultureInfo.InvariantCulture), Actor, ct);
         TempData["Notice"] = "Configuração salva. O coletor a consulta a cada ciclo.";
         return RedirectToAction(nameof(Configuracoes));
     }
