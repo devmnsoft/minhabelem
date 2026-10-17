@@ -68,6 +68,37 @@ public class SecurityTests
         Assert.True((await gate.IsAllowedAsync(new Uri("https://example.com/public/data"), default)).Allowed);
     }
 
+    [Fact]
+    public void RolesAndPermissionsDefinitionIsStrictAndPrivilegeEscalationIsPrevented()
+    {
+        Assert.Contains(Roles.SuperAdmin, Roles.All);
+        Assert.Contains(Roles.Editor, Roles.All);
+        Assert.Contains(Roles.Moderator, Roles.All);
+        Assert.Contains(Roles.Advertiser, Roles.All);
+
+        // Permissions hierarchy check
+        Assert.Contains(Permissions.UserManage, Permissions.ByRole[Roles.SuperAdmin]);
+        Assert.DoesNotContain(Permissions.UserManage, Permissions.ByRole[Roles.Editor]);
+        Assert.DoesNotContain(Permissions.UserManage, Permissions.ByRole[Roles.Moderator]);
+        Assert.DoesNotContain(Permissions.UserManage, Permissions.ByRole[Roles.Advertiser]);
+
+        // Content publishing is restricted to Editor and SuperAdmin (not Moderator or Advertiser)
+        Assert.Contains(Permissions.ContentPublish, Permissions.ByRole[Roles.Editor]);
+        Assert.DoesNotContain(Permissions.ContentPublish, Permissions.ByRole[Roles.Moderator]);
+        Assert.DoesNotContain(Permissions.ContentPublish, Permissions.ByRole[Roles.Advertiser]);
+    }
+
+    [Theory]
+    [InlineData("javascript:alert(1)")]
+    [InlineData("file:///etc/passwd")]
+    [InlineData("ftp://example.com/file")]
+    [InlineData("https://localhost:5001/admin")]
+    [InlineData("https://169.254.169.254/latest/meta-data")]
+    public void DangerousProtocolsAndCloudMetadataAreRejectedBySafeUrl(string url)
+    {
+        Assert.False(SafeUrl.Validate(url).IsValid);
+    }
+
     private sealed class RobotsHandler : HttpMessageHandler
     {
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct) =>

@@ -13,6 +13,7 @@
     var transitLines = ViewData["TransitLines"] as IReadOnlyList<TransitLine>;
     var neighborhoods = ViewData["Neighborhoods"] as IReadOnlyList<NeighborhoodGuide>;
     var itineraries = ViewData["TouristItineraries"] as IReadOnlyList<TouristItinerary>;
+    var socialVideos = ViewData["SocialVideos"] as IReadOnlyList<SocialPost>;
 
     var isFiltered = ViewData["Category"] != null || ViewData["Search"] != null || (int)(ViewData["Page"] ?? 1) > 1;
     var leadStory = Model.Count > 0 ? Model[0] : null;
@@ -427,6 +428,60 @@
         </div>
     </div>
 </section>
+
+<!-- VÍDEOS E REDES SOCIAIS OFICIAIS (RADAR SOCIAL) -->
+@if (socialVideos is { Count: > 0 })
+{
+    <section class="section" aria-label="Vídeos e Redes Sociais Oficiais">
+        <div class="section-header">
+            <div>
+                <span class="eyebrow">RADAR SOCIAL • CONTEÚDO OFICIAL</span>
+                <h2>Vídeos e Canais Oficiais de Belém</h2>
+            </div>
+            <a href="/admin/radar" class="button-link">Ver catálogo do Radar →</a>
+        </div>
+
+        <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:20px;">
+            @foreach (var post in socialVideos)
+            {
+                <article class="card" style="padding:18px; border-radius:12px; display:flex; flex-direction:column; justify-content:space-between;">
+                    <div>
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                            <span class="badge" style="background:#e0f2fe; color:#0369a1; padding:3px 8px; border-radius:6px; font-weight:700; font-size:0.75rem;">
+                                @(post.Platform == "YouTube" ? "▶️ YouTube" : "📸 Instagram")
+                            </span>
+                            @if (post.IsSponsored)
+                            {
+                                <span class="badge" style="background:#fef3c7; color:#b45309; font-size:0.7rem; padding:2px 6px;">Patrocinado</span>
+                            }
+                            else
+                            {
+                                <span class="badge" style="background:#ecfdf5; color:#059669; font-size:0.7rem; padding:2px 6px;">Oficial</span>
+                            }
+                        </div>
+
+                        <h3 style="font-size:1.05rem; margin:0 0 8px;">
+                            <a href="@post.PostUrl" target="_blank" rel="noopener noreferrer" style="color:var(--text-primary); text-decoration:none;">
+                                @post.Title
+                            </a>
+                        </h3>
+
+                        <p class="small text-muted" style="margin:0 0 12px; line-height:1.5;">
+                            @(post.CaptionSnippet ?? "Publicação oficial autorizada para divulgação cultural e turística de Belém.")
+                        </p>
+                    </div>
+
+                    <div style="border-top:1px solid var(--border); padding-top:12px; margin-top:8px; display:flex; justify-content:space-between; align-items:center;">
+                        <span class="small text-muted">@@@post.AuthorHandle</span>
+                        <a href="@post.PostUrl" target="_blank" rel="noopener noreferrer" class="button-link" style="font-size:0.85rem;">
+                            Assistir no @post.Platform ↗
+                        </a>
+                    </div>
+                </article>
+            }
+        </div>
+    </section>
+}
 
 <!-- TELEFONES E SERVIÇOS PÚBLICOS DE UTILIDADE -->
 <section class="section" aria-label="Serviços Úteis">
