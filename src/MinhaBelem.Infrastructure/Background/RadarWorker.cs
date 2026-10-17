@@ -35,7 +35,7 @@ public sealed class RadarWorker(
                 var settings = await admin.SettingsAsync(ct);
 
                 var enabled = bool.TryParse(settings.GetValueOrDefault("radar.enabled"), out var v) ? v : options.Value.Enabled;
-                var minutes = int.TryParse(settings.GetValueOrDefault("radar.intervalMinutes"), out var m) ? Math.Clamp(m, 10, 180) : 10;
+                var minutes = int.TryParse(settings.GetValueOrDefault("radar.intervalMinutes"), out var m) ? Math.Clamp(m, 1, 180) : Math.Clamp(options.Value.IntervalMinutes, 1, 180);
 
                 // Atualiza batimento cardíaco (Heartbeat) periódico mesmo enquanto ocioso
                 await radar.UpdateHeartbeatAsync("RadarWorker", "idle", $"Próximo ciclo programado para {last.AddMinutes(minutes).ToLocalTime():HH:mm:ss}", null, isRunning: false, ct);
@@ -69,7 +69,7 @@ public sealed class RadarWorker(
     public async Task TriggerOnceAsync(CancellationToken ct)
     {
         using var timeout = CancellationTokenSource.CreateLinkedTokenSource(ct);
-        timeout.CancelAfter(TimeSpan.FromMinutes(9));
+        timeout.CancelAfter(TimeSpan.FromSeconds(55));
         var token = timeout.Token;
 
         await using var conn = await data.OpenConnectionAsync(token);
