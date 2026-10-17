@@ -12,12 +12,17 @@ public sealed class RadarRepository(MySqlDataSource data) : IRadarRepository
     {
         await using var db = await data.OpenConnectionAsync(ct);
 
-        var totalSources = await db.ExecuteScalarAsync<int>(new CommandDefinition("SELECT COUNT(*) FROM ingestion_sources", cancellationToken: ct));
-        var activeSources = await db.ExecuteScalarAsync<int>(new CommandDefinition("SELECT COUNT(*) FROM ingestion_sources WHERE enabled=TRUE AND approved=TRUE", cancellationToken: ct));
+        var totalSources = await db.ExecuteScalarAsync<int>(new CommandDefinition("SELECT COUNT(*) FROM mb_ingestion_sources", cancellationToken: ct));
+        var activeSources = await db.ExecuteScalarAsync<int>(new CommandDefinition("SELECT COUNT(*) FROM mb_ingestion_sources WHERE enabled=1 AND approved=1", cancellationToken: ct));
         var discoveredItems = await db.ExecuteScalarAsync<int>(new CommandDefinition("SELECT COUNT(*) FROM mb_ingestion_candidates", cancellationToken: ct));
         var pendingReview = await db.ExecuteScalarAsync<int>(new CommandDefinition("SELECT COUNT(*) FROM mb_ingestion_candidates WHERE status='Pending'", cancellationToken: ct));
         var duplicates = await db.ExecuteScalarAsync<int>(new CommandDefinition("SELECT COUNT(*) FROM mb_ingestion_candidates WHERE status='Duplicate'", cancellationToken: ct));
         var upcomingEvents = await db.ExecuteScalarAsync<int>(new CommandDefinition("SELECT COUNT(*) FROM mb_content_items WHERE kind='Event' AND event_start_at > UTC_TIMESTAMP(6)", cancellationToken: ct));
+        var classified = await db.ExecuteScalarAsync<int>(new CommandDefinition("SELECT COUNT(*) FROM mb_content_items WHERE category IS NOT NULL AND status IN ('InReview', 'Published')", cancellationToken: ct));
+        var published = await db.ExecuteScalarAsync<int>(new CommandDefinition("SELECT COUNT(*) FROM mb_content_items WHERE status='Published'", cancellationToken: ct));
+        var outdated = await db.ExecuteScalarAsync<int>(new CommandDefinition("SELECT COUNT(*) FROM mb_ingestion_sources WHERE consecutive_failures >= 3 OR (enabled=1 AND (last_checked_at IS NULL OR last_checked_at < DATE_SUB(UTC_TIMESTAMP(6), INTERVAL 24 HOUR)))", cancellationToken: ct));
+        var collectorSetting = await db.ExecuteScalarAsync<string>(new CommandDefinition("SELECT setting_value FROM mb_settings WHERE setting_key='collector.enabled'", cancellationToken: ct));
+        var collectorEnabled = collectorSetting is null || !collectorSetting.Equals("false", StringComparison.OrdinalIgnoreCase);
         var errors = await db.ExecuteScalarAsync<int>(new CommandDefinition("SELECT COUNT(*) FROM mb_radar_crawl_history WHERE status_code >= 400 OR error_message IS NOT NULL", cancellationToken: ct));
         var aiTokens = await db.ExecuteScalarAsync<long?>(new CommandDefinition("SELECT SUM(prompt_tokens + completion_tokens) FROM mb_ai_runs", cancellationToken: ct)) ?? 0L;
         var lastCrawl = await db.ExecuteScalarAsync<DateTime?>(new CommandDefinition("SELECT MAX(crawled_at) FROM mb_radar_crawl_history", cancellationToken: ct));
@@ -29,10 +34,14 @@ public sealed class RadarRepository(MySqlDataSource data) : IRadarRepository
             TotalSources = totalSources,
             ActiveSources = activeSources,
             DiscoveredItemsCount = discoveredItems,
+            ClassifiedContentsCount = classified,
             UpcomingEventsCount = upcomingEvents,
             PendingReviewCount = pendingReview,
+            PublishedContentsCount = published,
             DuplicateItemsCount = duplicates,
             CrawlErrorsCount = errors,
+            OutdatedSourcesCount = outdated,
+            CollectorEnabled = collectorEnabled,
             AiTokensConsumed = aiTokens,
             LastCrawlAt = lastCrawl,
             NextCrawlDueAt = lastCrawl?.AddMinutes(10) ?? DateTime.UtcNow.AddMinutes(10),
@@ -142,8 +151,8 @@ public sealed class RadarRepository(MySqlDataSource data) : IRadarRepository
                 };
 
                 await db.ExecuteAsync(new CommandDefinition("""
-                    INSERT IGNORE INTO ingestion_sources (source_name, feed_url, feed_url_hash, protocol, enabled, approved, license_note, created_at)
-                    VALUES (@SourceName, @Url, @hash, @protocol, TRUE, TRUE, 'Aprovada via MinhaBelém Radar', UTC_TIMESTAMP(6));
+                    INSERT IGNORE INTO mb_ingestion_sources (name, feed_url, feed_url_hash, protocol, enabled, approved, license_note, created_at)
+                    VALUES (@SourceName, @Url, @hash, @protocol, 1, 1, 'Aprovada via MinhaBelém Radar', UTC_TIMESTAMP(6));
                     """, new { source.SourceName, source.Url, hash, protocol }, tx, cancellationToken: ct));
             }
         }
@@ -342,14 +351,14 @@ public sealed class RadarRepository(MySqlDataSource data) : IRadarRepository
     {
         await using var db = await data.OpenConnectionAsync(ct);
         var sql = """
-            SELECT id AS Id, source_name AS Name, feed_url AS FeedUrl, protocol AS Protocol,
+            SELECT id AS Id, name AS Name, feed_url AS FeedUrl, protocol AS Protocol,
                    topics AS Topics, municipality AS Municipality, enabled AS Enabled,
                    approved AS Approved, respect_robots AS RespectRobots, license_note AS LicenseNote,
                    last_checked_at AS LastCheckedAt, last_success_at AS LastSuccessAt,
                    last_error AS LastError, consecutive_failures AS ConsecutiveFailures,
                    etag AS ETag, last_modified AS LastModified, created_at AS CreatedAt
-            FROM ingestion_sources
-            ORDER BY source_name ASC
+            FROM mb_ingestion_sources
+            ORDER BY name ASC
             """;
         var sources = await db.QueryAsync<IngestionSource>(new CommandDefinition(sql, cancellationToken: ct));
         return sources.Select(s => new RadarOperationalSource { Source = s }).ToList();
@@ -359,8 +368,8 @@ public sealed class RadarRepository(MySqlDataSource data) : IRadarRepository
     {
         await using var db = await data.OpenConnectionAsync(ct);
         var rows = await db.ExecuteAsync(new CommandDefinition(
-            "UPDATE ingestion_sources SET enabled=@enabled WHERE id=@sourceId",
-            new { sourceId, enabled }, cancellationToken: ct));
+            "UPDATE mb_ingestion_sources SET enabled=@enabled WHERE id=@sourceId",
+            new { sourceId, enabled = enabled ? 1 : 0 }, cancellationToken: ct));
         return rows > 0;
     }
 }

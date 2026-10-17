@@ -118,56 +118,74 @@
     }
 </div>
 
-<!-- GRID DE METRICAS E KPIS DO RADAR -->
-<div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap:16px; margin-bottom:28px;">
+<!-- GRID DE METRICAS E KPIS DO RADAR (FASE 7) -->
+<div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap:14px; margin-bottom:28px;">
     <div class="card" style="padding:16px; border-radius:12px; border-left:4px solid var(--primary);">
-        <div style="font-size:0.8rem; text-transform:uppercase; color:var(--text-muted); font-weight:700;">Fontes Monitoradas</div>
-        <div style="font-size:1.8rem; font-weight:800; color:var(--text-primary); margin-top:4px;">
-            @(Model.Stats?.ActiveSources ?? 0) <span style="font-size:1rem; color:var(--text-muted); font-weight:400;">/ @(Model.Stats?.TotalSources ?? 0)</span>
+        <div style="font-size:0.75rem; text-transform:uppercase; color:var(--text-muted); font-weight:700;">Fontes Monitoradas</div>
+        <div style="font-size:1.7rem; font-weight:800; color:var(--text-primary); margin-top:4px;">
+            @(Model.Stats?.ActiveSources ?? 0) <span style="font-size:0.95rem; color:var(--text-muted); font-weight:400;">/ @(Model.Stats?.TotalSources ?? 0)</span>
         </div>
-        <div style="font-size:0.75rem; color:#2e7d32; margin-top:4px; font-weight:600;">Fontes públicas autorizadas</div>
+        <div style="font-size:0.75rem; color:#2e7d32; margin-top:4px; font-weight:600;">
+            Coleta: @(Model.Stats?.CollectorEnabled == true ? "🟢 Habilitada" : "🔴 Desabilitada")
+        </div>
     </div>
 
-    <div class="card" style="padding:16px; border-radius:12px; border-left:4px solid #1976d2;">
-        <div style="font-size:0.8rem; text-transform:uppercase; color:var(--text-muted); font-weight:700;">Eventos Identificados</div>
-        <div style="font-size:1.8rem; font-weight:800; color:#1976d2; margin-top:4px;">
-            @(Model.Stats?.UpcomingEventsCount ?? 0)
+    <div class="card" style="padding:16px; border-radius:12px; border-left:4px solid #0284c7;">
+        <div style="font-size:0.75rem; text-transform:uppercase; color:var(--text-muted); font-weight:700;">Itens Descobertos</div>
+        <div style="font-size:1.7rem; font-weight:800; color:#0284c7; margin-top:4px;">
+            @(Model.Stats?.DiscoveredItemsCount ?? 0)
         </div>
-        <div style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;">JSON-LD, iCal e semântica</div>
+        <div style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;">
+            @(Model.Stats?.DuplicateItemsCount ?? 0) duplicidades filtradas
+        </div>
+    </div>
+
+    <div class="card" style="padding:16px; border-radius:12px; border-left:4px solid #16a34a;">
+        <div style="font-size:0.75rem; text-transform:uppercase; color:var(--text-muted); font-weight:700;">Classificados & Publicados</div>
+        <div style="font-size:1.7rem; font-weight:800; color:#16a34a; margin-top:4px;">
+            @(Model.Stats?.PublishedContentsCount ?? 0) <span style="font-size:0.95rem; color:var(--text-muted); font-weight:400;">/ @(Model.Stats?.ClassifiedContentsCount ?? 0)</span>
+        </div>
+        <div style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;">Publicados / Classificados</div>
     </div>
 
     <div class="card" style="padding:16px; border-radius:12px; border-left:4px solid #f57c00;">
-        <div style="font-size:0.8rem; text-transform:uppercase; color:var(--text-muted); font-weight:700;">Aguardando Revisão</div>
-        <div style="font-size:1.8rem; font-weight:800; color:#f57c00; margin-top:4px;">
+        <div style="font-size:0.75rem; text-transform:uppercase; color:var(--text-muted); font-weight:700;">Aguardando Revisão</div>
+        <div style="font-size:1.7rem; font-weight:800; color:#f57c00; margin-top:4px;">
             @(Model.Stats?.PendingReviewCount ?? 0)
         </div>
         <div style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;">Na esteira editorial humana</div>
     </div>
 
-    <div class="card" style="padding:16px; border-radius:12px; border-left:4px solid #7b1fa2;">
-        <div style="font-size:0.8rem; text-transform:uppercase; color:var(--text-muted); font-weight:700;">Consumo IA (Tokens)</div>
-        <div style="font-size:1.8rem; font-weight:800; color:#7b1fa2; margin-top:4px;">
-            @(Model.Stats?.AiTokensConsumed.ToString("N0") ?? "0")
+    <div class="card" style="padding:16px; border-radius:12px; border-left:4px solid #1976d2;">
+        <div style="font-size:0.75rem; text-transform:uppercase; color:var(--text-muted); font-weight:700;">Eventos Identificados</div>
+        <div style="font-size:1.7rem; font-weight:800; color:#1976d2; margin-top:4px;">
+            @(Model.Stats?.UpcomingEventsCount ?? 0)
         </div>
-        <div style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;">Groq / Gemini / DeepSeek</div>
+        <div style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;">JSON-LD, iCal e semântica</div>
     </div>
 
-    <div class="card" style="padding:16px; border-radius:12px; border-left:4px solid #00796b;">
-        <div style="font-size:0.8rem; text-transform:uppercase; color:var(--text-muted); font-weight:700;">Ciclo de Consulta</div>
-        <div style="font-size:1.1rem; font-weight:700; color:var(--text-primary); margin-top:6px;">
-            @(Model.Stats?.LastCrawlAt?.ToLocalTime().ToString("HH:mm:ss") ?? "Aguardando")
+    <div class="card" style="padding:16px; border-radius:12px; border-left:4px solid #7b1fa2;">
+        <div style="font-size:0.75rem; text-transform:uppercase; color:var(--text-muted); font-weight:700;">Custos de IA</div>
+        <div style="font-size:1.7rem; font-weight:800; color:#7b1fa2; margin-top:4px;">
+            $@(Model.Stats?.AiCostEstimatedUsd.ToString("F4") ?? "0.0000")
         </div>
-        <div style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;">
-            Próximo: @(Model.Stats?.NextCrawlDueAt?.ToLocalTime().ToString("HH:mm:ss") ?? "Em breve")
+        <div style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;">@(Model.Stats?.AiTokensConsumed.ToString("N0") ?? "0") tokens consumidos</div>
+    </div>
+
+    <div class="card" style="padding:16px; border-radius:12px; border-left:4px solid @(Model.Stats?.OutdatedSourcesCount > 0 ? "#dc2626" : "#16a34a");">
+        <div style="font-size:0.75rem; text-transform:uppercase; color:var(--text-muted); font-weight:700;">Fontes Desatualizadas</div>
+        <div style="font-size:1.7rem; font-weight:800; color:@(Model.Stats?.OutdatedSourcesCount > 0 ? "#dc2626" : "#16a34a"); margin-top:4px;">
+            @(Model.Stats?.OutdatedSourcesCount ?? 0)
         </div>
+        <div style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;">Alerta de inatividade > 24h</div>
     </div>
 
     <div class="card" style="padding:16px; border-radius:12px; border-left:4px solid @(Model.Stats?.CrawlErrorsCount > 0 ? "#d32f2f" : "#2e7d32");">
-        <div style="font-size:0.8rem; text-transform:uppercase; color:var(--text-muted); font-weight:700;">Confiabilidade / Erros</div>
-        <div style="font-size:1.8rem; font-weight:800; color:@(Model.Stats?.CrawlErrorsCount > 0 ? "#d32f2f" : "#2e7d32"); margin-top:4px;">
+        <div style="font-size:0.75rem; text-transform:uppercase; color:var(--text-muted); font-weight:700;">Erros de Conexão</div>
+        <div style="font-size:1.7rem; font-weight:800; color:@(Model.Stats?.CrawlErrorsCount > 0 ? "#d32f2f" : "#2e7d32"); margin-top:4px;">
             @(Model.Stats?.CrawlErrorsCount ?? 0)
         </div>
-        <div style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;">Falhas de requisição / HTTP 4xx/5xx</div>
+        <div style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;">Falhas de requisição HTTP</div>
     </div>
 </div>
 

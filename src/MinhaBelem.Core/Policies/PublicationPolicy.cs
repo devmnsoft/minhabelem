@@ -11,15 +11,35 @@ public sealed record PolicyDecision(bool Allowed, bool RequiresHumanApproval, IR
     public static PolicyDecision HumanOnly(params string[] reasons) => new(false, true, reasons);
 }
 
+public sealed record PublicationSettings(
+    bool AutoPublicationEnabled = false,
+    IReadOnlyList<string>? AllowedCategoriesForAuto = null,
+    IReadOnlyList<long>? AllowedSourceIdsForAuto = null
+);
+
 /// <summary>
 /// Regra editorial central: define o que pode sair automaticamente e o que exige pessoa.
 /// A IA nunca publica sozinha política, denúncia ou alerta crítico.
 /// </summary>
 public static class PublicationPolicy
 {
-    public static PolicyDecision Evaluate(ContentItem item, DateTime now, bool automated)
+    public static PolicyDecision Evaluate(ContentItem item, DateTime now, bool automated, PublicationSettings? settings = null)
     {
+        settings ??= new PublicationSettings(AutoPublicationEnabled: false);
         var reasons = new List<string>();
+
+        if (automated)
+        {
+            if (!settings.AutoPublicationEnabled)
+                reasons.Add("Publicação automática restrita está desativada no sistema.");
+            else
+            {
+                if (settings.AllowedCategoriesForAuto is { Count: > 0 } && !settings.AllowedCategoriesForAuto.Contains(item.Category.ToString(), StringComparer.OrdinalIgnoreCase))
+                    reasons.Add($"Categoria '{item.Category}' não autorizada para publicação automática.");
+                if (settings.AllowedSourceIdsForAuto is { Count: > 0 } && (!item.SourceId.HasValue || !settings.AllowedSourceIdsForAuto.Contains(item.SourceId.Value)))
+                    reasons.Add("Fonte pública não homologada para publicação automática.");
+            }
+        }
 
         if (string.IsNullOrWhiteSpace(item.Title)) reasons.Add("Título obrigatório.");
         if (string.IsNullOrWhiteSpace(item.Summary)) reasons.Add("Resumo obrigatório.");

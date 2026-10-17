@@ -97,11 +97,16 @@ public sealed class RadarDashboardStats
     public int TotalSources { get; set; }
     public int ActiveSources { get; set; }
     public int DiscoveredItemsCount { get; set; }
+    public int ClassifiedContentsCount { get; set; }
     public int UpcomingEventsCount { get; set; }
     public int PendingReviewCount { get; set; }
+    public int PublishedContentsCount { get; set; }
     public int DuplicateItemsCount { get; set; }
     public int CrawlErrorsCount { get; set; }
+    public int OutdatedSourcesCount { get; set; }
+    public bool CollectorEnabled { get; set; } = true;
     public long AiTokensConsumed { get; set; }
+    public decimal AiCostEstimatedUsd => Math.Round(((decimal)AiTokensConsumed / 1_000_000m) * 0.15m, 4);
     public DateTime? LastCrawlAt { get; set; }
     public DateTime? NextCrawlDueAt { get; set; }
     public int SocialProfilesCount { get; set; }
