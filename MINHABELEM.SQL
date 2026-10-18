@@ -1539,3 +1539,31 @@ CREATE TABLE IF NOT EXISTS mb_place_media_assets(
  FOREIGN KEY(media_id) REFERENCES mb_media_assets(id) ON DELETE CASCADE,
  FOREIGN KEY(place_id) REFERENCES mb_places(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- @migration sprint17_radar_operations
+SET @minhabelem_ddl = IF(EXISTS(SELECT 1 FROM information_schema.columns WHERE table_schema=DATABASE() AND table_name='mb_radar_heartbeats' AND column_name='next_cycle_due_at'),'SELECT 1','ALTER TABLE mb_radar_heartbeats ADD COLUMN next_cycle_due_at DATETIME(6) NULL');
+PREPARE minhabelem_stmt FROM @minhabelem_ddl; EXECUTE minhabelem_stmt; DEALLOCATE PREPARE minhabelem_stmt;
+CREATE TABLE IF NOT EXISTS mb_radar_cycles (
+ id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+ started_at DATETIME(6) NOT NULL, finished_at DATETIME(6) NULL,
+ status VARCHAR(20) NOT NULL DEFAULT 'running',
+ sources_checked INT NOT NULL DEFAULT 0, sources_failed INT NOT NULL DEFAULT 0,
+ items_discovered INT NOT NULL DEFAULT 0, events_identified INT NOT NULL DEFAULT 0,
+ duration_ms BIGINT NOT NULL DEFAULT 0, error_code VARCHAR(120) NULL,
+ KEY idx_radar_cycle_started(started_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- @migration sprint17_discovery_observations
+SET @minhabelem_ddl = IF(EXISTS(SELECT 1 FROM information_schema.statistics WHERE table_schema=DATABASE() AND table_name='mb_discovery_versions' AND index_name='uq_discovery_version'),'ALTER TABLE mb_discovery_versions DROP INDEX uq_discovery_version, ADD INDEX idx_discovery_version(candidate_id,fingerprint)','SELECT 1');
+PREPARE minhabelem_stmt FROM @minhabelem_ddl; EXECUTE minhabelem_stmt; DEALLOCATE PREPARE minhabelem_stmt;
+
+-- @migration sprint17_commercial_inquiries
+CREATE TABLE IF NOT EXISTS mb_commercial_inquiries (
+ id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+ company VARCHAR(150) NOT NULL, contact_name VARCHAR(100) NOT NULL,
+ email VARCHAR(150) NOT NULL, phone VARCHAR(30) NULL, plan VARCHAR(30) NOT NULL,
+ message VARCHAR(2000) NULL, handled TINYINT(1) NOT NULL DEFAULT 0,
+ consented_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+ created_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+ KEY idx_commercial_pending(handled,id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

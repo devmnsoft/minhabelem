@@ -153,6 +153,27 @@ public sealed class CommunityRepository(MySqlDataSource dataSource) : ICommunity
 
 public sealed class AdvertiserRepository(MySqlDataSource dataSource) : IAdvertiserRepository
 {
+    public async Task<long> SubmitInquiryAsync(CommercialInquiry inquiry, CancellationToken ct)
+    {
+        await using var db = await dataSource.OpenConnectionAsync(ct);
+        return await db.ExecuteScalarAsync<long>(new CommandDefinition("""
+            INSERT INTO mb_commercial_inquiries(company,contact_name,email,phone,plan,message)
+            VALUES(@Company,@ContactName,@Email,@Phone,@Plan,@Message); SELECT LAST_INSERT_ID();
+            """, inquiry, cancellationToken: ct));
+    }
+    public async Task<IReadOnlyList<CommercialInquiry>> InquiriesAsync(CancellationToken ct)
+    {
+        await using var db = await dataSource.OpenConnectionAsync(ct);
+        return (await db.QueryAsync<CommercialInquiry>(new CommandDefinition("""
+            SELECT id,company,contact_name AS ContactName,email,phone,plan,message,handled,created_at AS CreatedAt
+            FROM mb_commercial_inquiries ORDER BY handled,id DESC LIMIT 100
+            """, cancellationToken: ct))).AsList();
+    }
+    public async Task<bool> HandleInquiryAsync(long id, CancellationToken ct)
+    {
+        await using var db = await dataSource.OpenConnectionAsync(ct);
+        return await db.ExecuteAsync(new CommandDefinition("UPDATE mb_commercial_inquiries SET handled=TRUE WHERE id=@id AND handled=FALSE", new { id }, cancellationToken: ct)) == 1;
+    }
     private const string Select = """
         SELECT id AS Id, advertiser_name AS AdvertiserName, destination_url AS DestinationUrl,
                image_url AS ImageUrl, label AS Label, headline AS Headline, active AS Active,
@@ -184,6 +205,15 @@ public sealed class AdvertiserRepository(MySqlDataSource dataSource) : IAdvertis
     public async Task<long> UpsertAsync(AdvertiserCampaign campaign, CancellationToken ct)
     {
         await using var connection = await dataSource.OpenConnectionAsync(ct);
+        if (campaign.Id > 0)
+        {
+            var changed = await connection.ExecuteAsync(new CommandDefinition("""
+                UPDATE mb_advertiser_campaigns SET advertiser_name=@AdvertiserName,destination_url=@DestinationUrl,
+                    image_url=@ImageUrl,label=@Label,headline=@Headline,active=@Active,valid_from=@ValidFrom,valid_to=@ValidTo
+                WHERE id=@Id
+                """, campaign, cancellationToken: ct));
+            return changed > 0 ? campaign.Id : 0;
+        }
         return await connection.ExecuteScalarAsync<long>(new CommandDefinition(
             """
             INSERT INTO mb_advertiser_campaigns
@@ -193,7 +223,8 @@ public sealed class AdvertiserRepository(MySqlDataSource dataSource) : IAdvertis
             ON DUPLICATE KEY UPDATE
               advertiser_name = VALUES(advertiser_name), destination_url = VALUES(destination_url),
               image_url = VALUES(image_url), label = VALUES(label), headline = VALUES(headline),
-              active = VALUES(active), valid_from = VALUES(valid_from), valid_to = VALUES(valid_to)
+              active = VALUES(active), valid_from = VALUES(valid_from), valid_to = VALUES(valid_to);
+            SELECT LAST_INSERT_ID();
             """,
             new
             {

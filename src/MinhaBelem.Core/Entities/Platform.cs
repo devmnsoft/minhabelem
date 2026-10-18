@@ -31,6 +31,19 @@ public sealed class AdvertiserCampaign
     public DateTime CreatedAt { get; set; }
 }
 
+public sealed class CommercialInquiry
+{
+    public long Id { get; set; }
+    public string Company { get; set; } = "";
+    public string ContactName { get; set; } = "";
+    public string Email { get; set; } = "";
+    public string? Phone { get; set; }
+    public string Plan { get; set; } = "";
+    public string? Message { get; set; }
+    public bool Handled { get; set; }
+    public DateTime CreatedAt { get; set; }
+}
+
 public sealed class AuditEntry
 {
     public long Id { get; set; }

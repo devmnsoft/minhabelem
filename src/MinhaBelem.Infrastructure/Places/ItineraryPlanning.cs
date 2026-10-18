@@ -10,6 +10,8 @@ public sealed class ItineraryPlanning(IPlaceRepository places,IVisitRepository v
     {
         var now=DateTime.UtcNow;var start=TimeZoneInfo.ConvertTimeToUtc(DateTime.SpecifyKind(q.LocalStart,DateTimeKind.Unspecified),VisitRecommendationService.Zone);
         if(q.Origin.Length is <3 or >350||q.Days is not(.5m or 1m or 2m or 3m or 5m)||q.VisitMinutes is <30 or >240||q.Budget<0||start<now.AddMinutes(-5)||start>now.AddDays(365)||q.Mode is not("transit" or "walking" or "bicycling" or "driving" or "boat")||q.Category is not null&&!PlacesCatalog.IsAllowedType(q.Category))throw new ArgumentException("Confira origem, período, orçamento e preferências.");
+        if (q.Visitors is < 1 or > 20) throw new ArgumentException("Quantidade de visitantes inválida.");
+        decimal? GroupFare(RouteOption route) => route.Currency == "BRL" ? route.Fare * (q.Mode is "transit" or "boat" ? q.Visitors : 1) : null;
         var all=await places.SearchAsync(new PlaceQuery{PublishedOnly=true,PageSize=40,Culture=culture,Category=q.Category,Audience=q.Children?Audience.Infantil:null},ct);
         var candidates=all.Where(p=>p.Latitude is >=-90 and <=90&&p.Longitude is >=-180 and <=180&&(!q.Accessible||p.WheelchairAccessible==true)).ToList();
         var result=new List<PlannedDay>();double? latitude=null,longitude=null;decimal budgetUsed=0;
@@ -29,9 +31,10 @@ public sealed class ItineraryPlanning(IPlaceRepository places,IVisitRepository v
                 var route=plan.Options.OrderBy(r=>r.DurationSeconds).FirstOrDefault();if(route is null)continue;
                 var arrive=cursor.AddSeconds(route.DurationSeconds);var depart=arrive.AddMinutes(q.VisitMinutes);var assessment=VisitRecommendationService.Evaluate(schedule,arrive,now);
                 if(assessment.State!="open"||depart>end||assessment.NextChangeUtc<depart)continue;
-                var fare=route.Currency=="BRL"?route.Fare:null;
-                if(q.Budget.HasValue&&(!fare.HasValue||!info.EntryPrice.HasValue||budgetUsed+known+fare.Value+info.EntryPrice.Value>q.Budget))continue;
-                known+=(fare??0)+(info.EntryPrice??0);complete&=fare.HasValue&&info.EntryPrice.HasValue;
+                var fare=GroupFare(route);
+                var entry=info.EntryPrice*q.Visitors;
+                if(q.Budget.HasValue&&(!fare.HasValue||!entry.HasValue||budgetUsed+known+fare.Value+entry.Value>q.Budget))continue;
+                known+=(fare??0)+(entry??0);complete&=fare.HasValue&&entry.HasValue;
                 stops.Add(new(place,arrive,depart,route,info.EntryPrice,info.SourceUrl));candidates.Remove(place);
                 latitude=place.Latitude;longitude=place.Longitude;origin=destination;cursor=depart;
             }
@@ -39,7 +42,7 @@ public sealed class ItineraryPlanning(IPlaceRepository places,IVisitRepository v
             if(stops.Count>0)
             {
                 returnRoute=await routes.PlanAsync(new(){Origin=origin,Destination=q.Origin,LocalTime=TimeZoneInfo.ConvertTimeFromUtc(cursor,VisitRecommendationService.Zone),Mode=q.Mode,Accessible=q.Accessible},ct);
-                var fare=returnRoute.Options.FirstOrDefault() is {Currency:"BRL"} back?back.Fare:null;known+=fare??0;complete&=fare.HasValue;
+                var fare=returnRoute.Options.FirstOrDefault() is {} back?GroupFare(back):null;known+=fare??0;complete&=fare.HasValue;
                 // A limited budget is never declared satisfied when return fare is unknown or exceeds it.
                 if(q.Budget.HasValue&&(!complete||budgetUsed+known>q.Budget)){result.Add(new(q.LocalStart.AddDays(day).Date,[],returnRoute,known,false));continue;}
             }

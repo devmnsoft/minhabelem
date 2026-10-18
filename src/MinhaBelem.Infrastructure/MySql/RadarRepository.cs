@@ -23,9 +23,26 @@ public sealed class RadarRepository(MySqlDataSource data) : IRadarRepository
         var lastCrawl = await db.ExecuteScalarAsync<DateTime?>(new CommandDefinition("SELECT MAX(crawled_at) FROM mb_radar_crawl_history", cancellationToken: ct));
         var socialCount = await db.ExecuteScalarAsync<int>(new CommandDefinition("SELECT COUNT(*) FROM mb_radar_social_profiles WHERE is_active=TRUE", cancellationToken: ct));
         var heartbeat = await GetHeartbeatAsync("RadarWorker", ct);
+        var operations = await db.QuerySingleAsync<RadarDashboardStats>(new CommandDefinition("""
+            SELECT SUM(enabled=TRUE) AS EnabledSources, SUM(approved=TRUE) AS ApprovedSources,
+                SUM(last_checked_at IS NOT NULL) AS ConsultedSources FROM mb_ingestion_sources
+            """, cancellationToken: ct));
+        var cycles = (await db.QueryAsync<RadarCycle>(new CommandDefinition("""
+            SELECT id, started_at AS StartedAt, finished_at AS FinishedAt, status,
+                sources_checked AS SourcesChecked, sources_failed AS SourcesFailed,
+                items_discovered AS ItemsDiscovered, events_identified AS EventsIdentified,
+                duration_ms AS DurationMs, error_code AS ErrorCode
+            FROM mb_radar_cycles ORDER BY id DESC LIMIT 30
+            """, cancellationToken: ct))).ToList();
 
         return new RadarDashboardStats
         {
+            EnabledSources = operations.EnabledSources,
+            ApprovedSources = operations.ApprovedSources,
+            ConsultedSources = operations.ConsultedSources,
+            PublishedItems = await db.ExecuteScalarAsync<int>(new CommandDefinition("SELECT COUNT(*) FROM mb_content_items WHERE status='Published'", cancellationToken: ct)),
+            AiCostUsd = await db.ExecuteScalarAsync<decimal>(new CommandDefinition("SELECT COALESCE(SUM(cost_usd),0) FROM mb_ai_runs", cancellationToken: ct)),
+            RecentCycles = cycles,
             TotalSources = totalSources,
             ActiveSources = activeSources,
             DiscoveredItemsCount = discoveredItems,
@@ -302,12 +319,40 @@ public sealed class RadarRepository(MySqlDataSource data) : IRadarRepository
                    last_cycle_started_at AS LastCycleStartedAt, last_cycle_finished_at AS LastCycleFinishedAt,
                    last_cycle_status AS LastCycleStatus, last_cycle_summary AS LastCycleSummary,
                    last_error AS LastError, is_running AS IsRunning, consecutive_errors AS ConsecutiveErrors,
-                   total_cycles_executed AS TotalCyclesExecuted
+                   total_cycles_executed AS TotalCyclesExecuted, next_cycle_due_at AS NextCycleDueAt
             FROM mb_radar_heartbeats
             WHERE worker_name = @workerName
             LIMIT 1
             """;
         return await db.QueryFirstOrDefaultAsync<RadarHeartbeat>(new CommandDefinition(sql, new { workerName }, cancellationToken: ct));
+    }
+
+    public async Task ScheduleAsync(DateTime? nextCycleUtc, CancellationToken ct)
+    {
+        await using var db = await data.OpenConnectionAsync(ct);
+        await db.ExecuteAsync(new CommandDefinition("UPDATE mb_radar_heartbeats SET next_cycle_due_at=@nextCycleUtc WHERE worker_name='RadarWorker'", new { nextCycleUtc }, cancellationToken: ct));
+    }
+
+    public async Task<long> StartCycleAsync(CancellationToken ct)
+    {
+        await using var db = await data.OpenConnectionAsync(ct);
+        // Called under the Radar advisory lock: any previous running row lost its owner.
+        return await db.ExecuteScalarAsync<long>(new CommandDefinition("""
+            UPDATE mb_radar_cycles SET status='interrupted',finished_at=UTC_TIMESTAMP(6),error_code='WorkerRestarted'
+                WHERE status='running';
+            INSERT INTO mb_radar_cycles(started_at) VALUES(UTC_TIMESTAMP(6)); SELECT LAST_INSERT_ID();
+            """, cancellationToken: ct));
+    }
+
+    public async Task FinishCycleAsync(RadarCycle cycle, CancellationToken ct)
+    {
+        await using var db = await data.OpenConnectionAsync(ct);
+        await db.ExecuteAsync(new CommandDefinition("""
+            UPDATE mb_radar_cycles SET finished_at=UTC_TIMESTAMP(6),status=@Status,
+                sources_checked=@SourcesChecked,sources_failed=@SourcesFailed,items_discovered=@ItemsDiscovered,
+                events_identified=@EventsIdentified,duration_ms=@DurationMs,error_code=@ErrorCode
+            WHERE id=@Id AND status='running'
+            """, cycle, cancellationToken: ct));
     }
 
     public async Task<IReadOnlyList<SocialPost>> SocialPostsAsync(int limit, long? profileId, CancellationToken ct)

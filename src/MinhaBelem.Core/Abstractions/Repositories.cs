@@ -134,6 +134,9 @@ public interface ICommunityRepository
 
 public interface IAdvertiserRepository
 {
+    Task<long> SubmitInquiryAsync(CommercialInquiry inquiry, CancellationToken ct);
+    Task<IReadOnlyList<CommercialInquiry>> InquiriesAsync(CancellationToken ct);
+    Task<bool> HandleInquiryAsync(long id, CancellationToken ct);
     Task<IReadOnlyList<AdvertiserCampaign>> ActiveAsync(DateTime now, int take, CancellationToken ct);
     Task<IReadOnlyList<AdvertiserCampaign>> AllAsync(CancellationToken ct);
     Task<long> UpsertAsync(AdvertiserCampaign campaign, CancellationToken ct);

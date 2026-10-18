@@ -1,5 +1,17 @@
 using System.ComponentModel.DataAnnotations;
 namespace MinhaBelem.Web.Models;
+public sealed class CampaignInput
+{
+    [Range(0, long.MaxValue)] public long Id { get; set; }
+    [Required, StringLength(250)] public string AdvertiserName { get; set; } = "";
+    [Required, StringLength(200)] public string Headline { get; set; } = "";
+    [Required, StringLength(2000)] public string DestinationUrl { get; set; } = "";
+    [StringLength(2000)] public string? ImageUrl { get; set; }
+    public DateOnly? FromDate { get; set; }
+    public DateOnly? ToDate { get; set; }
+    public bool Active { get; set; }
+    public bool RightsConfirmed { get; set; }
+}
 public sealed class CreateUserInput
 {
     [Required, EmailAddress, StringLength(256)] public string Email { get; set; } = "";

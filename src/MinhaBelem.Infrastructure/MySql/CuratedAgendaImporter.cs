@@ -22,7 +22,7 @@ public sealed class CuratedAgendaImporter(IContentRepository content)
         var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
         options.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
         var data = JsonSerializer.Deserialize<CuratedAgenda>(json, options) ?? throw new ArgumentException("Agenda inválida.");
-        if (data.Events is not { Count: > 0 and <= 1000 } || data.ThroughDate < data.FromDate || data.ThroughDate > data.FromDate.AddMonths(3)
+        if (data.Events is not { Count: > 0 and <= 1000 } || data.ThroughDate < data.FromDate || data.ThroughDate > data.FromDate.AddDays(365)
             || data.VerifiedAtUtc > DateTimeOffset.UtcNow.AddMinutes(5) || data.VerifiedAtUtc < DateTimeOffset.UtcNow.AddDays(-7)) throw new ArgumentException("Período ou verificação inválidos.");
         foreach (var e in data.Events)
         {

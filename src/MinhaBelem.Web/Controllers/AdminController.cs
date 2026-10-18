@@ -383,8 +383,17 @@ public sealed class AdminController(IAdministrationRepository admin, IDashboardR
     [HttpGet("anunciantes"), Authorize(Policy = Permissions.AdvertiserManage)]
     public async Task<IActionResult> Anunciantes(CancellationToken ct)
     {
+        Response.Headers.CacheControl = "no-store";
+        ViewData["CommercialInquiries"] = await advertisers.InquiriesAsync(ct);
         var all = await advertisers.AllAsync(ct);
         return View(all);
+    }
+
+    [HttpPost("anunciantes/solicitacoes/{id:long}/atender"), Authorize(Policy = Permissions.AdvertiserManage)]
+    public async Task<IActionResult> AtenderSolicitacao(long id, CancellationToken ct)
+    {
+        if (await advertisers.HandleInquiryAsync(id, ct)) await Audit("advertiser.inquiry_handled", "commercial_inquiry", id, ct);
+        return RedirectToAction(nameof(Anunciantes));
     }
 
     [HttpPost("anunciantes/{id:long}/estado"), Authorize(Policy = Permissions.AdvertiserManage)]
@@ -393,6 +402,26 @@ public sealed class AdminController(IAdministrationRepository admin, IDashboardR
         await advertisers.SetActiveAsync(id, active, ct);
         await Audit("advertiser.state_changed", "campaign", id, ct);
         TempData["Notice"] = active ? "Campanha ativada para veiculação." : "Campanha pausada.";
+        return RedirectToAction(nameof(Anunciantes));
+    }
+
+    [HttpPost("anunciantes/campanhas"), Authorize(Policy = Permissions.AdvertiserManage)]
+    public async Task<IActionResult> SalvarCampanha(CampaignInput model, CancellationToken ct)
+    {
+        if (!ModelState.IsValid || !model.RightsConfirmed || !SafeUrl.Validate(model.DestinationUrl).IsValid ||
+            !string.IsNullOrWhiteSpace(model.ImageUrl) && !SafeUrl.Validate(model.ImageUrl).IsValid ||
+            model.FromDate > model.ToDate || model.FromDate?.Year is < 2000 or > 2099 || model.ToDate?.Year is < 2000 or > 2099) return BadRequest();
+        var campaign = new AdvertiserCampaign
+        {
+            Id = model.Id, AdvertiserName = HtmlText.Clean(model.AdvertiserName, 250), Headline = HtmlText.Clean(model.Headline, 200),
+            DestinationUrl = model.DestinationUrl.Trim(), ImageUrl = string.IsNullOrWhiteSpace(model.ImageUrl) ? null : model.ImageUrl.Trim(),
+            Label = "Publicidade", Active = model.Active,
+            ValidFrom = model.FromDate is {} first ? PortalTime.Utc(first.ToDateTime(TimeOnly.MinValue)) : null,
+            ValidTo = model.ToDate is {} last ? PortalTime.Utc(last.AddDays(1).ToDateTime(TimeOnly.MinValue)).AddTicks(-1) : null
+        };
+        var id = await advertisers.UpsertAsync(campaign, ct);
+        if (id == 0) return NotFound();
+        await Audit("advertiser.campaign_saved", "campaign", id, ct);
         return RedirectToAction(nameof(Anunciantes));
     }
 

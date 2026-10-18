@@ -35,6 +35,7 @@ public interface IEditorialBatches
     Task<IReadOnlyDictionary<string,long>> DashboardAsync(CancellationToken ct);
     Task<string> PreviewAsync(EditorialBatchInput input, ClaimsPrincipal actor, CancellationToken ct);
     Task<EditorialBatch?> GetAsync(string id, long actorId, CancellationToken ct);
+    Task<IReadOnlyList<EditorialBatch>> RecentAsync(long actorId, CancellationToken ct);
     Task<bool> ConfirmAsync(string id, ClaimsPrincipal actor, CancellationToken ct);
     Task<bool> ProcessNextAsync(CancellationToken ct);
 }

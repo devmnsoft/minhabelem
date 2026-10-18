@@ -10,13 +10,19 @@ using MySqlConnector;
 namespace MinhaBelem.Tests;
 public sealed class OcrFactAttribute : FactAttribute
 {
-    public OcrFactAttribute() { if (string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("MINHABELEM_TEST_MYSQL")) || string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("OCR_TEST_EXECUTABLE"))) Skip = "Exige ambiente de homologação com MySQL descartável e Tesseract real."; }
+    public OcrFactAttribute(bool video = false)
+    {
+        if (string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("MINHABELEM_TEST_MYSQL")) || string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("OCR_TEST_EXECUTABLE")))
+            Skip = "Exige ambiente de homologação com MySQL descartável e Tesseract real.";
+        else if (video && (string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("OCR_TEST_FFMPEG")) || string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("OCR_TEST_VIDEO"))))
+            Skip = "Exige FFmpeg real e vídeo de teste configurados.";
+    }
 }
 [Collection("MySql")]
 public sealed class RealOcrTests(PortalFixture fixture)
 {
     [OcrFact] public async Task AuthorizedPosterIsProcessedByRealTesseract() => await Run(false);
-    [OcrFact] public async Task AuthorizedVideoFrameIsProcessedByRealFfmpegAndTesseract() => await Run(true);
+    [OcrFact(true)] public async Task AuthorizedVideoFrameIsProcessedByRealFfmpegAndTesseract() => await Run(true);
     private async Task Run(bool video)
     {
         var (client, actor) = await new OperationalTests(fixture).Login(); using var owner = client;

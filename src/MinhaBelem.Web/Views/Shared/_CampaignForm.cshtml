@@ -1,0 +1,15 @@
+@model MinhaBelem.Core.Entities.AdvertiserCampaign
+@using MinhaBelem.Web.Models
+<form method="post" action="/admin/anunciantes/campanhas" class="card route-form">
+    @Html.AntiForgeryToken()
+    <input type="hidden" name="Id" value="@Model.Id" />
+    <label>@Loc["CampaignCompany"]<input name="AdvertiserName" value="@Model.AdvertiserName" required maxlength="250" /></label>
+    <label>@Loc["CampaignHeadline"]<input name="Headline" value="@Model.Headline" required maxlength="200" /></label>
+    <label>@Loc["CampaignLink"]<input name="DestinationUrl" type="url" value="@Model.DestinationUrl" required maxlength="2000" /></label>
+    <label>@Loc["CampaignImage"]<input name="ImageUrl" type="url" value="@Model.ImageUrl" maxlength="2000" /></label>
+    <label>@Loc["CampaignStart"]<input name="FromDate" type="date" value="@(Model.ValidFrom is {} start ? PortalTime.Local(start).ToString("yyyy-MM-dd") : "")" /></label>
+    <label>@Loc["CampaignEnd"]<input name="ToDate" type="date" value="@(Model.ValidTo is {} end ? PortalTime.Local(end).ToString("yyyy-MM-dd") : "")" /></label>
+    <label><input name="Active" type="checkbox" value="true" checked="@Model.Active" /> @Loc["CampaignActive"]</label>
+    <label><input name="RightsConfirmed" type="checkbox" value="true" required /> @Loc["CampaignRights"]</label>
+    <button type="submit">@Loc["Save"]</button>
+</form>

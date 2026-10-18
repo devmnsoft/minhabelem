@@ -85,6 +85,9 @@ public sealed class Sprint15bTests(PortalFixture fixture)
             }
             var planner=new MinhaBelem.Infrastructure.Places.ItineraryPlanning(places,visits,new FixtureRoutePlanner());var request=new ItineraryRequest{Origin="Origem fixture",LocalStart=MinhaBelem.Web.Models.PortalTime.Local(DateTime.UtcNow).Date.AddDays(1).AddHours(9),Category="museum",Days=.5m,VisitMinutes=90};
             var result=await planner.PlanAsync(request,"pt-BR",default);Assert.Equal("calculated",result.State);Assert.Contains(result.Days.SelectMany(d=>d.Visits),v=>v.Place.Id==openId);Assert.Equal(4,Assert.Single(result.Days).KnownCost);
+            request.Visitors=2;
+            var group=await planner.PlanAsync(request,"pt-BR",default);Assert.Equal(8,Assert.Single(group.Days).KnownCost);
+            request.Visitors=0;await Assert.ThrowsAsync<ArgumentException>(()=>planner.PlanAsync(request,"pt-BR",default));request.Visitors=1;
             request.Budget=3;var limited=await planner.PlanAsync(request,"pt-BR",default);Assert.Equal("unavailable",limited.State);Assert.Empty(limited.Days.SelectMany(d=>d.Visits));
         }
     }

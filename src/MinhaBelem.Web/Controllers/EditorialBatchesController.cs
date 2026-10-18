@@ -13,6 +13,7 @@ public sealed class EditorialBatchesController(IEditorialBatches batches, IConte
     {
         ViewData["Kind"] = kind; ViewData["Search"] = search; ViewData["Page"] = Math.Max(1, page);
         ViewData["BatchMetrics"] = await batches.DashboardAsync(ct);
+        ViewData["BatchHistory"] = await batches.RecentAsync(long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!), ct);
         return View(kind == "candidate" ? (object)await ingestion.CandidatesAsync(new CandidateQuery { Search = search, Page = Math.Max(1, page), PageSize = 20 }, ct)
             : await content.EditorialAsync(new ContentQuery { Search = search, Page = Math.Max(1, page), PageSize = 20 }, ct));
     }
@@ -49,5 +50,15 @@ public sealed class EditorialBatchesController(IEditorialBatches batches, IConte
         if (!confirmed) return BadRequest("Confirmação obrigatória.");
         try { return await batches.ConfirmAsync(id, User, ct) ? RedirectToAction(nameof(Details), new { id }) : Conflict(); }
         catch (UnauthorizedAccessException) { return Forbid(); }
+    }
+
+    [HttpGet("{id}/progresso")]
+    public async Task<IActionResult> Progress(string id, CancellationToken ct)
+    {
+        Response.Headers.CacheControl = "no-store";
+        var batch = await batches.GetAsync(id, long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!), ct);
+        if (batch is null) return NotFound();
+        return Json(new { batch.Status, total = batch.Items.Count, finished = batch.Items.Count(x => x.Status is "completed" or "blocked" or "failed"),
+            items = batch.Items.Select(x => new { x.TargetId, x.TargetKind, x.Status, x.Result }) });
     }
 }

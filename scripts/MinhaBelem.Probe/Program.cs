@@ -33,6 +33,39 @@ foreach(var url in new[]{"https://www.theatrodapaz.com.br/informa-es-do-evento-e
 }
 Directory.CreateDirectory("TestResults/sources");await File.WriteAllTextAsync("TestResults/sources/official-probe.json",JsonSerializer.Serialize(results,new JsonSerializerOptions{WriteIndented=true}));
 Console.WriteLine("Consulta pontual concluída. Resultados factuais e limitações: TestResults/sources/official-probe.json");
+if (args.Contains("--stage-local-review"))
+{
+    var localConfig = new ConfigurationBuilder().AddUserSecrets("MinhaBelem.Web").AddEnvironmentVariables().Build();
+    var localConnection = new MySqlConnectionStringBuilder(localConfig.GetConnectionString("Default") ?? "");
+    if (localConnection.Server is not ("localhost" or "127.0.0.1") || string.IsNullOrWhiteSpace(localConnection.Database))
+        throw new InvalidOperationException("Encaminhamento exclusivo ao banco local configurado em User Secrets.");
+    localConnection.AllowUserVariables = true;
+    localConnection.DateTimeKind = MySqlDateTimeKind.Utc;
+    await using var localData = new MySqlDataSourceBuilder(localConnection.ConnectionString).Build();
+    var ingestion = new IngestionRepository(localData);
+    var discovery = new DiscoveryRepository(localData);
+    const string catalogUrl = "https://www.theatrodapaz.com.br/programa%C3%A7%C3%A3o";
+    var source = (await ingestion.SourcesAsync(false, default)).FirstOrDefault(s => s.FeedUrl.TrimEnd('/') == catalogUrl);
+    if (source is null)
+    {
+        source = new IngestionSource { Name = "Theatro da Paz — consulta factual pontual", FeedUrl = catalogUrl, Protocol = FeedProtocol.JsonLd,
+            Enabled = false, Approved = false, RespectRobots = true,
+            LicenseNote = "Consulta factual pontual solicitada na Sprint 17. Sem autorização contínua ou reutilização de mídia; exige revisão editorial e dos termos." };
+        source.Id = await ingestion.UpsertSourceAsync(source, default);
+        await discovery.SaveProfileAsync(new() { SourceId = source.Id, FrequencyMinutes = 1440, DailyRequestLimit = 1, MaxItems = 10 }, default);
+    }
+    var inserted = 0; var unchanged = 0;
+    foreach (var item in observed.Where(x => x.Event?.StartUtc > DateTime.UtcNow))
+    {
+        if ((await discovery.StoreAsync(source, item, 0, default)).Changed) inserted++; else unchanged++;
+    }
+    await File.WriteAllTextAsync("TestResults/sources/local-review.json", JsonSerializer.Serialize(new
+    {
+        mode = "local_editorial_review", inserted, unchanged, publishedByThisCommand = 0,
+        sourceActivatedByThisCommand = false, verifiedAtUtc = DateTime.UtcNow
+    }, new JsonSerializerOptions { WriteIndented = true }));
+    Console.WriteLine($"Candidatos futuros encaminhados à revisão local: {inserted}; sem mudanças: {unchanged}. Nenhuma publicação ou ativação automática.");
+}
 if(args.Contains("--persist-disposable")&&observed.Count>0)
 {
     var server=Environment.GetEnvironmentVariable("MINHABELEM_TEST_MYSQL")??throw new InvalidOperationException("Configure somente o servidor MySQL descartável.");

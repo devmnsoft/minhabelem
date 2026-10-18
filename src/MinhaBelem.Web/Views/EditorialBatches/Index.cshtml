@@ -11,6 +11,7 @@
 <label>@L["BatchType"]<select name="kind"><option value="content" selected="@(kind == "content")">@L["BatchContent"]</option><option value="candidate" selected="@(kind == "candidate")">@L["BatchCandidates"]</option></select></label>
 <label>@L["Search"]<input name="search" value="@ViewData["Search"]" maxlength="200"/></label><button>@L["Search"]</button>
 </form>
+<p class="small">@L["BatchKeyboard"]</p>
 <form method="post" asp-action="Preview" id="editorial-batch">
 <input type="hidden" name="kind" value="@kind"/><input type="hidden" name="search" value="@ViewData["Search"]"/>
 <div class="batch-toolbar card"><label><input type="checkbox" id="batch-select-page"/> @L["BatchSelectPage"]</label><output id="batch-count" aria-live="polite">0</output> @L["BatchSelected"]
@@ -21,11 +22,15 @@ else { foreach (var item in (IReadOnlyList<ContentItem>)Model) { <tr><td><input 
 </tbody></table></div>
 <div class="batch-toolbar card"><label>@L["BatchAction"]<select name="Action">
 @if (kind == "candidate") { <option value="approve">@L["BatchApprove"]</option><option value="rejectCandidate">@L["BatchReject"]</option><option value="reviewCandidate">@L["BatchReview"]</option><option value="retry">@L["BatchRetry"]</option> }
-else { <option value="review">@L["BatchReview"]</option><option value="reject">@L["BatchReject"]</option><option value="archive">@L["BatchArchive"]</option><option value="publish">@L["BatchPublish"]</option><option value="category">@L["BatchCategory"]</option><option value="locality">@L["BatchLocality"]</option><option value="eventStatus">@L["BatchEventStatus"]</option><option value="analyze">IA</option><option value="translate">🌐</option><option value="deduplicate">@L["BatchDeduplicate"]</option> }
+else { <option value="review">@L["BatchReview"]</option><option value="reject">@L["BatchReject"]</option><option value="archive">@L["BatchArchive"]</option><option value="publish">@L["BatchPublish"]</option><option value="category">@L["BatchCategory"]</option><option value="locality">@L["BatchLocality"]</option><option value="eventStatus">@L["BatchEventStatus"]</option><option value="analyze">@L["BatchAnalyze"]</option><option value="translate">@L["TranslateWithAi"]</option><option value="deduplicate">@L["BatchDeduplicate"]</option> }
 </select></label><label>@L["BatchValue"]<input name="Value" maxlength="64" list="batch-values"/><datalist id="batch-values">@foreach(var c in Enum.GetNames<MinhaBelem.Core.Taxonomy.ContentCategory>()){<option value="@c"/>}<option value="Cancelled"/><option value="Postponed"/><option value="UncertainDate"/><option value="AwaitingOrganizer"/><option value="Completed"/></datalist></label>
 <label>@L["BatchCity"]<input name="Municipality" maxlength="120"/></label><label>@L["BatchNeighborhood"]<input name="Neighborhood" maxlength="120"/></label>
 <label>@L["BatchReason"]<textarea name="Reason" required minlength="5" maxlength="500"></textarea></label><button>@L["BatchPreview"]</button></div>
 </form><nav class="pagination"><a href="?kind=@kind&search=@Uri.EscapeDataString(ViewData["Search"] as string ?? "")&page=@Math.Max(1,page-1)">←</a><span>@(page)</span><a href="?kind=@kind&search=@Uri.EscapeDataString(ViewData["Search"] as string ?? "")&page=@(page+1)">→</a></nav>
-</main></div><script src="~/js/editorial-batches.js" defer></script>
+<section class="card"><h2>@L["BatchMyHistory"]</h2>
+@if(ViewData["BatchHistory"] is IReadOnlyList<MinhaBelem.Core.Abstractions.EditorialBatch> history) {
+<ul>@foreach(var batch in history){<li><a href="/editorial/lotes/@batch.Id">@batch.CreatedAt.ToString("g") · @L[BatchLabels.ActionKey(batch.Action)] · @L["BatchState_"+batch.Status]</a></li>}</ul>
+}
+</section></main></div><script src="~/js/editorial-batches.js" defer></script>
 
 

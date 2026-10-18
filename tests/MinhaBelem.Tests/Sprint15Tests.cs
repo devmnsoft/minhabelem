@@ -120,7 +120,13 @@ public sealed class Sprint15Tests(PortalFixture fixture)
             Assert.Equal(HttpStatusCode.Redirect,(await PortalFixture.Post(client,location+"/confirmar",location,new(){{"confirmed","true"}})).StatusCode);
             Assert.True(await scope.ServiceProvider.GetRequiredService<IEditorialBatches>().ProcessNextAsync(default));
             Assert.Equal(ContentStatus.InReview,(await repo.GetAsync(items[0].Id,default))!.Status);Assert.Equal(ContentStatus.InReview,(await repo.GetAsync(items[1].Id,default))!.Status);Assert.Equal(ContentStatus.Draft,(await repo.GetAsync(items[2].Id,default))!.Status);
-            Assert.Equal(2,(await scope.ServiceProvider.GetRequiredService<IEditorialBatches>().GetAsync(id,actor,default))!.Items.Count);
+            var batches=scope.ServiceProvider.GetRequiredService<IEditorialBatches>();
+            Assert.Equal(2,(await batches.GetAsync(id,actor,default))!.Items.Count);
+            Assert.Contains(await batches.RecentAsync(actor,default),x=>x.Id==id);
+            Assert.DoesNotContain(await batches.RecentAsync(long.MaxValue,default),x=>x.Id==id);
+            Assert.Contains(id,await client.GetStringAsync("/editorial/lotes"));
+            var progress=await client.GetAsync(location+"/progresso");Assert.True(progress.IsSuccessStatusCode);Assert.True(progress.Headers.CacheControl!.NoStore);
+            Assert.Contains("\"finished\":2",await progress.Content.ReadAsStringAsync());
         }
     }
     [MySqlFact]public async Task RadarAndUserFormsHaveAccessibleControlLabels()

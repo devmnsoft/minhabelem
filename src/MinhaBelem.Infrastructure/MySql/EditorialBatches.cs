@@ -15,6 +15,14 @@ namespace MinhaBelem.Infrastructure.MySql;
 public sealed class EditorialBatches(MySqlDataSource data, IContentRepository content, IIngestionRepository ingestion,
     IAdministrationRepository admin, IConfiguration config, IAiAnalysisService ai, IContentTranslationService translations, ITranslationRepository languages) : IEditorialBatches
 {
+    public async Task<IReadOnlyList<EditorialBatch>> RecentAsync(long actorId, CancellationToken ct)
+    {
+        await using var db = await data.OpenConnectionAsync(ct);
+        return (await db.QueryAsync<EditorialBatch>(new CommandDefinition("""
+            SELECT id,actor_id AS ActorId,action,reason,status,created_at AS CreatedAt
+            FROM mb_editorial_batches WHERE actor_id=@actorId ORDER BY created_at DESC,id DESC LIMIT 30
+            """, new { actorId }, cancellationToken: ct))).AsList();
+    }
     public async Task<IReadOnlyDictionary<string,long>> DashboardAsync(CancellationToken ct)
     {
         await using var db=await data.OpenConnectionAsync(ct);

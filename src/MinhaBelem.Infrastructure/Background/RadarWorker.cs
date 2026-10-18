@@ -39,7 +39,8 @@ public sealed class RadarWorker(
                 var minutes = int.TryParse(settings.GetValueOrDefault("radar.intervalMinutes"), out var m) ? Math.Clamp(m, 1, 240) : Math.Clamp(options.Value.IntervalMinutes, 1, 240);
 
                 // Atualiza batimento cardíaco (Heartbeat) periódico mesmo enquanto ocioso
-                await radar.UpdateHeartbeatAsync("RadarWorker", "idle", $"Próximo ciclo programado para {last.AddMinutes(minutes).ToLocalTime():HH:mm:ss}", null, isRunning: false, ct);
+                await radar.UpdateHeartbeatAsync("RadarWorker", "idle", null, null, isRunning: false, ct);
+                await radar.ScheduleAsync(enabled ? (last == DateTime.MinValue ? DateTime.UtcNow : last.AddMinutes(minutes)) : null, ct);
 
                 if (enabled && DateTime.UtcNow >= last.AddMinutes(minutes))
                 {
@@ -47,7 +48,10 @@ public sealed class RadarWorker(
                     await TriggerOnceAsync(ct);
                 }
                 if (enabled)
+                {
+                    await radar.ScheduleAsync(last.AddMinutes(minutes), ct);
                     nextCheck = TimeSpan.FromMilliseconds(Math.Clamp((last.AddMinutes(minutes) - DateTime.UtcNow).TotalMilliseconds, 100, 30_000));
+                }
             }
             catch (OperationCanceledException) when (ct.IsCancellationRequested)
             {
@@ -95,9 +99,11 @@ public sealed class RadarWorker(
         var totalItems = 0;
         var totalEvents = 0;
         string? cycleError = null;
+        long cycleId = 0;
 
         try
         {
+            cycleId = await radar.StartCycleAsync(token);
             await radar.UpdateHeartbeatAsync("RadarWorker", "running", "Varredura autônoma em execução...", null, isRunning: true, token);
 
             var sources = await ingestion.SourcesAsync(onlyOperational: true, token);
@@ -139,7 +145,7 @@ public sealed class RadarWorker(
                     logger.LogWarning("Radar falhou na fonte {SourceId}: {ErrorType}", source.Id, ex.GetType().Name);
                     await ingestion.UpdateSourceRuntimeAsync(source.Id, DateTime.UtcNow, null, "Falha na consulta: " + ex.GetType().Name, null, null, token);
                 }
-                catch (OperationCanceledException) { sourceFailed = true; throw; }
+                catch (OperationCanceledException) { sourcesFailed++; sourceFailed = true; throw; }
                 finally { await discovery.FinishAsync(source.Id, sourceFailed ? "Error" : "Active", DateTime.UtcNow.AddMinutes(Math.Clamp(profile.FrequencyMinutes, 1, 1440)), records, profile.Checkpoint, CancellationToken.None); }
             }
 
@@ -157,7 +163,16 @@ public sealed class RadarWorker(
             var finalStatus = cycleError is not null ? "failed" : sourcesFailed == 0 ? "success" : sourcesFailed == sourcesChecked ? "failed" : "partial";
             var summary = $"{sourcesChecked} fontes ({sourcesFailed} falhas), {totalItems} matérias e {totalEvents} eventos em {duration.TotalSeconds:F1}s.";
 
-            try { await radar.UpdateHeartbeatAsync("RadarWorker", finalStatus, summary, cycleError, isRunning: false, CancellationToken.None); }
+            try
+            {
+                if (cycleId > 0) await radar.FinishCycleAsync(new RadarCycle
+                {
+                    Id = cycleId, Status = finalStatus, SourcesChecked = sourcesChecked, SourcesFailed = sourcesFailed,
+                    ItemsDiscovered = totalItems, EventsIdentified = totalEvents, DurationMs = (long)duration.TotalMilliseconds,
+                    ErrorCode = cycleError
+                }, CancellationToken.None);
+                await radar.UpdateHeartbeatAsync("RadarWorker", finalStatus, summary, cycleError, isRunning: false, CancellationToken.None);
+            }
             finally { await conn.ExecuteAsync("SELECT RELEASE_LOCK('minhabelem_radar')"); }
         }
     }

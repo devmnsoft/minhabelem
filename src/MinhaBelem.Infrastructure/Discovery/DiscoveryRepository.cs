@@ -56,7 +56,7 @@ public sealed class DiscoveryRepository(MySqlDataSource data) : IDiscoveryReposi
                 VALUES (@SourceId,@Name,@runId,@title,@summary,@url,@hash,@fingerprint,@author,@posted,@status,@duplicate); SELECT LAST_INSERT_ID();
                 """, new { SourceId = source.Id, source.Name, runId = runId > 0 ? (long?)runId : null, title = HtmlText.Clean(item.Title, 300), summary = HtmlText.ToPlainText(item.Summary, 1500), url = item.Url, hash, fingerprint, author = HtmlText.Clean(item.Author, 240), posted = item.PostedAt ?? DateTime.UtcNow, status = duplicate is null ? "Pending" : "Duplicate", duplicate }, tx, cancellationToken: ct));
         }
-        await db.ExecuteAsync(new CommandDefinition("INSERT IGNORE INTO mb_discovery_versions (candidate_id,fingerprint,snapshot) VALUES (@id,@fingerprint,@snapshot)", new { id, fingerprint, snapshot }, tx, cancellationToken: ct));
+        await db.ExecuteAsync(new CommandDefinition("INSERT INTO mb_discovery_versions (candidate_id,fingerprint,snapshot) VALUES (@id,@fingerprint,@snapshot)", new { id, fingerprint, snapshot }, tx, cancellationToken: ct));
         await tx.CommitAsync(ct);
         return (id, true);
     }

@@ -15,11 +15,27 @@ public sealed class HomeController(
     ICommunityRepository community,
     IPlaceRepository places,
     ITranslationRepository translationRepo,
+    IAdvertiserRepository advertisers,
     ITransitRepository? transitRepo = null,
     INeighborhoodRepository? neighborhoodRepo = null,
     ITouristRepository? touristRepo = null,
     IRadarRepository? radarRepo = null) : Controller
 {
+    [HttpPost, ValidateAntiForgeryToken, EnableRateLimiting("submission")]
+    public async Task<IActionResult> Reportar(long id, string motivo, bool consentimento, CancellationToken ct)
+    {
+        var item = await content.GetAsync(id, ct);
+        if (item is null || !item.IsVisibleToPublic(DateTime.UtcNow)) return NotFound();
+        if (!consentimento || string.IsNullOrWhiteSpace(motivo) || motivo.Trim().Length is < 10 or > 1000) return BadRequest();
+        await community.InsertAsync(new CommunitySubmission
+        {
+            DisplayName = "Relato sobre conteúdo #" + id,
+            Message = "Conteúdo #" + id + "\n" + HtmlText.ToPlainText(motivo, 1000),
+            Status = SubmissionStatus.Pending
+        }, ct);
+        TempData["Notice"] = LocalizationCatalog.Get("ReportReceived", CultureInfo.CurrentUICulture.Name);
+        return RedirectToAction(nameof(Detalhe), new { id });
+    }
     public async Task<IActionResult> Index(
         string? categoria,
         string? busca,
@@ -46,6 +62,7 @@ public sealed class HomeController(
         ViewData["Search"] = busca;
         ViewData["Page"] = pagina;
         ViewData["CurrentCulture"] = currentCulture;
+        ViewData["Campaigns"] = await advertisers.ActiveAsync(DateTime.UtcNow, 3, ct);
 
         if (!string.IsNullOrWhiteSpace(busca))
         {

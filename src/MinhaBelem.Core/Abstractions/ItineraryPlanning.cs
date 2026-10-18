@@ -7,6 +7,7 @@ public sealed class ItineraryRequest
     public string? Category{get;set;}public decimal? Budget{get;set;}
     public bool Children{get;set;}public bool Accessible{get;set;}public bool FreeOnly{get;set;}
     public int VisitMinutes{get;set;}=90;
+    public int Visitors { get; set; } = 1;
 }
 public sealed record PlannedVisit(Place Place,DateTime ArrivalUtc,DateTime DepartureUtc,RouteOption Route,decimal? EntryPrice,string SourceUrl);
 public sealed record PlannedDay(DateTime LocalDate,IReadOnlyList<PlannedVisit> Visits,RoutePlan? ReturnRoute,decimal KnownCost,bool CostComplete);

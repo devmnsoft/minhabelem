@@ -128,8 +128,14 @@ public sealed class PublicWebCrawler(
 
                 if (response.StatusCode == HttpStatusCode.NotModified)
                 {
-                    // 304 Não modificado
+                    // Preserve validators and hash on a cache hit, and audit the actual request.
                     consecutiveErrors = 0;
+                    await radarRepo.RecordCrawlHistoryAsync(new CrawlHistoryEntry
+                    {
+                        SourceId = source.Id > 0 ? source.Id : null, Url = currentUrl, StatusCode = 304,
+                        ETag = etag ?? lastCrawl?.ETag, LastModified = lastModified ?? lastCrawl?.LastModified,
+                        ContentHash = lastCrawl?.ContentHash, Depth = depth, DurationMs = (int)requestSw.ElapsedMilliseconds
+                    }, ct);
                     continue;
                 }
 
@@ -156,6 +162,7 @@ public sealed class PublicWebCrawler(
                         if (readCount > options.MaxContentLengthBytes)
                         {
                             errorMessage = "Conteúdo excedeu limite de 2MB.";
+                            result.Errors.Add(errorMessage);
                         }
                         else
                         {

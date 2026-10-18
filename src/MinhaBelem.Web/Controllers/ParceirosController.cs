@@ -2,11 +2,14 @@ using Microsoft.AspNetCore.Mvc;
 using MinhaBelem.Core.Abstractions;
 using MinhaBelem.Core.Entities;
 using MinhaBelem.Core.Text;
+using Microsoft.Extensions.Localization;
+using MinhaBelem.Web.Resources;
+using System.ComponentModel.DataAnnotations;
 
 namespace MinhaBelem.Web.Controllers;
 
 [Route("parceiros")]
-public sealed class ParceirosController(IAdvertiserRepository advertisers) : Controller
+public sealed class ParceirosController(IAdvertiserRepository advertisers, IStringLocalizer<SharedResource> loc) : Controller
 {
     [HttpGet("")]
     public async Task<IActionResult> Index(CancellationToken ct)
@@ -17,19 +20,25 @@ public sealed class ParceirosController(IAdvertiserRepository advertisers) : Con
 
     [HttpPost("anunciar")]
     [ValidateAntiForgeryToken]
-    public IActionResult Anunciar(string empresa, string contato, string email, string? telefone, string plano, string? mensagem)
+    [Microsoft.AspNetCore.RateLimiting.EnableRateLimiting("submission")]
+    public async Task<IActionResult> Anunciar(string empresa, string contato, string email, string? telefone, string plano, string? mensagem, bool consentimento, CancellationToken ct)
     {
-        if (string.IsNullOrWhiteSpace(empresa) || string.IsNullOrWhiteSpace(email))
+        if (!consentimento || string.IsNullOrWhiteSpace(empresa) || empresa.Length > 150 ||
+            string.IsNullOrWhiteSpace(contato) || contato.Length > 100 || string.IsNullOrWhiteSpace(email) ||
+            email.Length > 150 || !new EmailAddressAttribute().IsValid(email) || telefone?.Length > 30 ||
+            mensagem?.Length > 2000 || plano is not ("Guia" or "Categoria" or "Bairro" or "Personalizado"))
         {
-            TempData["Notice"] = "Preencha ao menos o nome da empresa e o e-mail de contato.";
+            TempData["Notice"] = loc["CommercialInvalid"].Value;
             return RedirectToAction(nameof(Index));
         }
 
-        // Sanitização e feedback
-        var safeEmpresa = HtmlText.Clean(empresa, 150);
-        var safeEmail = HtmlText.Clean(email, 150);
-        
-        TempData["Notice"] = $"Obrigado, {safeEmpresa}! Recebemos seu interesse no plano '{plano}'. Nossa equipe comercial entrará em contato.";
+        await advertisers.SubmitInquiryAsync(new()
+        {
+            Company = HtmlText.Clean(empresa, 150), ContactName = HtmlText.Clean(contato, 100),
+            Email = email.Trim(), Phone = HtmlText.Clean(telefone, 30), Plan = plano,
+            Message = HtmlText.ToPlainText(mensagem, 2000)
+        }, ct);
+        TempData["Notice"] = loc["CommercialReceived"].Value;
         return RedirectToAction(nameof(Index));
     }
 }

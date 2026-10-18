@@ -31,9 +31,13 @@
             <a href="/guia">@Loc["NavGuide"] ↗</a>
         </div>
     </div>
-    <span class="hero-caption">@Loc["ImageDisclosure"]</span>
+    <span class="hero-caption">
+        <a href="https://commons.wikimedia.org/wiki/File:Esta%C3%A7%C3%A3o_das_Docas_Bel%C3%A9m_Par%C3%A1_2023-8696.jpg" target="_blank" rel="noopener noreferrer">Estação das Docas · Prburley / Wikimedia Commons</a>
+        · <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">CC BY 4.0</a> · @Loc["PhotoOptimized"]
+    </span>
 </section>
 <div class="city-ribbon"><span class="live-dot" aria-hidden="true"></span><strong>@Loc["CityNow"]</strong><span>@Loc["EditorialNote"]</span><a href="/agora">@Loc["ViewMore"] ↗</a></div>
+@if(ViewData["Campaigns"] is IReadOnlyList<AdvertiserCampaign> campaigns){<partial name="_SponsoredCampaigns" model="campaigns" />}
 <nav class="categories category-strip" aria-label="@Loc["AllCategories"]">
     <a href="/" aria-current="@(ViewData["Category"] == null ? "page" : null)">@Loc["AllCategories"]</a>
     @foreach (var category in MinhaBelem.Core.Taxonomy.Taxonomy.All)

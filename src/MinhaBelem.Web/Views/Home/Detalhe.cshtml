@@ -233,3 +233,16 @@
     </section>
 }
 <partial name="_MediaGallery" model="Model.Id" />
+<section class="section article">
+    @if (TempData["Notice"] is string reportNotice) { <p class="notice" role="status">@reportNotice</p> }
+    <details class="card">
+        <summary>@Loc["ReportContent"]</summary>
+        <form method="post" action="/Home/Reportar">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="id" value="@Model.Id" />
+            <label>@Loc["ReportReason"]<textarea name="motivo" required minlength="10" maxlength="1000" rows="3"></textarea></label>
+            <label><input type="checkbox" name="consentimento" value="true" required /> @Loc["ReportPrivacy"]</label>
+            <button type="submit">@Loc["ReportContent"]</button>
+        </form>
+    </details>
+</section>

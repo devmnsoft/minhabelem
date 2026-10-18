@@ -45,6 +45,10 @@ public sealed class PortalFixture : IAsyncLifetime
         await using var data = new MySqlDataSourceBuilder(ConnectionString).Build();
         await new SchemaMigrator(data, NullLogger<SchemaMigrator>.Instance).ApplyAsync();
         Factory = new PortalFactory(ConnectionString);
+        // Fail closed if a host configuration ever resolves a different database (for example User Secrets).
+        var configured = Factory.Services.GetRequiredService<MySqlDataSource>();
+        if (new MySqlConnectionStringBuilder(configured.ConnectionString).Database != database)
+            throw new InvalidOperationException("O host de testes deve usar exclusivamente a base aleatória criada pela fixture.");
     }
     public async Task DisposeAsync()
     {

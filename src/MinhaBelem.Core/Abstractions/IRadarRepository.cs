@@ -19,6 +19,9 @@ public interface IRadarRepository
     Task<CrawlHistoryEntry?> GetLastCrawlForUrlAsync(string url, CancellationToken ct);
     Task UpdateHeartbeatAsync(string workerName, string status, string? summary, string? error, bool isRunning, CancellationToken ct);
     Task<RadarHeartbeat?> GetHeartbeatAsync(string workerName, CancellationToken ct);
+    Task ScheduleAsync(DateTime? nextCycleUtc, CancellationToken ct);
+    Task<long> StartCycleAsync(CancellationToken ct);
+    Task FinishCycleAsync(RadarCycle cycle, CancellationToken ct);
     Task<IReadOnlyList<SocialPost>> SocialPostsAsync(int limit, long? profileId, CancellationToken ct);
     Task<long> InsertSocialPostAsync(SocialPost post, CancellationToken ct);
     Task<IReadOnlyList<RadarOperationalSource>> OperationalSourcesAsync(CancellationToken ct);

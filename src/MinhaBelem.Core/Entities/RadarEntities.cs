@@ -94,6 +94,12 @@ public sealed class ExtractedHtmlContent
 
 public sealed class RadarDashboardStats
 {
+    public int EnabledSources { get; set; }
+    public int ApprovedSources { get; set; }
+    public int ConsultedSources { get; set; }
+    public int PublishedItems { get; set; }
+    public decimal AiCostUsd { get; set; }
+    public IReadOnlyList<RadarCycle> RecentCycles { get; set; } = Array.Empty<RadarCycle>();
     public int TotalSources { get; set; }
     public int ActiveSources { get; set; }
     public int DiscoveredItemsCount { get; set; }
@@ -106,6 +112,21 @@ public sealed class RadarDashboardStats
     public DateTime? NextCrawlDueAt { get; set; }
     public int SocialProfilesCount { get; set; }
     public RadarHeartbeat? Heartbeat { get; set; }
+}
+
+public sealed class RadarCycle
+{
+    public long Id { get; set; }
+    public DateTime StartedAt { get; set; }
+    public DateTime? FinishedAt { get; set; }
+    public string Status { get; set; } = "running";
+    public int SourcesChecked { get; set; }
+    public int SourcesFailed { get; set; }
+    public int ItemsDiscovered { get; set; }
+    public int EventsIdentified { get; set; }
+    public long DurationMs { get; set; }
+    public string? ErrorCode { get; set; }
+    public decimal? SuccessRate => SourcesChecked == 0 ? null : 100m * (SourcesChecked - SourcesFailed) / SourcesChecked;
 }
 
 public sealed class DiscoveredSourceQuery

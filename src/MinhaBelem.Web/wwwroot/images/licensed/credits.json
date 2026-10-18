@@ -1,0 +1,15 @@
+{
+  "assets": [{
+    "files": ["estacao-docas-640.webp", "estacao-docas-1280.webp", "estacao-docas-1920.webp"],
+    "title": "Estação das Docas Belém Pará 2023-8696.jpg",
+    "creator": "Prburley (Paul Burley)",
+    "source": "https://commons.wikimedia.org/wiki/File:Esta%C3%A7%C3%A3o_das_Docas_Bel%C3%A9m_Par%C3%A1_2023-8696.jpg",
+    "original": "https://upload.wikimedia.org/wikipedia/commons/4/4f/Esta%C3%A7%C3%A3o_das_Docas_Bel%C3%A9m_Par%C3%A1_2023-8696.jpg",
+    "license": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+    "capturedAt": "2023-08-17",
+    "verifiedAt": "2026-10-18",
+    "changes": "EXIF orientation applied, resized proportionally and compressed as WebP; metadata removed. CSS crops to cover the hero. No content generated or added.",
+    "endorsement": false
+  }]
+}
