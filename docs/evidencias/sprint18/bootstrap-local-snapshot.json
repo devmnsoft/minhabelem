@@ -1,0 +1,106 @@
+{
+  "capturedAtUtc": "2026-10-18T20:06:59.0550074Z",
+  "host": "localhost",
+  "port": 3308,
+  "database": "minhabelem",
+  "environment": "Development",
+  "databaseReference": "10431675E03A",
+  "version": "10.11.7-MariaDB",
+  "operatorAcceptanceConfirmed": false,
+  "bootstrapExplicitlyAuthorized": true,
+  "accounts": [
+    {
+      "email": "superadmin@minhabelem.com.br",
+      "exists": true,
+      "enabled": true,
+      "mustChangePassword": true,
+      "lockedOut": false,
+      "twoFactorEnabled": false,
+      "roles": [
+        "SuperAdmin"
+      ],
+      "permissions": [
+        "advertiser.manage",
+        "ai.run",
+        "audit.read",
+        "candidate.read",
+        "candidate.review",
+        "content.delete",
+        "content.publish",
+        "content.read",
+        "content.write",
+        "dashboard.read",
+        "place.manage",
+        "settings.manage",
+        "source.manage",
+        "submission.moderate",
+        "translation.manage",
+        "translation.read",
+        "user.manage"
+      ],
+      "expectedRolePresent": true,
+      "missingDefaultPermissions": [],
+      "activeSessions": 0,
+      "failedAttempts": 0
+    },
+    {
+      "email": "editor.teste@minhabelem.com.br",
+      "exists": true,
+      "enabled": true,
+      "mustChangePassword": true,
+      "lockedOut": false,
+      "twoFactorEnabled": false,
+      "roles": [
+        "Editor"
+      ],
+      "permissions": [
+        "ai.run",
+        "candidate.read",
+        "candidate.review",
+        "content.publish",
+        "content.read",
+        "content.write",
+        "dashboard.read",
+        "place.manage",
+        "source.manage",
+        "submission.moderate",
+        "translation.manage",
+        "translation.read"
+      ],
+      "expectedRolePresent": true,
+      "missingDefaultPermissions": [],
+      "activeSessions": 0,
+      "failedAttempts": 0
+    },
+    {
+      "email": "moderador.teste@minhabelem.com.br",
+      "exists": true,
+      "enabled": true,
+      "mustChangePassword": true,
+      "lockedOut": false,
+      "twoFactorEnabled": false,
+      "roles": [
+        "Moderator"
+      ],
+      "permissions": [
+        "ai.run",
+        "candidate.read",
+        "candidate.review",
+        "content.read",
+        "dashboard.read",
+        "place.manage",
+        "submission.moderate",
+        "translation.read"
+      ],
+      "expectedRolePresent": true,
+      "missingDefaultPermissions": [],
+      "activeSessions": 0,
+      "failedAttempts": 0
+    }
+  ],
+  "protectedReportMetadata": {
+    "inheritanceDisabled": true,
+    "onlyExecutingUserGranted": true,
+    "reportExistsWithoutReading": true
+  }
+}

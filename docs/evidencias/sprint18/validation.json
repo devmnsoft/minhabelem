@@ -1,0 +1,180 @@
+{
+  "generatedAtUtc": "2026-10-18T20:13:12.0764740Z",
+  "auditedBase": "4fed942",
+  "codeCommit": "7764114055b7865f3dc5f9832f13144077e86d22",
+  "finding": {
+    "operatorProvidedUrl": "https://localhost:63859/admin/login",
+    "matchingLaunchProfile": "BelemRestaurantes.Web",
+    "port63859ListeningAtInspection": false,
+    "minhaBelemUrl": "https://localhost:53406/conta/login",
+    "otherRepositoryModified": false,
+    "otherDatabaseAccessed": false
+  },
+  "localBootstrap": {
+    "operatorExplicitlyAuthorized": true,
+    "host": "localhost",
+    "port": 3308,
+    "database": "minhabelem",
+    "environment": "Development",
+    "reference": "10431675E03A",
+    "missingAccountsBefore": 3,
+    "accountsCreated": 3,
+    "existingPasswordsReset": 0,
+    "rolesAndEffectivePermissionsVerified": true,
+    "credentialReportReadByAgent": false,
+    "ownerOnlyAclVerified": true
+  },
+  "operatorAcceptanceConfirmed": false,
+  "deployment": {
+    "iisInstalledLocally": false,
+    "remoteIisVerified": false,
+    "backgroundServerStartRejected": true,
+    "rejectionReason": "blocked by policy",
+    "webStartupByOperatorConfirmed": false,
+    "personalMfaEnrollmentConfirmed": false,
+    "personalApplicationRestartConfirmed": false
+  },
+  "automatedTests": {
+    "database": "MySQL 8.0.46, local disposable Docker",
+    "schemaGuard": "random minhabelem_test_GUID only",
+    "http": "ASP.NET Core TestServer",
+    "realIdentityAndTotp": true,
+    "tlsHandshakeTested": false
+  },
+  "runs": [
+    {
+      "purpose": "Initial expanded tests: identified unsigned-ID conversion bug in new diagnostic",
+      "localTrx": "tests/MinhaBelem.Tests/TestResults/sprint18-auth.trx",
+      "startedUtc": "2026-10-18T20:01:16.9748083+00:00",
+      "finishedUtc": "2026-10-18T20:04:46.7080868+00:00",
+      "total": 10,
+      "passed": 9,
+      "failed": 1,
+      "skipped": [],
+      "authenticationCases": [
+        {
+          "name": "MinhaBelem.Tests.AuthenticationDiagnosticsTests.HttpFailuresHaveGenericPublicMessagesAndDistinctSecretFreeAdministrativeReasons",
+          "outcome": "Passed"
+        },
+        {
+          "name": "MinhaBelem.Tests.AuthenticationDiagnosticsTests.LocalSnapshotNamesMissingAccountsAndReportsStateRolesAndEffectivePermissionsWithoutSecrets",
+          "outcome": "Failed"
+        },
+        {
+          "name": "MinhaBelem.Tests.AuthenticationJourneyTests.BootstrapPasswordRotationMfaRevocationAndRestart(role: \"Editor\", email: \"editor.teste@minhabelem.com.br\")",
+          "outcome": "Passed"
+        },
+        {
+          "name": "MinhaBelem.Tests.AuthenticationJourneyTests.BootstrapPasswordRotationMfaRevocationAndRestart(role: \"Moderator\", email: \"moderador.teste@minhabelem.com.br\")",
+          "outcome": "Passed"
+        },
+        {
+          "name": "MinhaBelem.Tests.AuthenticationJourneyTests.BootstrapPasswordRotationMfaRevocationAndRestart(role: \"SuperAdmin\", email: \"superadmin@minhabelem.com.br\")",
+          "outcome": "Passed"
+        },
+        {
+          "name": "MinhaBelem.Tests.AuthenticationJourneyTests.ConcurrencyFailureDoesNotMutateStampOrOverwriteTheNewPassword",
+          "outcome": "Passed"
+        },
+        {
+          "name": "MinhaBelem.Tests.AuthenticationJourneyTests.ExplicitLocalRecoveryResetsOnlyAuthorizedAccountsAndPreservesMfa",
+          "outcome": "Passed"
+        },
+        {
+          "name": "MinhaBelem.Tests.AuthenticationJourneyTests.PasswordAndFirstAccessFlagAreCommittedTogetherEvenWhenStampChangesInDatabase",
+          "outcome": "Passed"
+        },
+        {
+          "name": "MinhaBelem.Tests.AuthenticationJourneyTests.PasswordAndTotpFailuresLockOutAndRecoveryCodesAreSingleUseOverHttp",
+          "outcome": "Passed"
+        },
+        {
+          "name": "MinhaBelem.Tests.AuthenticationJourneyTests.PasswordResetInvalidatesPendingMfaCookieAndExpiredChallengesCannotAuthenticate",
+          "outcome": "Passed"
+        }
+      ]
+    },
+    {
+      "purpose": "Full suite after ID-conversion fix; before final lockout-classification adjustment",
+      "localTrx": "tests/MinhaBelem.Tests/TestResults/sprint18-full.trx",
+      "startedUtc": "2026-10-18T20:05:36.7526265+00:00",
+      "finishedUtc": "2026-10-18T20:10:31.7788304+00:00",
+      "total": 189,
+      "passed": 188,
+      "failed": 0,
+      "skipped": [
+        "MinhaBelem.Tests.RealOcrTests.AuthorizedVideoFrameIsProcessedByRealFfmpegAndTesseract"
+      ],
+      "authenticationCases": [
+        {
+          "name": "MinhaBelem.Tests.AuthenticationDiagnosticsTests.HttpFailuresHaveGenericPublicMessagesAndDistinctSecretFreeAdministrativeReasons",
+          "outcome": "Passed"
+        },
+        {
+          "name": "MinhaBelem.Tests.AuthenticationDiagnosticsTests.LocalSnapshotNamesMissingAccountsAndReportsStateRolesAndEffectivePermissionsWithoutSecrets",
+          "outcome": "Passed"
+        },
+        {
+          "name": "MinhaBelem.Tests.AuthenticationJourneyTests.BootstrapPasswordRotationMfaRevocationAndRestart(role: \"Editor\", email: \"editor.teste@minhabelem.com.br\")",
+          "outcome": "Passed"
+        },
+        {
+          "name": "MinhaBelem.Tests.AuthenticationJourneyTests.BootstrapPasswordRotationMfaRevocationAndRestart(role: \"Moderator\", email: \"moderador.teste@minhabelem.com.br\")",
+          "outcome": "Passed"
+        },
+        {
+          "name": "MinhaBelem.Tests.AuthenticationJourneyTests.BootstrapPasswordRotationMfaRevocationAndRestart(role: \"SuperAdmin\", email: \"superadmin@minhabelem.com.br\")",
+          "outcome": "Passed"
+        },
+        {
+          "name": "MinhaBelem.Tests.AuthenticationJourneyTests.ConcurrencyFailureDoesNotMutateStampOrOverwriteTheNewPassword",
+          "outcome": "Passed"
+        },
+        {
+          "name": "MinhaBelem.Tests.AuthenticationJourneyTests.ExplicitLocalRecoveryResetsOnlyAuthorizedAccountsAndPreservesMfa",
+          "outcome": "Passed"
+        },
+        {
+          "name": "MinhaBelem.Tests.AuthenticationJourneyTests.PasswordAndFirstAccessFlagAreCommittedTogetherEvenWhenStampChangesInDatabase",
+          "outcome": "Passed"
+        },
+        {
+          "name": "MinhaBelem.Tests.AuthenticationJourneyTests.PasswordAndTotpFailuresLockOutAndRecoveryCodesAreSingleUseOverHttp",
+          "outcome": "Passed"
+        },
+        {
+          "name": "MinhaBelem.Tests.AuthenticationJourneyTests.PasswordResetInvalidatesPendingMfaCookieAndExpiredChallengesCannotAuthenticate",
+          "outcome": "Passed"
+        }
+      ]
+    },
+    {
+      "purpose": "Final targeted diagnostic tests, including disabled-lockout semantics",
+      "localTrx": "tests/MinhaBelem.Tests/TestResults/sprint18-diagnostics-final.trx",
+      "startedUtc": "2026-10-18T20:11:04.9712757+00:00",
+      "finishedUtc": "2026-10-18T20:12:17.7417470+00:00",
+      "total": 2,
+      "passed": 2,
+      "failed": 0,
+      "skipped": [],
+      "authenticationCases": [
+        {
+          "name": "MinhaBelem.Tests.AuthenticationDiagnosticsTests.HttpFailuresHaveGenericPublicMessagesAndDistinctSecretFreeAdministrativeReasons",
+          "outcome": "Passed"
+        },
+        {
+          "name": "MinhaBelem.Tests.AuthenticationDiagnosticsTests.LocalSnapshotNamesMissingAccountsAndReportsStateRolesAndEffectivePermissionsWithoutSecrets",
+          "outcome": "Passed"
+        }
+      ]
+    }
+  ],
+  "scope": {
+    "priorityZero": "Awaiting operator personal login/MFA/dashboard/restart confirmation",
+    "radarAgendaMobilityDesign": "Pending access acceptance as required by user",
+    "newPlaywrightVisualMatrixRun": false,
+    "productionAccountsCreated": false,
+    "continuousSourcesActivated": false
+  },
+  "secretsIncluded": false
+}
