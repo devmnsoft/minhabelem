@@ -1,6 +1,6 @@
 # Sprint 18 — acesso real e condição de continuidade
 
-Data: 18/10/2026. Base inicial: `4fed942`. Código e testes: `7764114`. **Prioridade zero ainda não homologada pelo operador.** Houve bootstrap local expressamente autorizado após identificar o destino correto. Não houve redefinição de contas existentes, implantação nem ativação de fontes.
+Data: 18/10/2026. Base inicial: `4fed942`. Código inicial de diagnóstico e testes: `7764114`. **Prioridade zero homologada pessoalmente pelo operador para os três perfis, inclusive após reiniciar a aplicação.** Houve bootstrap local expressamente autorizado após identificar o destino correto. Não houve redefinição de contas existentes, implantação nem ativação de fontes.
 
 ## Ambiente encontrado
 
@@ -68,7 +68,7 @@ O [snapshot seguro posterior ao bootstrap](evidencias/sprint18/bootstrap-local-s
 
 O operador foi orientado a iniciar **MinhaBelem.Web** no Visual Studio e usar `https://localhost:53406/conta/login`. A tentativa do agente de iniciar o servidor em segundo plano foi rejeitada pela revisão automática com `blocked by policy`; esse processo não foi iniciado. A inicialização pelo próprio operador não foi declarada concluída.
 
-Para concluir o aceite pessoal:
+Roteiro de aceite pessoal realizado:
 
 1. Iniciar MinhaBelem.Web com o perfil correto, preservando a configuração e o chaveiro já existentes.
 2. Ler as credenciais pelo script `scripts/windows/show-homologation-credentials.ps1` com o caminho local informado. O leitor remove o relatório antes de exibir a janela e não imprime senhas no console.
@@ -76,11 +76,13 @@ Para concluir o aceite pessoal:
 4. Para cada perfil, confirmar painel autorizado, logout, novo login com senha nova e MFA; reiniciar a aplicação de modo controlado e repetir o acesso.
 5. Registrar confirmação do operador e evidências administrativas sem material secreto. Não confundir o teste automatizado com esse aceite.
 
+Em 18/10/2026, o operador respondeu **“Consegui concluir com os três perfis”** à jornada de login, troca, MFA, logout, novo login e painel. Em confirmação específica sobre persistência após parar/iniciar a aplicação, respondeu **“Sim, confirmei após reiniciar”**. Isso encerra o aceite pessoal solicitado, sem coletar credenciais ou códigos. A confirmação abrange o ambiente local identificado; não é homologação de uma instalação IIS remota.
+
 Se a URL informada apontar para outro ambiente, primeiro auditar esse destino; não criar contas no banco local apenas para contornar uma instalação diferente. Para contas existentes, a rotina de recuperação de [AUTH-LOGIN-MFA-CORRECAO.md](AUTH-LOGIN-MFA-CORRECAO.md) continua exigindo autorização explícita e preserva MFA.
 
 ## Continuidade das demais fases
 
-Radar, Agenda, Guia, Mobilidade, Design Amazônico 5.0 e administração continuam no escopo. A instrução desta Sprint condiciona sua continuação ao acesso real funcionar. Não se declara homologado Worker contínuo, fonte autorizada, publicação real, Google Routes, tarifa vigente, revisão visual completa ou implantação IIS com base em testes isolados. As pendências e evidências anteriores permanecem em [SPRINT-17-EXECUCAO.md](SPRINT-17-EXECUCAO.md).
+Radar, Agenda, Guia, Mobilidade, Design Amazônico 5.0 e administração continuam no escopo e sua execução foi retomada após o aceite pessoal. O operador confirmou **“Ainda não há autorização documentada”** para coleta contínua das fontes; nenhuma fonte deve ser ativada nessa condição. A auditoria inicial encontrou nove fontes inativas, zero fontes operacionais, zero eventos publicados, um candidato pendente, 49 ciclos agregados sem histórico de páginas consultadas e nenhum processo/serviço Worker local. Esses números não comprovam operação contínua. As pendências e evidências anteriores permanecem em [SPRINT-17-EXECUCAO.md](SPRINT-17-EXECUCAO.md).
 
 ## Validação de código
 
