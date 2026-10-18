@@ -22,6 +22,8 @@ public sealed class Sprint16Tests(PortalFixture fixture)
         {
             var places=scope.ServiceProvider.GetRequiredService<IPlaceRepository>();var visits=scope.ServiceProvider.GetRequiredService<IVisitRepository>();
             var id=await places.UpsertAsync(new(){GooglePlaceId="s16-"+Guid.NewGuid(),Name="Visita S16",PrimaryType="museum",IsPublished=true,Latitude=-1.45,Longitude=-48.49,FormattedAddress="Endereço de teste",PurgeAfter=DateTime.UtcNow.AddDays(7)},default);
+            try
+            {
             Assert.True(await visits.SaveAsync(new(){PlaceId=id,SourceUrl="https://example.com/open",ConfirmedAt=DateTime.UtcNow.AddHours(-1),ValidUntil=DateTime.UtcNow.AddDays(7),EntryPrice=10},Enumerable.Range(0,7).Select(d=>new VisitHours{Weekday=d,Is24h=true}).ToArray(),0,actor,default));
             var request=new ItineraryRequest{Origin="Origem S16",LocalStart=PortalTime.Local(DateTime.UtcNow).Date.AddDays(1).AddHours(9),Category="museum",AvailableMinutes=480};
             var planner=new MinhaBelem.Infrastructure.Places.ItineraryPlanning(places,visits,new TestRoutes(false));
@@ -29,6 +31,8 @@ public sealed class Sprint16Tests(PortalFixture fixture)
             request.People=3;var three=await planner.PlanAsync(request,"pt-BR",default);Assert.Equal(one.Days.Sum(d=>d.KnownCost)*3,three.Days.Sum(d=>d.KnownCost));Assert.All(three.Days.Where(d=>d.Visits.Count>0),d=>Assert.True(d.ReturnTimeConfirmed));
             var impossible=new MinhaBelem.Infrastructure.Places.ItineraryPlanning(places,visits,new TestRoutes(true));Assert.Equal("unavailable",(await impossible.PlanAsync(request,"pt-BR",default)).State);
             request.AvailableMinutes=60;Assert.Equal("unavailable",(await planner.PlanAsync(request,"pt-BR",default)).State);
+            }
+            finally { await places.SetPublishedAsync(id,false,actor,default); }
         }
     }
     private sealed class TestRoutes(bool lateReturn):IRoutePlanner
