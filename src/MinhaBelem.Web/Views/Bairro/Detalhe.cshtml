@@ -17,24 +17,24 @@
         <div class="main-content">
             <div class="card">
                 <h3>História & Origens</h3>
-                <p style="line-height:1.8;">@Model.Guide.HistorySummary</p>
+                <p class="view-5d5ad179">@Model.Guide.HistorySummary</p>
 
-                <h3 style="margin-top:24px;">Identidade & Tradições</h3>
-                <p style="line-height:1.8;">@Model.Guide.CulturalCharacteristics</p>
+                <h3 class="view-04bbec5e">Identidade & Tradições</h3>
+                <p class="view-5d5ad179">@Model.Guide.CulturalCharacteristics</p>
 
                 @if (!string.IsNullOrWhiteSpace(Model.Guide.PopularAttractions))
                 {
-                    <h3 style="margin-top:24px;">Pontos de Interesse e Atrações</h3>
-                    <p style="line-height:1.8;">@Model.Guide.PopularAttractions</p>
+                    <h3 class="view-04bbec5e">Pontos de Interesse e Atrações</h3>
+                    <p class="view-5d5ad179">@Model.Guide.PopularAttractions</p>
                 }
             </div>
 
             <!-- Notícias Locais do Bairro -->
             @if (Model.LocalNews.Count > 0)
             {
-                <section style="margin-top:36px;">
+                <section class="view-0fd92b1e">
                     <h2>Notícias e Eventos em @Model.Guide.Name</h2>
-                    <div class="grid" style="grid-template-columns:1fr 1fr;gap:16px;margin-top:16px;">
+                    <div class="view-d2310dae grid">
                         @foreach (var news in Model.LocalNews)
                         {
                             <div class="card">
@@ -50,9 +50,9 @@
             <!-- Lugares do Bairro -->
             @if (Model.LocalPlaces.Count > 0)
             {
-                <section style="margin-top:36px;">
+                <section class="view-0fd92b1e">
                     <h2>Onde ir em @Model.Guide.Name</h2>
-                    <div class="grid" style="grid-template-columns:1fr 1fr;gap:16px;margin-top:16px;">
+                    <div class="view-d2310dae grid">
                         @foreach (var place in Model.LocalPlaces)
                         {
                             <div class="card">
@@ -75,7 +75,7 @@
                 </div>
             }
 
-            <div class="card" style="margin-top:20px;">
+            <div class="view-910f53fb card">
                 <h4>Participe do seu Bairro</h4>
                 <p>Mora em @Model.Guide.Name? Envie uma notícia, aviso comunitário ou evento da sua rua.</p>
                 <a href="/#colaborar" class="button small">Enviar Colaboração</a>
@@ -83,7 +83,7 @@
 
             @if (Model.OtherNeighborhoods.Count > 0)
             {
-                <div class="card" style="margin-top:20px;">
+                <div class="view-910f53fb card">
                     <h4>Outros Bairros</h4>
                     <ul style="padding-left:18px;margin:8px 0;">
                         @foreach (var other in Model.OtherNeighborhoods)

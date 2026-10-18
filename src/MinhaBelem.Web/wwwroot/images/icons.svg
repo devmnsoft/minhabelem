@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+<symbol id="search" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></symbol>
+<symbol id="river" viewBox="0 0 120 80"><path d="M8 56q17-12 34 0t34 0 34 0M8 69q17-12 34 0t34 0 34 0M24 44V27l12-13 12 13v17m-12-30v30m22 0V21l12-13 12 13v23m-12-36v36m20 0V27l12-13 12 13v17"/><circle cx="18" cy="13" r="6"/></symbol>
+<symbol id="calendar" viewBox="0 0 120 80"><rect x="29" y="15" width="62" height="54" rx="4"/><path d="M29 30h62M44 9v14M76 9v14m-31 8v0M44 44h8m16 0h8M44 56h8m16 0h8"/></symbol>
+<symbol id="boat" viewBox="0 0 64 64"><path d="m8 39 8 13h32l8-13ZM17 39V22h30v17M23 22V14h19v8M7 58q8-5 16 0t16 0 17 0M25 28v6m8-6v6m8-6v6"/></symbol>
+<symbol id="city" viewBox="0 0 64 64"><path d="M7 55h50M13 55V29l10-9 10 9v26M33 55V15h19v40M20 34v5m0 7v5m21-29v5m6-5v5m-6 9v5m6-5v5M41 55v-8h6v8"/></symbol>
+</svg>

@@ -1,3 +1,4 @@
+@{ Layout = "_AdminLayout"; }
 @using MinhaBelem.Core.Entities
 
 @{
@@ -36,20 +37,20 @@
                 <h3>@(contentItem?.Title ?? "Conteúdo original")</h3>
             </div>
 
-            <div class="field-preview" style="margin-top:14px;">
+            <div class="view-8d842990 field-preview">
                 <label><strong>Resumo Original:</strong></label>
                 <p>@contentItem?.Summary</p>
             </div>
 
             @if (!string.IsNullOrWhiteSpace(contentItem?.Body))
             {
-                <div class="field-preview" style="margin-top:14px;">
+                <div class="view-8d842990 field-preview">
                     <label><strong>Corpo Original:</strong></label>
                     <div class="article-body">@contentItem.Body</div>
                 </div>
             }
 
-            <div class="field-preview small" style="margin-top:14px;">
+            <div class="view-8d842990 field-preview small">
                 <p><strong>Categoria:</strong> @contentItem?.Category</p>
                 <p><strong>Bairro:</strong> @contentItem?.Neighborhood · @contentItem?.Municipality</p>
             </div>
@@ -62,14 +63,14 @@
                 <h3>@(translation?.Title ?? "Tradução ainda não gerada")</h3>
             </div>
 
-            <div class="field-preview" style="margin-top:14px;">
+            <div class="view-8d842990 field-preview">
                 <label><strong>Resumo Traduzido:</strong></label>
                 <p>@(translation?.Summary ?? "-")</p>
             </div>
 
             @if (!string.IsNullOrWhiteSpace(translation?.Body))
             {
-                <div class="field-preview" style="margin-top:14px;">
+                <div class="view-8d842990 field-preview">
                     <label><strong>Corpo Traduzido:</strong></label>
                     <div class="article-body">@translation.Body</div>
                 </div>
@@ -77,7 +78,7 @@
 
             @if (!string.IsNullOrWhiteSpace(translation?.CulturalNotes))
             {
-                <div class="cultural-badge-box" style="margin-top:14px;">
+                <div class="view-8d842990 cultural-badge-box">
                     <h4>💡 Preservação Cultural</h4>
                     <p>@translation.CulturalNotes</p>
                 </div>
@@ -87,21 +88,21 @@
 
     @if (translation is not null)
     {
-        <div class="actions" style="margin-top:24px;">
-            <form action="/admin/traducoes/conteudo/@translation.Id/revisar" method="post" style="display:inline;">
+        <div class="view-04bbec5e actions">
+            <form action="/admin/traducoes/conteudo/@translation.Id/revisar" method="post" class="view-a91548c5">
                 @Html.AntiForgeryToken()
                 <input type="hidden" name="approve" value="true" />
                 <button type="submit" class="button">✅ Aprovar Tradução para Publicação</button>
             </form>
 
-            <form action="/admin/traducoes/conteudo/@translation.Id/revisar" method="post" style="display:inline;">
+            <form action="/admin/traducoes/conteudo/@translation.Id/revisar" method="post" class="view-a91548c5">
                 @Html.AntiForgeryToken()
                 <input type="hidden" name="approve" value="false" />
                 <input type="text" name="notes" placeholder="Motivo da rejeição (opcional)" style="width:250px;display:inline-block;padding:8px 12px;margin-right:8px;" />
                 <button type="submit" class="button secondary">❌ Rejeitar Tradução</button>
             </form>
 
-            <form action="/admin/traducoes/solicitar-ia" method="post" style="display:inline;">
+            <form action="/admin/traducoes/solicitar-ia" method="post" class="view-a91548c5">
                 @Html.AntiForgeryToken()
                 <input type="hidden" name="type" value="content" />
                 <input type="hidden" name="id" value="@contentItem?.Id" />

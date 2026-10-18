@@ -19,7 +19,7 @@
         <div class="admin-header">
             <div>
                 <span class="eyebrow">INTELIGÊNCIA DE CONTEÚDO MULTILÍNGUE</span>
-                <h1 style="font-size:2.2rem;margin-top:4px;">Fila & Gestão de Traduções</h1>
+                <h1 class="view-26731c99">Fila & Gestão de Traduções</h1>
                 <p class="small text-muted">Aprovação editorial de traduções geradas por IA com preservação de expressões culturais amazônicas.</p>
             </div>
             <a href="/admin/idiomas" class="button secondary small">🌐 Gerenciar Idiomas</a>
@@ -32,7 +32,7 @@
 
     @if (stats is not null)
     {
-        <div class="grid stats-grid" style="margin-bottom: 24px;">
+        <div class="view-fec3619e grid stats-grid">
             <div class="card stat-card">
                 <span class="small">✅ Traduções Aprovadas</span>
                 <h3>@stats.ApprovedTranslations</h3>
@@ -95,16 +95,16 @@
                             <td><strong>@tr.Title</strong></td>
                             <td><small>@(tr.Provider) / @(tr.Model)</small></td>
                             <td><small>@tr.CreatedAt.ToString("dd/MM/yyyy HH:mm")</small></td>
-                            <td style="display:flex;gap:6px;">
+                            <td class="view-ccc58d95">
                                 <a href="/admin/traducoes/comparar/@tr.ContentId?targetLanguage=@tr.TargetLanguage" class="button small secondary">
                                     Comparar
                                 </a>
-                                <form action="/admin/traducoes/conteudo/@tr.Id/revisar" method="post" style="display:inline;">
+                                <form action="/admin/traducoes/conteudo/@tr.Id/revisar" method="post" class="view-a91548c5">
                                     @Html.AntiForgeryToken()
                                     <input type="hidden" name="approve" value="true" />
                                     <button type="submit" class="button small" title="Aprovar">✓ Aprovar</button>
                                 </form>
-                                <form action="/admin/traducoes/conteudo/@tr.Id/revisar" method="post" style="display:inline;">
+                                <form action="/admin/traducoes/conteudo/@tr.Id/revisar" method="post" class="view-a91548c5">
                                     @Html.AntiForgeryToken()
                                     <input type="hidden" name="approve" value="false" />
                                     <button type="submit" class="button small secondary" title="Rejeitar">✗</button>
@@ -121,13 +121,13 @@
                             <td><strong>@tr.Name</strong></td>
                             <td><small>@(tr.Provider) / @(tr.Model)</small></td>
                             <td><small>@tr.CreatedAt.ToString("dd/MM/yyyy HH:mm")</small></td>
-                            <td style="display:flex;gap:6px;">
-                                <form action="/admin/traducoes/lugar/@tr.Id/revisar" method="post" style="display:inline;">
+                            <td class="view-ccc58d95">
+                                <form action="/admin/traducoes/lugar/@tr.Id/revisar" method="post" class="view-a91548c5">
                                     @Html.AntiForgeryToken()
                                     <input type="hidden" name="approve" value="true" />
                                     <button type="submit" class="button small" title="Aprovar">✓ Aprovar</button>
                                 </form>
-                                <form action="/admin/traducoes/lugar/@tr.Id/revisar" method="post" style="display:inline;">
+                                <form action="/admin/traducoes/lugar/@tr.Id/revisar" method="post" class="view-a91548c5">
                                     @Html.AntiForgeryToken()
                                     <input type="hidden" name="approve" value="false" />
                                     <button type="submit" class="button small secondary" title="Rejeitar">✗</button>
@@ -145,7 +145,7 @@
     {
         <h2 style="margin-top: 40px;">⚠️ Itens Sem Tradução para [<code>@selectedLang</code>]</h2>
         <p class="small">Dispare a tradução automática através do orquestrador de IA com preservação de termos culturais.</p>
-        
+
         <div class="table-wrap">
             <table>
                 <thead>
@@ -164,7 +164,7 @@
                             <td>#@item.Id</td>
                             <td><strong>@item.Title</strong></td>
                             <td>
-                                <form action="/admin/traducoes/solicitar-ia" method="post" style="display:inline;">
+                                <form action="/admin/traducoes/solicitar-ia" method="post" class="view-a91548c5">
                                     @Html.AntiForgeryToken()
                                     <input type="hidden" name="type" value="content" />
                                     <input type="hidden" name="id" value="@item.Id" />
@@ -183,7 +183,7 @@
                             <td>#@place.Id</td>
                             <td><strong>@place.Name</strong></td>
                             <td>
-                                <form action="/admin/traducoes/solicitar-ia" method="post" style="display:inline;">
+                                <form action="/admin/traducoes/solicitar-ia" method="post" class="view-a91548c5">
                                     @Html.AntiForgeryToken()
                                     <input type="hidden" name="type" value="place" />
                                     <input type="hidden" name="id" value="@place.Id" />

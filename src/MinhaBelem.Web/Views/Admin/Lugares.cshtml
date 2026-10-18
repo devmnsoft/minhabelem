@@ -11,7 +11,7 @@
         <div class="admin-header">
             <div>
                 <span class="eyebrow">GUIA DA CIDADE & GOOGLE PLACES</span>
-                <h1 style="font-size:2.2rem;margin-top:4px;">Curadoria de Lugares & Atrações</h1>
+                <h1 class="view-26731c99">Curadoria de Lugares & Atrações</h1>
                 <p class="small text-muted">Cadastro de identificadores do Google Places e notas editoriais próprias, sem armazenar indevidamente fotos ou avaliações de terceiros.</p>
             </div>
             <a href="#novo-lugar" class="button small">➕ Cadastrar Novo Lugar</a>
@@ -25,11 +25,11 @@
         }
 
         <!-- GRADE DE LUGARES CADASTRADOS -->
-        <h2 style="font-size:1.4rem;margin:24px 0 14px;">Locais Cadastrados no Guia (@Model.Count)</h2>
-        <div class="grid" style="margin-bottom:34px;">
+        <h2 class="view-975245e1">Locais Cadastrados no Guia (@Model.Count)</h2>
+        <div class="view-4c34f994 grid">
             @if (Model.Count == 0)
             {
-                <div class="card empty" style="grid-column:1/-1;">
+                <div class="view-01d607cb card empty">
                     <p>Nenhum lugar cadastrado no momento.</p>
                 </div>
             }
@@ -50,12 +50,12 @@
         </div>
 
         <!-- FORMULÁRIO DE CADASTRO DE LOCAL -->
-        <div id="novo-lugar" class="card" style="border-top:4px solid var(--green-forest);">
-            <h2 style="font-size:1.4rem;margin-bottom:14px;">Cadastrar Novo Estabelecimento / Atração</h2>
+        <div id="novo-lugar" class="view-5afd4f17 card">
+            <h2 class="view-a0b99945">Cadastrar Novo Estabelecimento / Atração</h2>
             <form method="post" asp-action="SalvarLugar" style="max-width:800px;">
                 @Html.AntiForgeryToken()
 
-                <div class="grid" style="grid-template-columns:1fr 1fr;gap:16px;">
+                <div class="view-0e3686f0 grid">
                     <label>
                         Google Place ID *
                         <input name="googlePlaceId" maxlength="255" required placeholder="Chave ChIJ..." />
@@ -72,7 +72,7 @@
                     <textarea name="note" maxlength="1000" rows="3" placeholder="Informações culturais, história e orientações aos visitantes..."></textarea>
                 </label>
 
-                <div class="grid" style="grid-template-columns:1fr 1fr 1fr;gap:16px;">
+                <div class="view-c2fdb273 grid">
                     <label>
                         Bairro
                         <input name="bairro" maxlength="120" placeholder="Campina, Nazaré..." />
@@ -95,25 +95,25 @@
                     </label>
                 </div>
 
-                <fieldset style="border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px 18px;margin:16px 0;">
-                    <legend style="padding:0 8px;font-weight:700;color:var(--green-deep);font-size:0.88rem;">Públicos Confirmados pela Equipe</legend>
-                    <div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:6px;">
+                <fieldset class="view-5afb97bc">
+                    <legend class="view-ed9e32ea">Públicos Confirmados pela Equipe</legend>
+                    <div class="view-1b6abf54">
                         @foreach (var audience in Enum.GetNames<MinhaBelem.Core.Taxonomy.Audience>())
                         {
-                            <label style="display:flex;align-items:center;gap:6px;margin:0;font-size:0.86rem;font-weight:normal;">
-                                <input type="checkbox" name="Audiences" value="@audience" style="width:auto;margin:0;" /> @audience
+                            <label class="view-299715b9">
+                                <input type="checkbox" name="Audiences" value="@audience" class="view-ba78805d" /> @audience
                             </label>
                         }
                     </div>
                 </fieldset>
 
-                <fieldset style="border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px 18px;margin:16px 0;">
-                    <legend style="padding:0 8px;font-weight:700;color:var(--green-deep);font-size:0.88rem;">Acessibilidade Confirmada</legend>
-                    <div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:6px;">
+                <fieldset class="view-5afb97bc">
+                    <legend class="view-ed9e32ea">Acessibilidade Confirmada</legend>
+                    <div class="view-1b6abf54">
                         @foreach (var feature in Enum.GetNames<MinhaBelem.Core.Taxonomy.AccessibilityFeature>())
                         {
-                            <label style="display:flex;align-items:center;gap:6px;margin:0;font-size:0.86rem;font-weight:normal;">
-                                <input type="checkbox" name="Accessibility" value="@feature" style="width:auto;margin:0;" /> @feature
+                            <label class="view-299715b9">
+                                <input type="checkbox" name="Accessibility" value="@feature" class="view-ba78805d" /> @feature
                             </label>
                         }
                     </div>

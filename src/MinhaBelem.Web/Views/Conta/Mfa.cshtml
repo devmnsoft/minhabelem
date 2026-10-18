@@ -6,7 +6,7 @@
 
 <section class="section" style="max-width:580px;margin:50px auto 80px;">
     <div class="card" style="padding:36px;border-top:6px solid var(--gold);box-shadow:var(--shadow-md);">
-        <span class="eyebrow" style="color:var(--gold-dark);">SEGURANÇA DA CONTA</span>
+        <span class="view-0488757b eyebrow">SEGURANÇA DA CONTA</span>
         <h1 style="font-size:1.85rem;margin:6px 0 16px;">Autenticação em Duas Etapas (TOTP)</h1>
 
         @if (Model.Enabled)
@@ -14,7 +14,7 @@
             <div class="notice" role="status">
                 <span>✓ <strong>Autenticador Ativo:</strong> Sua conta está protegida com TOTP de segundo fator.</span>
             </div>
-            <div style="margin-top:20px;">
+            <div class="view-910f53fb">
                 <a href="/editorial" class="button">Acessar Central Editorial →</a>
             </div>
         }
@@ -23,14 +23,14 @@
             <p>
                 Para acessar as áreas administrativas e editoriais do MinhaBelém, é obrigatório vincular sua conta a um aplicativo autenticador como Google Authenticator, Microsoft Authenticator ou 1Password.
             </p>
-            <form method="post" asp-action="IniciarMfa" style="margin-top:20px;">
+            <form method="post" asp-action="IniciarMfa" class="view-910f53fb">
                 @Html.AntiForgeryToken()
                 <button type="submit" class="button">Configurar Aplicativo Autenticador</button>
             </form>
         }
         else
         {
-            <p class="small text-muted" style="margin-bottom:16px;">
+            <p class="view-7564ec60 small text-muted">
                 No seu aplicativo autenticador, adicione uma nova conta via chave de configuração manual ou utilize o link direto.
             </p>
 
@@ -47,8 +47,8 @@
                     <input id="code" name="code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required placeholder="000000" style="font-size:1.4rem;letter-spacing:0.2em;text-align:center;" />
                 </label>
 
-                <div style="margin-top:20px;">
-                    <button type="submit" style="width:100%;">Validar Código e Obter Códigos de Recuperação</button>
+                <div class="view-910f53fb">
+                    <button type="submit" class="view-9ccc4ca9">Validar Código e Obter Códigos de Recuperação</button>
                 </div>
             </form>
         }

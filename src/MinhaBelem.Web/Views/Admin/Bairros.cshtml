@@ -11,7 +11,7 @@
         <div class="admin-header">
             <div>
                 <span class="eyebrow">COMUNIDADE & IDENTIDADE LOCAL</span>
-                <h1 style="font-size:2.2rem;margin-top:4px;">Guias de Bairros de Belém</h1>
+                <h1 class="view-26731c99">Guias de Bairros de Belém</h1>
                 <p class="small text-muted">Documentação histórica, gastronômica e atrativos culturais de cada região da capital.</p>
             </div>
             <a href="#novo-bairro" class="button small">➕ Novo Bairro</a>
@@ -54,11 +54,11 @@
     </div>
 
     <!-- Novo Bairro Formulário -->
-    <div id="novo-bairro" class="card cta" style="margin-top:36px;">
+    <div id="novo-bairro" class="view-0fd92b1e card cta">
         <h3>Cadastrar / Atualizar Guia de Bairro</h3>
         <form action="/admin/bairros" method="post">
             @Html.AntiForgeryToken()
-            <div class="grid" style="grid-template-columns:1fr 1fr 1fr;gap:16px;">
+            <div class="view-c2fdb273 grid">
                 <label>
                     Nome do Bairro *
                     <input name="Name" required placeholder="Ex: Marco, Guamá, Pedreira..." />
@@ -80,12 +80,12 @@
                 </label>
             </div>
 
-            <label style="margin-top:14px;">
+            <label class="view-8d842990">
                 Resumo Histórico *
                 <textarea name="HistorySummary" rows="3" required placeholder="Origem e fundação do bairro..."></textarea>
             </label>
 
-            <label style="margin-top:14px;">
+            <label class="view-8d842990">
                 Características Culturais e Gastronômicas *
                 <textarea name="CulturalCharacteristics" rows="3" required placeholder="Comércio típico, feiras, tradições, comida de rua..."></textarea>
             </label>
@@ -101,7 +101,7 @@
                 </label>
             </div>
 
-            <button type="submit" style="margin-top:16px;">Salvar Guia de Bairro</button>
+            <button type="submit" class="view-76977cc9">Salvar Guia de Bairro</button>
         </form>
     </div>
     </main>

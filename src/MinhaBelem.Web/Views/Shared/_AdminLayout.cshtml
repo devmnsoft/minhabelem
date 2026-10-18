@@ -1,0 +1,12 @@
+@{
+    Layout = "_Layout";
+}
+<div class="admin-shell">
+    <partial name="_AdminSidebar" />
+    <div class="admin-content" id="conteudo-admin">
+        @RenderBody()
+    </div>
+</div>
+@section Scripts {
+    @await RenderSectionAsync("Scripts", required: false)
+}

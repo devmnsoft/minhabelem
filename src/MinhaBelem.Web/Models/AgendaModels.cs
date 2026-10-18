@@ -1,6 +1,9 @@
 using MinhaBelem.Core.Entities;
 namespace MinhaBelem.Web.Models;
-public sealed record AgendaPage(string Title, string Description, IReadOnlyList<ContentItem> Items, int Days);
+public sealed record AgendaPage(string Title, string Description, IReadOnlyList<ContentItem> Items, int Days)
+{
+    public DateOnly? SelectedDate { get; init; }
+}
 public static class PortalTime
 {
     public static readonly TimeZoneInfo Zone = TimeZoneInfo.FindSystemTimeZoneById("America/Belem");

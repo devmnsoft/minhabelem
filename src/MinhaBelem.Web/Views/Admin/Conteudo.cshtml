@@ -14,7 +14,7 @@
         <div class="admin-header">
             <div>
                 <span class="eyebrow">ADMINISTRAÇÃO EDITORIAL</span>
-                <h1 style="font-size:2.2rem;margin-top:4px;">Gestão de Matérias & Notícias</h1>
+                <h1 class="view-26731c99">Gestão de Matérias & Notícias</h1>
                 <p class="small text-muted">Controle de reportagens manuais, revisão de artigos e arquivamento seguro.</p>
             </div>
             <a href="#nova-materia" class="button small">➕ Nova Matéria Manual</a>
@@ -72,7 +72,7 @@
                 @if (Model.Count == 0)
                 {
                     <tr>
-                        <td colspan="7" style="text-align:center;padding:24px;">Nenhum conteúdo encontrado.</td>
+                        <td colspan="7" class="view-1e09158a">Nenhum conteúdo encontrado.</td>
                     </tr>
                 }
                 @foreach (var item in Model)
@@ -89,11 +89,11 @@
                         </td>
                         <td>@item.Neighborhood</td>
                         <td><small>@item.PublishedAt.ToString("dd/MM/yyyy HH:mm")</small></td>
-                        <td style="display:flex;gap:6px;">
+                        <td class="view-ccc58d95">
                             <a href="/editorial/editar/@item.Id" class="button small secondary">Editar</a>
                             @if (item.Status != MinhaBelem.Core.Entities.ContentStatus.Archived)
                             {
-                                <form action="/admin/conteudo/@item.Id/arquivar" method="post" style="display:inline;">
+                                <form action="/admin/conteudo/@item.Id/arquivar" method="post" class="view-a91548c5">
                                     @Html.AntiForgeryToken()
                                     <button type="submit" class="button small secondary" title="Arquivar">Arquivar</button>
                                 </form>
@@ -106,7 +106,7 @@
     </div>
 
     <!-- Formulário de Criação Manual -->
-    <div id="nova-materia" class="card cta" style="margin-top:40px;">
+    <div id="nova-materia" class="view-543ac430 card cta">
         <h2>Publicar Nova Matéria Manual</h2>
         <p class="small">Use este formulário para produzir conteúdo exclusivo da redação ou informes oficiais verificados.</p>
 
@@ -122,7 +122,7 @@
                 <textarea name="resumo" rows="2" maxlength="500" required placeholder="Breve resumo informativo..."></textarea>
             </label>
 
-            <div class="grid" style="grid-template-columns:1fr 1fr;gap:16px;">
+            <div class="view-0e3686f0 grid">
                 <label>
                     Categoria *
                     <select name="categoria">
@@ -143,7 +143,7 @@
                 <textarea name="corpo" rows="8" placeholder="Texto completo da reportagem ou comunicado..."></textarea>
             </label>
 
-            <div class="grid" style="grid-template-columns:1fr 1fr;gap:16px;">
+            <div class="view-0e3686f0 grid">
                 <label>
                     Nome da Fonte
                     <input name="nomeFonte" placeholder="Redação MinhaBelém / Assessoria Oficial" />
@@ -154,7 +154,7 @@
                 </label>
             </div>
 
-            <button type="submit" style="margin-top:14px;">Publicar Matéria</button>
+            <button type="submit" class="view-8d842990">Publicar Matéria</button>
         </form>
     </div>
     </main>

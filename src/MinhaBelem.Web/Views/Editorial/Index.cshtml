@@ -11,10 +11,10 @@
         <div class="admin-header">
             <div>
                 <span class="eyebrow">CENTRAL EDITORIAL & JORNALISMO</span>
-                <h1 style="font-size:2.2rem;margin-top:4px;">Revisão Editorial & Publicação</h1>
+                <h1 class="view-26731c99">Revisão Editorial & Publicação</h1>
                 <p class="small text-muted">Fontes autorizadas, conferência de fatos e revisão humana precedem toda publicação pública.</p>
             </div>
-            <div style="display:flex;gap:10px;">
+            <div class="view-4a5cec13">
                 <a href="/admin/conteudo" class="button small">➕ Nova Matéria Manual</a>
                 <a href="/admin/fontes" class="button secondary small">📡 Status das Fontes</a>
             </div>
@@ -28,17 +28,17 @@
         }
 
         <!-- CANDIDATOS DESCOBERTOS PELA INGESTÃO -->
-        <h2 style="font-size:1.4rem;margin:24px 0 14px;">Candidatos Descobertos Aguardando Decisão (@Model.Candidates.Count)</h2>
+        <h2 class="view-975245e1">Candidatos Descobertos Aguardando Decisão (@Model.Candidates.Count)</h2>
         @if (Model.Candidates.Count == 0)
         {
             <div class="card empty" style="text-align:center;padding:32px;">
                 <p>Nenhum candidato pendente no momento. As fontes estão operando normalmente.</p>
-                <a href="/admin/fontes" class="button secondary small" style="margin-top:10px;">Verificar Fontes e Monitoramento</a>
+                <a href="/admin/fontes" class="view-726e8b31 button secondary small">Verificar Fontes e Monitoramento</a>
             </div>
         }
         else
         {
-            <div class="grid" style="margin-bottom:34px;">
+            <div class="view-4c34f994 grid">
                 @foreach (var item in Model.Candidates)
                 {
                     <article class="card">
@@ -50,18 +50,18 @@
                             <a href="/editorial/comparar/@item.Id" class="button-link">🔍 Comparar dados</a>
                             @if (MinhaBelem.Core.Security.SafeUrl.Validate(item.SourceUrl).IsValid)
                             {
-                                <a href="@item.SourceUrl" target="_blank" rel="noopener noreferrer" style="color:var(--text-muted);">Conferir original ↗</a>
+                                <a href="@item.SourceUrl" target="_blank" rel="noopener noreferrer" class="view-805f01b1">Conferir original ↗</a>
                             }
                         </div>
 
                         <div style="display:flex;gap:8px;margin-top:auto;padding-top:14px;border-top:1px solid var(--border-subtle);">
-                            <form method="post" asp-action="Importar" asp-route-id="@item.Id" style="display:inline;flex:1;">
+                            <form method="post" asp-action="Importar" asp-route-id="@item.Id" class="view-6c7f3809">
                                 @Html.AntiForgeryToken()
-                                <button type="submit" class="button small" style="width:100%;">Importar</button>
+                                <button type="submit" class="view-9ccc4ca9 button small">Importar</button>
                             </form>
-                            <form method="post" asp-action="Rejeitar" asp-route-id="@item.Id" style="display:inline;flex:1;">
+                            <form method="post" asp-action="Rejeitar" asp-route-id="@item.Id" class="view-6c7f3809">
                                 @Html.AntiForgeryToken()
-                                <button type="submit" class="button secondary small" style="width:100%;">Rejeitar</button>
+                                <button type="submit" class="view-9ccc4ca9 button secondary small">Rejeitar</button>
                             </form>
                         </div>
                     </article>
@@ -85,7 +85,7 @@
                     @if (Model.Content.Count == 0)
                     {
                         <tr>
-                            <td colspan="4" style="text-align:center;padding:24px;">Nenhuma matéria no fluxo editorial.</td>
+                            <td colspan="4" class="view-1e09158a">Nenhuma matéria no fluxo editorial.</td>
                         </tr>
                     }
                     @foreach (var item in Model.Content)

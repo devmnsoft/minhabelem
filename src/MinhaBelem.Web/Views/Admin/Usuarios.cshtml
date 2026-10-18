@@ -12,10 +12,10 @@
         <div class="admin-header">
             <div>
                 <span class="eyebrow">SEGURANÇA & GOVERNANÇA DE ACESSOS</span>
-                <h1 style="font-size:2.2rem;margin-top:4px;">Usuários & Controle de Acessos</h1>
+                <h1 class="view-26731c99">Usuários & Controle de Acessos</h1>
                 <p class="small text-muted">Gestão de operadores, papéis RBAC, autenticação de dois fatores (TOTP) e revogação imediata de sessões.</p>
             </div>
-            <div style="display:flex;gap:10px;">
+            <div class="view-4a5cec13">
                 <a href="/admin/perfis" class="button secondary small">🛡️ Configurar Perfis</a>
                 <a href="#novo-usuario" class="button small">➕ Novo Usuário</a>
             </div>
@@ -29,7 +29,7 @@
         }
 
         <!-- TABELA DE USUÁRIOS -->
-        <h2 style="font-size:1.4rem;margin:24px 0 12px;">Usuários do Sistema (@Model.Count)</h2>
+        <h2 class="view-2f21105d">Usuários do Sistema (@Model.Count)</h2>
         <div class="table-wrap">
             <table>
                 <thead>
@@ -70,7 +70,7 @@
                                         <button type="submit" class="button secondary small">Alterar Perfil</button>
                                     </form>
 
-                                    <form method="post" asp-action="EstadoUsuario" asp-route-id="@user.Id" style="display:inline;">
+                                    <form method="post" asp-action="EstadoUsuario" asp-route-id="@user.Id" class="view-a91548c5">
                                         @Html.AntiForgeryToken()
                                         <input type="hidden" name="enabled" value="@((!user.Enabled).ToString().ToLowerInvariant())" />
                                         <button type="submit" class="button small @(user.Enabled ? "secondary" : "")">
@@ -86,8 +86,8 @@
         </div>
 
         <!-- FORMULÁRIO DE NOVO USUÁRIO -->
-        <div id="novo-usuario" class="card" style="margin-top:34px;border-top:4px solid var(--green-forest);">
-            <h2 style="font-size:1.4rem;margin-bottom:14px;">Criar Novo Usuário Administrativo</h2>
+        <div id="novo-usuario" class="view-c7eab27c card">
+            <h2 class="view-a0b99945">Criar Novo Usuário Administrativo</h2>
             <form method="post" asp-action="CriarUsuario" style="max-width:700px;">
                 @Html.AntiForgeryToken()
 

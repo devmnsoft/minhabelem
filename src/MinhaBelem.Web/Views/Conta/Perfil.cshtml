@@ -10,9 +10,9 @@
             <div>
                 <span class="eyebrow">DADOS DA CONTA</span>
                 <h1 style="font-size:2rem;margin:4px 0 6px;">@Model.DisplayName</h1>
-                <p class="small text-muted" style="margin:0;">@Model.Email · Usuário registrado</p>
+                <p class="view-38965f9b small text-muted">@Model.Email · Usuário registrado</p>
             </div>
-            <div style="display:flex;gap:10px;">
+            <div class="view-4a5cec13">
                 <a href="/conta/mfa" class="button secondary small">🔐 Autenticador TOTP</a>
                 <a href="/conta/sessoes" class="button outline small">📱 Sessões Ativas</a>
             </div>
@@ -34,7 +34,7 @@
                     Senha Atual *
                     <input name="CurrentPassword" type="password" autocomplete="current-password" required placeholder="Digite sua senha atual" />
                 </label>
-                <label style="margin-top:14px;">
+                <label class="view-8d842990">
                     Nova Senha Forte * (Mínimo 12 caracteres, maiúscula, minúscula, número e símbolo)
                     <input name="NewPassword" type="password" autocomplete="new-password" minlength="12" required placeholder="Digite a nova senha segura" />
                 </label>
@@ -45,9 +45,9 @@
         </div>
 
         <!-- PERMISSÕES CONCEDIDAS -->
-        <div style="margin-bottom:30px;">
-            <h3 style="font-size:1.15rem;margin-bottom:12px;">Permissões Atribuídas ao seu Perfil</h3>
-            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <div class="view-a612e8d2">
+            <h3 class="view-fe794d34">Permissões Atribuídas ao seu Perfil</h3>
+            <div class="view-31e4e2a2">
                 @foreach (var claim in User.FindAll("mb:permission"))
                 {
                     <span class="badge badge-primary">@claim.Value</span>
