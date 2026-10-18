@@ -32,9 +32,15 @@ public sealed class EditorialBatchItem
 }
 public interface IEditorialBatches
 {
+    Task<IReadOnlyList<EditorialBatch>> HistoryAsync(long actorId, CancellationToken ct);
     Task<IReadOnlyDictionary<string,long>> DashboardAsync(CancellationToken ct);
     Task<string> PreviewAsync(EditorialBatchInput input, ClaimsPrincipal actor, CancellationToken ct);
     Task<EditorialBatch?> GetAsync(string id, long actorId, CancellationToken ct);
     Task<bool> ConfirmAsync(string id, ClaimsPrincipal actor, CancellationToken ct);
     Task<bool> ProcessNextAsync(CancellationToken ct);
+}
+public static class EditorialBatchLimits
+{
+    public const int Maximum = 500;
+    public static readonly string[] ReviewQueues = ["dates", "location", "license", "translation", "sensitive"];
 }

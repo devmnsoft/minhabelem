@@ -67,6 +67,7 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/view-formats.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/components.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/amazonia.css" asp-append-version="true" />
 </head>
 <body class="culture-@currentCulture.ToLowerInvariant() @(Context.Request.Path.StartsWithSegments("/admin") || Context.Request.Path.StartsWithSegments("/editorial") ? "administration" : "portal")">
     <a class="skip-link" href="#conteudo">@Loc["General_Back"]</a>
@@ -197,7 +198,7 @@
                     <a href="/privacidade">@Loc["Nav_Privacy"]</a>
                     <a href="/termos">@Loc["Nav_Terms"]</a>
                     <a href="/sitemap.xml" target="_blank">Sitemap XML</a>
-                    <a href="/status">Status da Plataforma</a>
+                    <a href="/status">Status da Plataforma</a><a href="/creditos">@Loc["PhotoCredits"]</a>
                 </nav>
                 <div class="footer-languages">
                     <span class="small">@Loc["Language_Selector_Title"]:</span>

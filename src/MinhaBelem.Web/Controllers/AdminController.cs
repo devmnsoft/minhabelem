@@ -328,8 +328,22 @@ public sealed class AdminController(IAdministrationRepository admin, IDashboardR
     {
         ViewData["Lines"] = await transit.GetLinesAsync(null, ct);
         ViewData["Alerts"] = await transit.GetActiveAlertsAsync(ct);
-        ViewData["RiverRoutes"] = await transit.GetRiverRoutesAsync(ct);
+        ViewData["RiverRoutes"] = await transit.GetRiverRoutesAsync(ct,true);
         return View();
+    }
+
+    [HttpGet("mobilidade/fluvial/{id:long?}"),Authorize(Policy=Permissions.SettingsManage)]
+    public async Task<IActionResult> Fluvial(long? id,CancellationToken ct)
+    {
+        var route=id is null?new RiverRoute{IsActive=false}:(await transit.GetRiverRoutesAsync(ct,true)).FirstOrDefault(x=>x.Id==id);
+        return route is null?NotFound():View(route);
+    }
+    [HttpPost("mobilidade/fluvial"),Authorize(Policy=Permissions.SettingsManage)]
+    public async Task<IActionResult> SalvarFluvial(RiverRoute route,int expectedRevision,CancellationToken ct)
+    {
+        if(!ModelState.IsValid || route.Name.Length is <3 or >150 || route.DeparturePort.Length is <3 or >200 || route.DestinationPort.Length is <3 or >200 || route.DestinationIsland.Length>100 || route.OperatorName?.Length>150 || route.OperatorNotes?.Length>2000 || route.SourceUrl?.Length>2000 || route.OperatingHours.Length>1000 || route.VesselType.Length>100 || route.EstimatedDurationMinutes is <0 or >1440 || route.Fare is <0 or >10000) return BadRequest();
+        if(route.IsActive && (!SafeUrl.Validate(route.SourceUrl).IsValid || route.VerifiedAt is null || route.VerifiedAt>DateTime.UtcNow || route.ValidUntil is null || route.ValidUntil<=DateTime.UtcNow || route.FareValidUntil>route.ValidUntil || string.IsNullOrWhiteSpace(route.OperatorName)))return BadRequest("Confira fonte, operador e vigência antes de ativar.");
+        return await transit.SaveRiverRouteAsync(route,expectedRevision,Actor,ct)?RedirectToAction(nameof(Mobilidade)):Conflict("Registro alterado; recarregue antes de salvar.");
     }
 
     [HttpPost("mobilidade/alerta"), Authorize(Policy = Permissions.SettingsManage)]

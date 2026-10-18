@@ -2,6 +2,22 @@ using MinhaBelem.Core.Abstractions;
 namespace MinhaBelem.Core.Policies;
 public static class VisitRecommendationService
 {
+    public static (DateTime StartUtc,DateTime EndUtc)? Suggest(VisitSchedule schedule,DateTime afterUtc,DateTime nowUtc,int durationMinutes=90,string sector="principal")
+    {
+        if(durationMinutes is <15 or >480)throw new ArgumentOutOfRangeException(nameof(durationMinutes));
+        var cursor=afterUtc>nowUtc?afterUtc:nowUtc;
+        for(var i=0;i<8*24;i++)
+        {
+            var assessment=Evaluate(schedule,cursor,nowUtc,sector);
+            var end=cursor.AddMinutes(durationMinutes);
+            if(assessment.State=="open" && assessment.NextChangeUtc>=end && schedule.Info!.ValidUntil>end)
+                return (cursor,end);
+            if(assessment.NextChangeUtc is {} next && next>cursor)cursor=next;
+            else cursor=cursor.AddHours(1);
+            if(cursor>afterUtc.AddDays(7))break;
+        }
+        return null;
+    }
     public static readonly TimeZoneInfo Zone=TimeZoneInfo.FindSystemTimeZoneById("America/Belem");
     public static VisitAssessment Evaluate(VisitSchedule schedule,DateTime whenUtc,DateTime nowUtc,string sector="principal")
     {

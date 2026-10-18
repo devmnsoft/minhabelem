@@ -31,7 +31,7 @@
             <a href="/guia">@Loc["NavGuide"] ↗</a>
         </div>
     </div>
-    <span class="hero-caption">@Loc["ImageDisclosure"]</span>
+    <span class="hero-caption">Ver-o-Peso · Helderserralva · <a href="/creditos">CC BY-SA 4.0 · @Loc["PhotoCredits"]</a></span>
 </section>
 <div class="city-ribbon"><span class="live-dot" aria-hidden="true"></span><strong>@Loc["CityNow"]</strong><span>@Loc["EditorialNote"]</span><a href="/agora">@Loc["ViewMore"] ↗</a></div>
 <nav class="categories category-strip" aria-label="@Loc["AllCategories"]">
@@ -80,16 +80,18 @@
 @if (!filtered)
 {
     <section class="section agenda-feature" aria-labelledby="agenda-title">
-        <div class="agenda-intro"><span class="eyebrow">@Loc["NavAgenda"]</span><h2 id="agenda-title">@Loc["WeeklyAgenda"]</h2><p>@Loc["AgendaEmpty"]</p><a class="button" href="/agenda/semana">@Loc["ThisWeek"] ↗</a></div>
+        <div class="agenda-intro"><span class="eyebrow">@Loc["NavAgenda"]</span><h2 id="agenda-title">@Loc["WeeklyAgenda"]</h2><p>@Loc["Agenda365Intro"]</p><a class="button" href="/agenda/semana">@Loc["ThisWeek"] ↗</a></div>
         <div class="agenda-list">
-            @foreach (var item in events)
+            @foreach (var item in (ViewData["WeeklyEvents"] as IReadOnlyList<ContentItem> ?? events))
             {
                 <article class="event-row"><div class="event-date">@if (item.EventStartAt is { } start) { <strong>@PortalTime.Local(start).ToString("dd", culture)</strong><span>@PortalTime.Local(start).ToString("MMM", culture)</span> }</div><div><span class="eyebrow">@item.Neighborhood</span><h3><a asp-action="Detalhe" asp-route-id="@item.Id">@item.DisplayTitle</a></h3><p>@item.Address</p></div></article>
             }
-            @if (events.Count == 0) { <div class="empty"><svg class="empty-art" aria-hidden="true"><use href="/images/icons.svg#calendar" /></svg><h3>@Loc["General_Empty"]</h3></div> }
+            @if ((ViewData["WeeklyEvents"] as IReadOnlyList<ContentItem> ?? events).Count == 0) { <div class="empty"><svg class="empty-art" aria-hidden="true"><use href="/images/icons.svg#calendar" /></svg><h3>@Loc["General_Empty"]</h3></div> }
             <nav class="agenda-links"><a href="/agenda">@Loc["UpcomingEvents"] ↗</a><a href="/cinema-teatro">@Loc["CinemaTheater"] ↗</a><a href="/programacao-infantil">@Loc["ChildrenProgram"] ↗</a></nav>
         </div>
     </section>
+    <section class="section"><div class="sectionhead"><h2>@Loc["UpcomingEvents"]</h2><a href="/agenda?dias=365">@Loc["Agenda365Title"] ↗</a></div><div class="grid">@foreach(var upcoming in events){<article class="card"><span class="eyebrow">@Loc["Category_"+MinhaBelem.Core.Taxonomy.Taxonomy.Info(upcoming.Category).Slug]</span><h3><a href="/Home/Detalhe/@upcoming.Id">@upcoming.DisplayTitle</a></h3><p>@(upcoming.EventStartAt is {} when?PortalTime.Local(when).ToString("D",culture):Loc["RouteUnknown"].Value)</p><p>@upcoming.DisplaySummary</p></article>}</div><nav class="agenda-links"><a href="/eventos-gratuitos">@Loc["FreeEvents"] ↗</a><a href="/cinema-teatro">@Loc["CinemaTheater"] ↗</a><a href="/meu-dia-em-belem">@Loc["MyDayBelem"] ↗</a><a href="/como-chegar">@Loc["RouteTitle"] ↗</a></nav></section>
+    <section class="section belem-photo-grid"><figure><a href="/guia?busca=Ver-o-Peso"><img src="/images/belem/ver-o-peso.jpg" alt="Ver-o-Peso, Belém" width="1280" height="960" loading="lazy"/><strong>Ver-o-Peso</strong></a><figcaption>Helderserralva · <a href="/creditos">CC BY-SA 4.0</a></figcaption></figure><figure><a href="/guia?busca=Theatro"><img src="/images/belem/theatro.jpg" alt="Theatro da Paz, Belém" width="1280" height="960" loading="lazy"/><strong>Theatro da Paz</strong></a><figcaption>Fabio Gomes · <a href="/creditos">CC BY-SA 4.0</a></figcaption></figure><figure><a href="/guia?busca=Docas"><img src="/images/belem/docas.jpg" alt="Estação das Docas, Belém" width="1280" height="960" loading="lazy"/><strong>Estação das Docas</strong></a><figcaption>Ajmcbarreto · <a href="/creditos">CC BY-SA 4.0</a></figcaption></figure></section>
     <section class="section discovery-feature"><div><span class="eyebrow">@Loc["NavExplore"]</span><h2>@Loc["Explore_Hero_Title"]</h2><p>@Loc["Explore_Hero_Subtitle"]</p><a class="button-link" href="/explore">@Loc["WhatToVisit"] ↗</a></div><div class="route-list">
         @foreach (var route in itineraries.Take(4)) { <a href="/explore/roteiro/@route.Slug"><span>@route.Days.ToString("00")</span><strong>@route.GetTitle(culture.Name)</strong><span aria-hidden="true">↗</span></a> }
         @if (itineraries.Count == 0) { <p>@Loc["General_Empty"]</p> }

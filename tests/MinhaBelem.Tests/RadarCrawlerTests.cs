@@ -71,7 +71,7 @@ public sealed class RadarCrawlerTests
         var evidence = extractor.ExtractEventFromText(textWithEvent, "https://example.com/evento-jazz");
 
         Assert.NotNull(evidence);
-        Assert.False(evidence.Uncertain);
+        Assert.True(evidence.Uncertain); // Text heuristics always require editorial confirmation.
         Assert.NotNull(evidence.StartUtc);
         // 20h em Belém (UTC-3) corresponde a 23h UTC
         Assert.Equal(23, evidence.StartUtc!.Value.Hour);
@@ -400,6 +400,7 @@ public sealed class RadarCrawlerTests
 
     private sealed class FakeContentRepo(IReadOnlyList<ContentItem> items) : IContentRepository
     {
+        public Task<int> CountEditorialAsync(ContentQuery query,CancellationToken ct)=>CountAsync(query,ct);
         public Task<IReadOnlyList<ContentItem>> SearchForDuplicatesAsync(string title, string summary, int limit, CancellationToken ct)
             => Task.FromResult(items);
 

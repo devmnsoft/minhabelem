@@ -8,6 +8,7 @@ public interface IContentRepository
     Task<IReadOnlyList<ContentItem>> EditorialAsync(ContentQuery query, CancellationToken ct);
     Task<IReadOnlyList<ContentItem>> SearchAsync(ContentQuery query, CancellationToken ct);
     Task<int> CountAsync(ContentQuery query, CancellationToken ct);
+    Task<int> CountEditorialAsync(ContentQuery query, CancellationToken ct);
     Task<ContentItem?> GetAsync(long id, CancellationToken ct);
     Task<ContentItem?> GetBySlugAsync(string slug, CancellationToken ct);
     Task<long> InsertAsync(ContentItem item, long? actorId, string changeSummary, CancellationToken ct);
@@ -27,6 +28,7 @@ public interface IEditorialWorkflow
 
 public sealed class ContentQuery
 {
+    public ContentKind? Kind { get; set; }
     public bool EventsOverlapWindow { get; set; }
     public ContentCategory? Category { get; set; }
     public string? Subject { get; set; }
@@ -189,7 +191,8 @@ public interface ITransitRepository
     Task<IReadOnlyList<TransitLine>> SearchLinesAsync(string query, CancellationToken ct);
     Task<IReadOnlyList<TransitStop>> GetStopsAsync(string? neighborhood, CancellationToken ct);
     Task<IReadOnlyList<TransitAlert>> GetActiveAlertsAsync(CancellationToken ct);
-    Task<IReadOnlyList<RiverRoute>> GetRiverRoutesAsync(CancellationToken ct);
+    Task<IReadOnlyList<RiverRoute>> GetRiverRoutesAsync(CancellationToken ct,bool includeInactive=false);
+    Task<bool> SaveRiverRouteAsync(RiverRoute route,int expectedRevision,long actorId,CancellationToken ct);
     Task<long> UpsertAlertAsync(TransitAlert alert, CancellationToken ct);
     Task<long> UpsertLineAsync(TransitLine line, CancellationToken ct);
 }

@@ -64,15 +64,25 @@ public sealed class TransitRepository(MySqlDataSource dataSource) : ITransitRepo
         return rows.ToList();
     }
 
-    public async Task<IReadOnlyList<RiverRoute>> GetRiverRoutesAsync(CancellationToken ct)
+    public async Task<IReadOnlyList<RiverRoute>> GetRiverRoutesAsync(CancellationToken ct,bool includeInactive=false)
     {
         await using var db = await dataSource.OpenConnectionAsync(ct);
         var sql = @"SELECT id, name, departure_port AS DeparturePort, destination_port AS DestinationPort, destination_island AS DestinationIsland, estimated_duration_minutes AS EstimatedDurationMinutes, fare, vessel_type AS VesselType, operating_hours AS OperatingHours, operator_notes AS OperatorNotes, is_active AS IsActive, created_at AS CreatedAt
-                     ,source_url AS SourceUrl,verified_at AS VerifiedAt,valid_until AS ValidUntil,fare_valid_until AS FareValidUntil FROM mb_river_routes
-                    WHERE is_active = TRUE
+                     ,source_url AS SourceUrl,verified_at AS VerifiedAt,valid_until AS ValidUntil,fare_valid_until AS FareValidUntil,operator_name AS OperatorName,is_accessible AS IsAccessible,revision AS Revision FROM mb_river_routes
+                    WHERE is_active = TRUE OR @includeInactive=TRUE
                     ORDER BY name ASC";
-        var rows = await db.QueryAsync<RiverRoute>(new CommandDefinition(sql, cancellationToken: ct));
+        var rows = await db.QueryAsync<RiverRoute>(new CommandDefinition(sql,new{includeInactive}, cancellationToken: ct));
         return rows.ToList();
+    }
+    public async Task<bool> SaveRiverRouteAsync(RiverRoute route,int expectedRevision,long actorId,CancellationToken ct)
+    {
+        await using var db=await dataSource.OpenConnectionAsync(ct);await using var tx=await db.BeginTransactionAsync(ct);
+        var previous=route.Id==0?null:await db.ExecuteScalarAsync<string?>(new CommandDefinition("SELECT JSON_OBJECT('id',id,'name',name,'source',source_url,'hours',operating_hours,'fare',fare,'revision',revision) FROM mb_river_routes WHERE id=@Id AND revision=@expectedRevision FOR UPDATE",new{route.Id,expectedRevision},tx,cancellationToken:ct));
+        if(route.Id!=0&&previous is null)return false;
+        if(route.Id==0)route.Id=await db.ExecuteScalarAsync<long>(new CommandDefinition("INSERT INTO mb_river_routes(name,departure_port,destination_port,destination_island,estimated_duration_minutes,fare,vessel_type,operating_hours,operator_notes,is_active,source_url,verified_at,valid_until,fare_valid_until,operator_name,is_accessible) VALUES(@Name,@DeparturePort,@DestinationPort,@DestinationIsland,@EstimatedDurationMinutes,@Fare,@VesselType,@OperatingHours,@OperatorNotes,@IsActive,@SourceUrl,@VerifiedAt,@ValidUntil,@FareValidUntil,@OperatorName,@IsAccessible);SELECT LAST_INSERT_ID()",route,tx,cancellationToken:ct));
+        else await db.ExecuteAsync(new CommandDefinition("UPDATE mb_river_routes SET name=@Name,departure_port=@DeparturePort,destination_port=@DestinationPort,destination_island=@DestinationIsland,estimated_duration_minutes=@EstimatedDurationMinutes,fare=@Fare,vessel_type=@VesselType,operating_hours=@OperatingHours,operator_notes=@OperatorNotes,is_active=@IsActive,source_url=@SourceUrl,verified_at=@VerifiedAt,valid_until=@ValidUntil,fare_valid_until=@FareValidUntil,operator_name=@OperatorName,is_accessible=@IsAccessible,revision=revision+1 WHERE id=@Id",route,tx,cancellationToken:ct));
+        await db.ExecuteAsync(new CommandDefinition("INSERT INTO mb_audit_logs(actor_id,action,entity_type,entity_id,details) VALUES(@actorId,'transit.river_saved','river_route',@Id,@details)",new{actorId,route.Id,details=System.Text.Json.JsonSerializer.Serialize(new{previous,route})},tx,cancellationToken:ct));
+        await tx.CommitAsync(ct);return true;
     }
 
     public async Task<long> UpsertAlertAsync(TransitAlert alert, CancellationToken ct)

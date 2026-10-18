@@ -1,0 +1,41 @@
+{
+  "fromDate": "2026-10-18",
+  "throughDate": "2027-10-18",
+  "verifiedAtUtc": "2026-10-18T13:29:13.796373+00:00",
+  "events": [
+    {
+      "end": null,
+      "neighborhood": null,
+      "price": null,
+      "age": null,
+      "title": "MAZ ao Pôr do Sol — Kamishibai Encantado",
+      "date": "2026-10-30",
+      "time": "17:30",
+      "subject": "infantil",
+      "category": "Familia",
+      "venue": "Varanda do Museu das Amazônias",
+      "address": "Varanda do Museu das Amazônias, Belém – PA",
+      "sourceName": "SECULT Pará — programação do MAZ",
+      "sourceUrl": "https://www.secult.pa.gov.br/noticia/2137/museu-das-amazonias-tem-programacao-gratuita-sobre-saberes-e-sabores-da-regiao-em-outubro",
+      "summary": "Espetáculo de narração com pranchas ilustradas, anunciado na programação gratuita do Museu das Amazônias. Consulte a fonte para condições de participação.",
+      "isFree": true
+    },
+    {
+      "end": null,
+      "neighborhood": null,
+      "price": null,
+      "age": null,
+      "title": "Dominguinho — Belém",
+      "date": "2027-01-22",
+      "time": null,
+      "subject": "musica",
+      "category": "Cultura",
+      "venue": "Hangar",
+      "address": "Hangar — Centro de Convenções e Feiras da Amazônia, Belém – PA",
+      "sourceName": "Dominguinho — agenda oficial",
+      "sourceUrl": "https://turnedominguinho.com.br/",
+      "summary": "A agenda oficial da turnê anuncia Belém em 22 de janeiro de 2027, no Hangar, e aponta a bilheteria oficial. Horário e valores devem ser conferidos no ingresso.",
+      "isFree": false
+    }
+  ]
+}

@@ -81,6 +81,8 @@ public sealed class ContentItem
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
     public int Revision { get; set; } = 1;
+    public int EditorialPriority { get; set; }
+    public string? ReviewQueue { get; set; }
     public Services.EventEvidence? EventDetails { get; set; }
 
     public IReadOnlyList<Audience> Audiences { get; set; } = Array.Empty<Audience>();

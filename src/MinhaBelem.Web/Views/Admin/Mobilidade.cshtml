@@ -138,5 +138,5 @@
             </tbody>
         </table>
     </div>
-    </main>
+<section class="card"><h2>@Loc["RiverEditor"]</h2><a class="button" href="/admin/mobilidade/fluvial">@Loc["RiverAdd"]</a><div class="table-scroll"><table><thead><tr><th>@Loc["NameLabel"]</th><th>@Loc["RouteSource"]</th><th>@Loc["BatchAction"]</th></tr></thead><tbody>@foreach(var route in (IReadOnlyList<MinhaBelem.Core.Entities.RiverRoute>)ViewData["RiverRoutes"]!){<tr><td>@route.Name · @route.DeparturePort → @route.DestinationPort</td><td>@(route.IsVerified?route.SourceUrl:Loc["RouteUnknown"].Value)</td><td><a href="/admin/mobilidade/fluvial/@route.Id">@Loc["AgendaDetails"] ↗</a></td></tr>}</tbody></table></div></section>    </main>
 </div>

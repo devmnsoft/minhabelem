@@ -5,7 +5,7 @@ public sealed record AgendaPage(string Title, string Description, IReadOnlyList<
     public DateOnly? SelectedDate { get; init; }
     public DateOnly? Month { get; init; }
     public IReadOnlyList<ContentItem> CalendarItems { get; init; } = [];
-    public static bool DateOnlyEvent(ContentItem item) => item.EventDetails?.Status == "DateOnly";
+    public static bool DateOnlyEvent(ContentItem item) => item.EventDetails?.DateOnly == true || item.EventDetails?.Status == "DateOnly";
     public static bool OccursOn(ContentItem item, DateOnly day) => item.EventStartAt is {} start
         && DateOnly.FromDateTime(PortalTime.Local(start)) <= day
         && DateOnly.FromDateTime(PortalTime.Local(item.EventEndAt ?? start)) >= day;

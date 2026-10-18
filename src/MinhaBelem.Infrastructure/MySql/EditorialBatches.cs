@@ -15,6 +15,11 @@ namespace MinhaBelem.Infrastructure.MySql;
 public sealed class EditorialBatches(MySqlDataSource data, IContentRepository content, IIngestionRepository ingestion,
     IAdministrationRepository admin, IConfiguration config, IAiAnalysisService ai, IContentTranslationService translations, ITranslationRepository languages) : IEditorialBatches
 {
+    public async Task<IReadOnlyList<EditorialBatch>> HistoryAsync(long actorId, CancellationToken ct)
+    {
+        await using var db = await data.OpenConnectionAsync(ct);
+        return (await db.QueryAsync<EditorialBatch>(new CommandDefinition("SELECT id,actor_id AS ActorId,action,reason,status,created_at AS CreatedAt FROM mb_editorial_batches WHERE actor_id=@actorId ORDER BY created_at DESC LIMIT 50",new{actorId},cancellationToken:ct))).AsList();
+    }
     public async Task<IReadOnlyDictionary<string,long>> DashboardAsync(CancellationToken ct)
     {
         await using var db=await data.OpenConnectionAsync(ct);
@@ -35,7 +40,8 @@ public sealed class EditorialBatches(MySqlDataSource data, IContentRepository co
     {
         "approve" or "rejectCandidate" or "reviewCandidate" or "retry" => Permissions.CandidateReview,
         "publish" or "archive" or "eventStatus" => Permissions.ContentPublish,
-        "category" or "locality" or "review" or "reject" or "deduplicate" => Permissions.ContentWrite,
+        "category" or "locality" or "review" or "reject" or "deduplicate" or "priority" or "reviewQueue" => Permissions.ContentWrite,
+        "candidatePriority" or "candidateReviewQueue" => Permissions.CandidateReview,
         "analyze" => Permissions.AiRun,
         "translate" => Permissions.TranslationManage,
         _ => throw new ArgumentException("Ação inválida.")
@@ -49,9 +55,11 @@ public sealed class EditorialBatches(MySqlDataSource data, IContentRepository co
     public async Task<string> PreviewAsync(EditorialBatchInput input, ClaimsPrincipal actor, CancellationToken ct)
     {
         var actorId = Actor(actor, input.Action);
-        if (string.IsNullOrWhiteSpace(input.Reason) || input.Reason.Trim().Length is < 5 or > 500 || input.Targets.Length is 0 || input.Targets.Length > Math.Clamp(config.GetValue("Editorial:BatchLimit", 50), 1, 100)
+        if (string.IsNullOrWhiteSpace(input.Reason) || input.Reason.Trim().Length is < 5 or > 500 || input.Targets.Length is 0 || input.Targets.Length > Math.Clamp(config.GetValue("Editorial:BatchLimit", 250), 1, EditorialBatchLimits.Maximum)
             || input.Targets.Any(x => x.Id <= 0 || x.Kind is not ("content" or "candidate")) || input.Targets.DistinctBy(x => (x.Kind, x.Id)).Count() != input.Targets.Length)
             throw new ArgumentException("Confira os itens, o motivo e o limite do lote.");
+        if (input.Action is "priority" or "candidatePriority" && (!int.TryParse(input.Value, out var priority) || priority is < 0 or > 3)) throw new ArgumentException("Prioridade inválida.");
+        if (input.Action is "reviewQueue" or "candidateReviewQueue" && !EditorialBatchLimits.ReviewQueues.Contains(input.Value)) throw new ArgumentException("Fila de revisão inválida.");
         if (input.Action == "category" && !Enum.TryParse<ContentCategory>(input.Value, out var category) || input.Action == "category" && !Enum.IsDefined(Enum.Parse<ContentCategory>(input.Value!))) throw new ArgumentException("Categoria inválida.");
         if (input.Action == "eventStatus" && input.Value is not ("Cancelled" or "Postponed" or "UncertainDate" or "AwaitingOrganizer" or "Completed")) throw new ArgumentException("Situação inválida.");
         if (input.Municipality?.Length > 120 || input.Neighborhood?.Length > 120) throw new ArgumentException("Localidade inválida.");
@@ -134,7 +142,13 @@ public sealed class EditorialBatches(MySqlDataSource data, IContentRepository co
         if (item is null || item.Revision != target.Revision) return "Registro alterado.";
         var input = JsonSerializer.Deserialize<EditorialBatchInput>(target.Payload)!;
         var oldStatus = item.Status;
-        if (batch.Action == "publish")
+        if(batch.Action is "priority" or "reviewQueue")
+        {
+            if(batch.Action=="priority")item.EditorialPriority=int.Parse(input.Value!);else item.ReviewQueue=input.Value;
+            await db.ExecuteAsync(new CommandDefinition(batch.Action=="priority"?"UPDATE mb_content_items SET editorial_priority=@value WHERE id=@Id":"UPDATE mb_content_items SET review_queue=@value WHERE id=@Id",new{item.Id,value=input.Value},tx,cancellationToken:ct));
+            if(batch.Action=="reviewQueue")item.Status=ContentStatus.InReview;
+        }
+        else if (batch.Action == "publish")
         {
             // Batch publishing is deliberately stricter than individual human publication.
             if (item.Category is ContentCategory.Politica || item.Flags != ModerationFlag.None || item.DuplicateOfId is not null || item.Audiences.Contains(Audience.Infantil) || new[] { "saude", "saúde", "policia", "polícia", "menor", "denuncia", "denúncia" }.Any(x => (item.Subject ?? "").Contains(x, StringComparison.OrdinalIgnoreCase))) return "Revisão individual obrigatória para conteúdo sensível ou duplicado.";
@@ -195,6 +209,12 @@ public sealed class EditorialBatches(MySqlDataSource data, IContentRepository co
                 await db.ExecuteAsync(new CommandDefinition("UPDATE mb_content_items SET kind='Event',event_start_at=@StartUtc,event_end_at=@EndUtc,address=@Location,is_free=@IsFree,ticket_price_text=@Price WHERE id=@contentId; INSERT INTO mb_event_evidence(content_id,evidence) VALUES(@contentId,@evidence)", new { contentId = id, evidence.StartUtc, evidence.EndUtc, evidence.Location, evidence.IsFree, evidence.Price, evidence = JsonSerializer.Serialize(evidence) }, tx, cancellationToken: ct));
             await db.ExecuteAsync(new CommandDefinition("UPDATE mb_ingestion_candidates SET content_id=@contentId WHERE id=@candidateId; INSERT INTO mb_content_revisions(content_id,revision,change_summary,snapshot,changed_by_id) VALUES(@contentId,1,@reason,@snapshot,@actorId)", new { contentId = id, candidateId = row.Id, reason = batch.Reason, snapshot = JsonSerializer.Serialize(row), actorId = batch.ActorId }, tx, cancellationToken: ct));
             row.Status = CandidateStatus.Approved;
+        }
+        else if (batch.Action is "candidatePriority" or "candidateReviewQueue")
+        {
+            var input=JsonSerializer.Deserialize<EditorialBatchInput>(target.Payload)!;
+            await db.ExecuteAsync(new CommandDefinition(batch.Action=="candidatePriority"?"UPDATE mb_ingestion_candidates SET editorial_priority=@value WHERE id=@Id":"UPDATE mb_ingestion_candidates SET review_queue=@value WHERE id=@Id",new{row.Id,value=input.Value},tx,cancellationToken:ct));
+            if(batch.Action=="candidateReviewQueue")row.Status=CandidateStatus.InReview;
         }
         else if (batch.Action == "rejectCandidate") row.Status = CandidateStatus.Rejected;
         else if (batch.Action is "reviewCandidate" or "retry") row.Status = CandidateStatus.InReview;
