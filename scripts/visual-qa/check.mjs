@@ -28,11 +28,13 @@ await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
 const port = server.address().port;
 const browser = await chromium.launch({ channel: 'msedge', headless: true });
 const results = [];
+const screenshotPages = process.env.QA_SCREENSHOTS?.split(',');
+const screenshotDevices = process.env.QA_SCREENSHOT_DEVICES?.split(',');
 const sizes = { desktop: [1440, 1000], notebook: [1280, 800], tablet: [768, 1024], mobile: [390, 844] };
-const cultures = ['pt-BR', 'en', 'fr', 'es', 'ru', 'zh-Hans', 'ja'];
+const cultures = process.env.QA_CULTURES?.split(',') || ['pt-BR', 'en', 'fr', 'es', 'ru', 'zh-Hans', 'ja'];
 try {
   for (const culture of cultures) {
-    const files = (await fs.readdir(path.join(snapshots, culture))).filter(x => x.endsWith('.html'));
+    const files = (await fs.readdir(path.join(snapshots, culture))).filter(x => x.endsWith('.html') && (!process.env.QA_FILES || process.env.QA_FILES.split(',').includes(x))); 
     for (const [device, [width, height]] of Object.entries(sizes)) {
       const page = await browser.newPage({ viewport: { width, height }, locale: culture });
       // Avoid external fonts/network variability during layout checks.
@@ -45,6 +47,7 @@ try {
           width: innerWidth, scrollWidth: document.documentElement.scrollWidth,
           h1: document.querySelector('h1')?.textContent?.trim(),
           lang: document.documentElement.lang,
+          a11y: { missingImageAlt: [...document.images].filter(img=>!img.hasAttribute('alt')).length, unnamedButtons: [...document.querySelectorAll('button')].filter(el=>!el.textContent.trim()&&!el.getAttribute('aria-label')&&!el.getAttribute('aria-labelledby')).length, unlabeledFields: [...document.querySelectorAll('input:not([type=hidden]):not([type=submit]):not([type=button]),select,textarea')].filter(el=>!el.labels?.length&&!el.getAttribute('aria-label')&&!el.getAttribute('aria-labelledby')).map(el=>el.name||el.id||el.tagName) },
           brokenImages: [...document.images].filter(img => !img.complete || img.naturalWidth === 0).map(img => img.getAttribute('src')),
           overflow: [...document.querySelectorAll('body *')].filter(el => {
             const rect = el.getBoundingClientRect();
@@ -53,7 +56,7 @@ try {
           }).slice(0, 5).map(el => ({ tag: el.tagName, class: el.className, width: Math.round(el.getBoundingClientRect().width) }))
         }));
         results.push({ culture, device, file, ...layout });
-        if (culture === 'pt-BR' && ['home.html', 'admin.html', 'admin-radar.html', 'agenda.html', 'explore.html', 'conta-login.html', 'mobilidade.html', 'como-chegar.html', 'editorial-lotes.html', 'admin-midias.html', 'explore-planejar.html', 'guia-ia.html'].includes(file)) {
+        if (culture === 'pt-BR' && (!screenshotPages || screenshotPages.includes(file.replace('.html',''))) && (!screenshotDevices || screenshotDevices.includes(device)) && ['home.html', 'admin.html', 'admin-radar.html', 'agenda.html', 'explore.html', 'conta-login.html', 'mobilidade.html', 'como-chegar.html', 'editorial-lotes.html', 'admin-midias.html', 'explore-planejar.html', 'guia-ia.html'].includes(file)) {
           await page.screenshot({ path: path.join(output, `${file.replace('.html', '')}-${device}.jpg`), type: 'jpeg', quality: 82, fullPage: device === 'mobile' });
         }
         if (file === 'home.html' && device === 'mobile') {

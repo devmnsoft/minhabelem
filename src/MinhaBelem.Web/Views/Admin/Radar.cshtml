@@ -29,7 +29,7 @@
     <div class="view-8586d96c">
         <form method="post" action="/admin/radar/varredura" style="display:flex; gap:8px;">
             @Html.AntiForgeryToken()
-            <input type="url" name="url" placeholder="https://exemplo.belem.pa.gov.br (opcional)" style="padding:8px 12px; border-radius:8px; border:1px solid var(--border-color); font-size:0.85rem; width:260px;" />
+            <input type="url" name="url" aria-label="@Loc["RouteSource"]" placeholder="https://exemplo.belem.pa.gov.br (opcional)" style="padding:8px 12px; border-radius:8px; border:1px solid var(--border-color); font-size:0.85rem; width:260px;" />
             <button type="submit" class="btn btn-primary" style="display:flex; align-items:center; gap:6px; font-size:0.9rem; padding:8px 16px; border-radius:8px; font-weight:700;">
                 <span>⚡</span> Solicitar varredura
             </button>
@@ -287,7 +287,7 @@
         </div>
 
         <form method="get" action="/admin/radar" style="display:flex; gap:8px; align-items:center;">
-            <select name="status" onchange="this.form.submit()" style="padding:6px 10px; border-radius:8px; border:1px solid var(--border-color); font-size:0.85rem;">
+            <select name="status" aria-label="@Loc["BatchStatus"]" onchange="this.form.submit()" style="padding:6px 10px; border-radius:8px; border:1px solid var(--border-color); font-size:0.85rem;">
                 <option value="">Todos os status</option>
                 <option value="Pending" selected="@(Model.Query.Status == MinhaBelem.Core.Entities.SourceEvaluationStatus.Pending)">Pendentes de Avaliação</option>
                 <option value="Approved" selected="@(Model.Query.Status == MinhaBelem.Core.Entities.SourceEvaluationStatus.Approved)">Aprovadas</option>
@@ -535,8 +535,8 @@
             <form method="post" action="/admin/radar/perfis/cadastrar" class="view-a662acde">
                 @Html.AntiForgeryToken()
                 <div>
-                    <label class="view-221d5741">Plataforma</label>
-                    <select name="Platform" class="view-4133d5db">
+                    <label class="view-221d5741" for="radar-Platform">Plataforma</label>
+                    <select id="radar-Platform" name="Platform" class="view-4133d5db">
                         <option value="Instagram">Instagram</option>
                         <option value="YouTube">YouTube</option>
                         <option value="Facebook">Facebook</option>
@@ -544,20 +544,20 @@
                     </select>
                 </div>
                 <div>
-                    <label class="view-221d5741">Handle (@@usuario)</label>
-                    <input type="text" name="ProfileHandle" placeholder="ex: fumbel.belem" required class="view-4133d5db" />
+                    <label class="view-221d5741" for="radar-ProfileHandle">Handle (@@usuario)</label>
+                    <input id="radar-ProfileHandle" type="text" name="ProfileHandle" placeholder="ex: fumbel.belem" required class="view-4133d5db" />
                 </div>
                 <div class="view-454ae367">
-                    <label class="view-221d5741">Nome de Exibição</label>
-                    <input type="text" name="DisplayName" placeholder="ex: FUMBEL Belém" required class="view-4133d5db" />
+                    <label class="view-221d5741" for="radar-DisplayName">Nome de Exibição</label>
+                    <input id="radar-DisplayName" type="text" name="DisplayName" placeholder="ex: FUMBEL Belém" required class="view-4133d5db" />
                 </div>
                 <div class="view-454ae367">
-                    <label class="view-221d5741">URL do Perfil</label>
-                    <input type="url" name="ProfileUrl" placeholder="https://instagram.com/fumbel.belem" required class="view-4133d5db" />
+                    <label class="view-221d5741" for="radar-ProfileUrl">URL do Perfil</label>
+                    <input id="radar-ProfileUrl" type="url" name="ProfileUrl" placeholder="https://instagram.com/fumbel.belem" required class="view-4133d5db" />
                 </div>
                 <div>
-                    <label class="view-221d5741">Categoria</label>
-                    <input type="text" name="Category" value="cultura" class="view-4133d5db" />
+                    <label class="view-221d5741" for="radar-Category">Categoria</label>
+                    <input id="radar-Category" type="text" name="Category" value="cultura" class="view-4133d5db" />
                 </div>
                 <div class="view-020227ab">
                     <button type="submit" class="view-49bc52a8 btn btn-primary">
@@ -575,8 +575,8 @@
             <form method="post" action="/admin/radar/social/post" class="view-a662acde">
                 @Html.AntiForgeryToken()
                 <div>
-                    <label class="view-221d5741">Perfil Social</label>
-                    <select name="socialProfileId" required class="view-4133d5db">
+                    <label class="view-221d5741" for="radar-socialProfileId">Perfil Social</label>
+                    <select id="radar-socialProfileId" name="socialProfileId" required class="view-4133d5db">
                         @foreach (var p in Model.SocialProfiles)
                         {
                             <option value="@p.Id">@p.DisplayName (@p.Platform)</option>
@@ -584,24 +584,24 @@
                     </select>
                 </div>
                 <div>
-                    <label class="view-221d5741">Tipo de Mídia</label>
-                    <select name="mediaType" class="view-4133d5db">
+                    <label class="view-221d5741" for="radar-mediaType">Tipo de Mídia</label>
+                    <select id="radar-mediaType" name="mediaType" class="view-4133d5db">
                         <option value="video">Vídeo (YouTube/Reels)</option>
                         <option value="post">Postagem Oficial</option>
                         <option value="embed">Embed Oficial</option>
                     </select>
                 </div>
                 <div class="view-454ae367">
-                    <label class="view-221d5741">URL do Post / Vídeo</label>
-                    <input type="url" name="postUrl" placeholder="https://www.youtube.com/watch?v=... ou https://instagram.com/p/..." required class="view-4133d5db" />
+                    <label class="view-221d5741" for="radar-postUrl">URL do Post / Vídeo</label>
+                    <input id="radar-postUrl" type="url" name="postUrl" placeholder="https://www.youtube.com/watch?v=... ou https://instagram.com/p/..." required class="view-4133d5db" />
                 </div>
                 <div class="view-454ae367">
-                    <label class="view-221d5741">Resumo / Legenda</label>
-                    <input type="text" name="captionSnippet" placeholder="Breve descrição da publicação oficial" class="view-4133d5db" />
+                    <label class="view-221d5741" for="radar-captionSnippet">Resumo / Legenda</label>
+                    <input id="radar-captionSnippet" type="text" name="captionSnippet" placeholder="Breve descrição da publicação oficial" class="view-4133d5db" />
                 </div>
                 <div>
-                    <label class="view-221d5741">ID Notícia/Evento (Opcional)</label>
-                    <input type="number" name="linkedContentId" placeholder="ex: 104" class="view-4133d5db" />
+                    <label class="view-221d5741" for="radar-linkedContentId">ID Notícia/Evento (Opcional)</label>
+                    <input id="radar-linkedContentId" type="number" name="linkedContentId" placeholder="ex: 104" class="view-4133d5db" />
                 </div>
                 <div class="view-020227ab">
                     <button type="submit" class="view-49bc52a8 btn btn-primary">

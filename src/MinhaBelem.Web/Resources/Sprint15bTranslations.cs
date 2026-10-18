@@ -83,4 +83,5 @@ for(var i=0;i<7;i++) catalogs[cultures[i]]["ItineraryCalculated"]=new[]{"Roteiro
 for(var i=0;i<7;i++) catalogs[cultures[i]]["ItineraryReturn"]=new[]{"Consultar retorno","Check return trip","Consulter le retour","Consultar regreso","Проверить обратный путь","查询返程","帰路を確認"}[i];
 for(var i=0;i<7;i++) catalogs[cultures[i]]["AccountPreferences"]=new[]{"Preferências da conta","Account preferences","Préférences du compte","Preferencias de cuenta","Настройки аккаунта","账户偏好","アカウント設定"}[i];
 for(var i=0;i<7;i++) catalogs[cultures[i]]["AccountLanguage"]=new[]{"Idioma preferido","Preferred language","Langue préférée","Idioma preferido","Предпочитаемый язык","首选语言","希望する言語"}[i];
+for(var i=0;i<7;i++) catalogs[cultures[i]]["AccountRole"]=new[]{"Perfil do usuário","User role","Rôle de l’utilisateur","Perfil del usuario","Роль пользователя","用户角色","ユーザーの役割"}[i];
 }}

@@ -98,5 +98,18 @@ public sealed class Sprint15Tests(PortalFixture fixture)
             Assert.Equal(2,(await scope.ServiceProvider.GetRequiredService<IEditorialBatches>().GetAsync(id,actor,default))!.Items.Count);
         }
     }
+    [MySqlFact]public async Task RadarAndUserFormsHaveAccessibleControlLabels()
+    {
+        var(client,_)=await new OperationalTests(fixture).Login();using(client)
+        foreach(var culture in SupportedCultures.All)
+        {
+            client.DefaultRequestHeaders.AcceptLanguage.Clear();client.DefaultRequestHeaders.AcceptLanguage.ParseAdd(culture);
+            foreach(var (name,path) in new[]{("admin-radar","/admin/radar"),("admin-usuarios","/admin/usuarios")})
+            {
+                var html=await client.GetStringAsync(path);Assert.Contains(name=="admin-radar"?"for=\"radar-Platform\"":"aria-label=",html);
+                if(Environment.GetEnvironmentVariable("MINHABELEM_VISUAL_SNAPSHOTS") is {Length:>0} output){var directory=Path.Combine(output,culture);Directory.CreateDirectory(directory);html=System.Text.RegularExpressions.Regex.Replace(html,"<input[^>]*name=\"__RequestVerificationToken\"[^>]*>","");await File.WriteAllTextAsync(Path.Combine(directory,name+".html"),html);}
+            }
+        }
+    }
 }
 
