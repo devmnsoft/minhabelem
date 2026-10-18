@@ -1,0 +1,24 @@
+{
+  "date": "2026-10-18",
+  "head": "a6b74e304fb1360581d4c53a1369dd48a88d9352",
+  "tree": "ffb23b52317bcdaaa238d72574ed37316851483c",
+  "run": "https://github.com/devmnsoft/minhabelem/actions/runs/39133313580",
+  "jobs": [
+    {
+      "id": 117692717919,
+      "name": "mysql-http"
+    },
+    {
+      "id": 117692718066,
+      "name": "build (windows-latest)"
+    },
+    {
+      "id": 117692718132,
+      "name": "build (ubuntu-latest)"
+    }
+  ],
+  "summary": [
+    "2026-10-18T13:53:18.8705452Z Passed!  - Failed:     0, Passed:   177, Skipped:     0, Total:   177, Duration: 1 m 26 s - MinhaBelem.Tests.dll (net8.0)"
+  ],
+  "scope": "MySQL8/HTTP/OCR: 177 passed, 0 failed, 0 skipped. Windows/Linux builds and 74 portable tests each passed. Includes transit persistence regression."
+}

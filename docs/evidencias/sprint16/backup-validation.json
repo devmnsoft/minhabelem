@@ -1,0 +1,8 @@
+{
+  "mode": "restore_to_disposable_mysql8",
+  "compatibility": "Only generated MariaDB CHECK constraint names were renamed for MySQL schema-wide uniqueness; original backup unchanged",
+  "tables": 71,
+  "content": 32,
+  "users": 3,
+  "protectedBackup": true
+}

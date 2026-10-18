@@ -1,0 +1,57 @@
+culture,device,page,viewport,scrollWidth,brokenImages,missingAlt,unnamedButtons,unlabeledFields,interactions
+pt-BR,desktop,editorial-batch-detail.html,1440,1440,0,0,0,0,polling response fixture updates row and progress bar
+pt-BR,desktop,editorial-lotes.html,1440,1440,0,0,0,0,page selection; all filtered selection; confirmation count
+pt-BR,notebook,editorial-batch-detail.html,1280,1280,0,0,0,0,
+pt-BR,notebook,editorial-lotes.html,1280,1280,0,0,0,0,page selection; all filtered selection; confirmation count
+pt-BR,tablet,editorial-batch-detail.html,768,768,0,0,0,0,
+pt-BR,tablet,editorial-lotes.html,768,768,0,0,0,0,page selection; all filtered selection; confirmation count
+pt-BR,mobile,editorial-batch-detail.html,390,390,0,0,0,0,
+pt-BR,mobile,editorial-lotes.html,390,390,0,0,0,0,page selection; all filtered selection; confirmation count
+en,desktop,editorial-batch-detail.html,1440,1440,0,0,0,0,
+en,desktop,editorial-lotes.html,1440,1440,0,0,0,0,page selection; all filtered selection; confirmation count
+en,notebook,editorial-batch-detail.html,1280,1280,0,0,0,0,
+en,notebook,editorial-lotes.html,1280,1280,0,0,0,0,page selection; all filtered selection; confirmation count
+en,tablet,editorial-batch-detail.html,768,768,0,0,0,0,
+en,tablet,editorial-lotes.html,768,768,0,0,0,0,page selection; all filtered selection; confirmation count
+en,mobile,editorial-batch-detail.html,390,390,0,0,0,0,
+en,mobile,editorial-lotes.html,390,390,0,0,0,0,page selection; all filtered selection; confirmation count
+fr,desktop,editorial-batch-detail.html,1440,1440,0,0,0,0,
+fr,desktop,editorial-lotes.html,1440,1440,0,0,0,0,page selection; all filtered selection; confirmation count
+fr,notebook,editorial-batch-detail.html,1280,1280,0,0,0,0,
+fr,notebook,editorial-lotes.html,1280,1280,0,0,0,0,page selection; all filtered selection; confirmation count
+fr,tablet,editorial-batch-detail.html,768,768,0,0,0,0,
+fr,tablet,editorial-lotes.html,768,768,0,0,0,0,page selection; all filtered selection; confirmation count
+fr,mobile,editorial-batch-detail.html,390,390,0,0,0,0,
+fr,mobile,editorial-lotes.html,390,390,0,0,0,0,page selection; all filtered selection; confirmation count
+es,desktop,editorial-batch-detail.html,1440,1440,0,0,0,0,
+es,desktop,editorial-lotes.html,1440,1440,0,0,0,0,page selection; all filtered selection; confirmation count
+es,notebook,editorial-batch-detail.html,1280,1280,0,0,0,0,
+es,notebook,editorial-lotes.html,1280,1280,0,0,0,0,page selection; all filtered selection; confirmation count
+es,tablet,editorial-batch-detail.html,768,768,0,0,0,0,
+es,tablet,editorial-lotes.html,768,768,0,0,0,0,page selection; all filtered selection; confirmation count
+es,mobile,editorial-batch-detail.html,390,390,0,0,0,0,
+es,mobile,editorial-lotes.html,390,390,0,0,0,0,page selection; all filtered selection; confirmation count
+ru,desktop,editorial-batch-detail.html,1440,1440,0,0,0,0,
+ru,desktop,editorial-lotes.html,1440,1440,0,0,0,0,page selection; all filtered selection; confirmation count
+ru,notebook,editorial-batch-detail.html,1280,1280,0,0,0,0,
+ru,notebook,editorial-lotes.html,1280,1280,0,0,0,0,page selection; all filtered selection; confirmation count
+ru,tablet,editorial-batch-detail.html,768,768,0,0,0,0,
+ru,tablet,editorial-lotes.html,768,768,0,0,0,0,page selection; all filtered selection; confirmation count
+ru,mobile,editorial-batch-detail.html,390,390,0,0,0,0,
+ru,mobile,editorial-lotes.html,390,390,0,0,0,0,page selection; all filtered selection; confirmation count
+zh-Hans,desktop,editorial-batch-detail.html,1440,1440,0,0,0,0,
+zh-Hans,desktop,editorial-lotes.html,1440,1440,0,0,0,0,page selection; all filtered selection; confirmation count
+zh-Hans,notebook,editorial-batch-detail.html,1280,1280,0,0,0,0,
+zh-Hans,notebook,editorial-lotes.html,1280,1280,0,0,0,0,page selection; all filtered selection; confirmation count
+zh-Hans,tablet,editorial-batch-detail.html,768,768,0,0,0,0,
+zh-Hans,tablet,editorial-lotes.html,768,768,0,0,0,0,page selection; all filtered selection; confirmation count
+zh-Hans,mobile,editorial-batch-detail.html,390,390,0,0,0,0,
+zh-Hans,mobile,editorial-lotes.html,390,390,0,0,0,0,page selection; all filtered selection; confirmation count
+ja,desktop,editorial-batch-detail.html,1440,1440,0,0,0,0,
+ja,desktop,editorial-lotes.html,1440,1440,0,0,0,0,page selection; all filtered selection; confirmation count
+ja,notebook,editorial-batch-detail.html,1280,1280,0,0,0,0,
+ja,notebook,editorial-lotes.html,1280,1280,0,0,0,0,page selection; all filtered selection; confirmation count
+ja,tablet,editorial-batch-detail.html,768,768,0,0,0,0,
+ja,tablet,editorial-lotes.html,768,768,0,0,0,0,page selection; all filtered selection; confirmation count
+ja,mobile,editorial-batch-detail.html,390,390,0,0,0,0,
+ja,mobile,editorial-lotes.html,390,390,0,0,0,0,page selection; all filtered selection; confirmation count

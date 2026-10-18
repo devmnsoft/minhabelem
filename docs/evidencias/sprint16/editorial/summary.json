@@ -1,0 +1,24 @@
+{
+  "mode": "HTML MVC autenticado; selecao de pagina/todos e polling com resposta controlada identificada",
+  "checked": 56,
+  "pages": 2,
+  "cultures": [
+    "en",
+    "es",
+    "fr",
+    "ja",
+    "pt-BR",
+    "ru",
+    "zh-Hans"
+  ],
+  "widths": [
+    390,
+    768,
+    1280,
+    1440
+  ],
+  "failures": [],
+  "accessibilityIssues": 0,
+  "interactionCases": 29,
+  "fullResultsSha256": "ebf532894e08a4f5031eaa45319a5a1ac8a6f6448f68d7f22f23cc3cbbf5ca5c"
+}

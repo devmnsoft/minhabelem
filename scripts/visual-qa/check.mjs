@@ -75,6 +75,26 @@ try {
           await page.locator('[data-agenda-list]').click();
           if (await page.locator('[data-agenda-list]').getAttribute('aria-pressed') !== 'true') throw new Error('Agenda list toggle failed');
         }
+        if (file === 'editorial-lotes.html') {
+          const selected = page.locator('input[name="selected"]');
+          if (await selected.count()) {
+            await page.locator('#batch-select-page').check();
+            if (Number(await page.locator('#batch-count').textContent()) !== await selected.count()) throw new Error('Batch page selection count failed');
+            await page.locator('input[name="allFiltered"]').check();
+            const total = Number(await page.locator('#editorial-batch').getAttribute('data-filtered-total'));
+            if (Number(await page.locator('#batch-count').textContent()) !== total || Number(await page.locator('input[name="confirmedCount"]').inputValue()) !== total) throw new Error('Batch filtered selection count failed');
+            results.at(-1).interactions = ['page selection', 'all filtered selection', 'confirmation count'];
+          }
+        }
+        if (file === 'editorial-batch-detail.html' && culture === 'pt-BR' && device === 'desktop') {
+          const target = (await page.locator('[data-batch-target]').first().getAttribute('data-batch-target')).split(':');
+          await page.route('**/editorial/lotes/qa/progresso', route => route.fulfill({ json: { status: 'completed', total: 200, finished: 200, results: [{ targetKind: target[0], targetId: Number(target[1]), status: 'completed', result: 'UI polling fixture' }] } }));
+          await page.locator('#batch-progress').evaluate(el => { el.dataset.progressUrl = '/editorial/lotes/qa/progresso'; el.value = 0; });
+          await page.addScriptTag({ url: `http://127.0.0.1:${port}/js/editorial-progress.js` });
+          await page.waitForFunction(() => document.querySelector('.batch-item-result')?.textContent === 'UI polling fixture');
+          if (await page.locator('#batch-progress').evaluate(el => el.value) !== 200) throw new Error('Batch progress bar failed');
+          results.at(-1).interactions = ['polling response fixture updates row and progress bar'];
+        }
         if (file === 'home.html' && device === 'mobile') {
           const toggle = page.locator('.menu-toggle');
           await toggle.click();

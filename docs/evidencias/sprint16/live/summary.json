@@ -1,0 +1,23 @@
+{
+  "mode": "HTTP real na base local, 34 ocorrencias; GET sem efeitos de edicao",
+  "checked": 308,
+  "pages": 11,
+  "cultures": [
+    "en",
+    "es",
+    "fr",
+    "ja",
+    "pt-BR",
+    "ru",
+    "zh-Hans"
+  ],
+  "widths": [
+    390,
+    768,
+    1280,
+    1440
+  ],
+  "failures": [],
+  "accessibilityIssues": 0,
+  "fullResultsSha256": "d4210a642ae2b74abd11e8f91d869759831312d3718868f915a5d4c26beffcb5"
+}
