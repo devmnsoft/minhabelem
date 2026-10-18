@@ -30,7 +30,7 @@
     @for(var blank=0;blank<(int)first.DayOfWeek;blank++){<span aria-hidden="true"></span>}
     @for(var n=1;n<=DateTime.DaysInMonth(first.Year,first.Month);n++){var day=new DateOnly(first.Year,first.Month,n);var count=Model.CalendarItems.Count(x=>AgendaPage.OccursOn(x,day));<a class="@(day==today?"is-today":"") @(count>0?"has-events":"")" href="@Link("data",day.ToString("yyyy-MM-dd"),true)" aria-current="@(Model.SelectedDate==day?"date":null)" aria-label="@day.ToString("D",culture) · @count @Loc["AgendaSessions"]"><strong>@n</strong>@if(count>0){<small>@count</small>}</a>}
     </div><p class="small">● @Loc["AgendaCalendarHint"]</p></section>
-    <details class="card agenda-filters" open><summary>@Loc["AgendaRefine"]</summary><form method="get" action="/agenda" role="search">
+    <details class="card agenda-filters"><summary>@Loc["AgendaRefine"]</summary><form method="get" action="/agenda" role="search">
     @if(!string.IsNullOrEmpty(Context.Request.Query["tipo"])){<input type="hidden" name="tipo" value="@Context.Request.Query["tipo"]"/>}
     <label>@Loc["Period"]<select name="dias">@foreach(var period in new[]{0,1,7,30,90,180,365}){<option value="@period" selected="@(Model.Days==period)">@Loc["AgendaPeriod_"+period]</option>}</select></label>
     <label>@Loc["Search"]<input name="busca" maxlength="120" value="@Context.Request.Query["busca"]" placeholder="@Loc["Search_Placeholder"]"/></label>
