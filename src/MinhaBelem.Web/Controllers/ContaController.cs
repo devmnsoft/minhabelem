@@ -6,6 +6,7 @@ using MinhaBelem.Core.Abstractions;
 using MinhaBelem.Core.Entities;
 using MinhaBelem.Infrastructure.Identity;
 using MinhaBelem.Web.Models;
+using MinhaBelem.Core.Security;
 
 namespace MinhaBelem.Web.Controllers;
 
@@ -19,20 +20,20 @@ public sealed class ContaController(UserManager<ApplicationUser> users, SignInMa
     public async Task<IActionResult> Login(LoginInput model)
     {
         if (!ModelState.IsValid) return View(model);
-        var user = await users.FindByEmailAsync(model.Email);
+        var user = await users.FindByEmailAsync(model.Email.Trim());
         var result = user is { Enabled: true }
             ? await signIn.PasswordSignInAsync(user, model.Password, false, true)
             : Microsoft.AspNetCore.Identity.SignInResult.Failed;
         if (result.RequiresTwoFactor) return RedirectToAction(nameof(Verificar));
         if (result.Succeeded)
         {
-            user!.LastLoginAt = DateTime.UtcNow;
-            await users.UpdateAsync(user);
-            await audit.WriteAsync(new AuditEntry { ActorId = user.Id, Action = "session.password_login", EntityType = "user", EntityId = user.Id }, HttpContext.RequestAborted);
-            return RedirectToAction(user.MustChangePassword ? nameof(Perfil) : nameof(Mfa));
+            var fresh = await RecordLoginAsync(user!.Id, "session.password_login");
+            if (fresh is null) { await signIn.SignOutAsync(); return Conflict("Recarregue e tente entrar novamente."); }
+            return await DestinationAsync(fresh);
         }
         ModelState.AddModelError("", "Não foi possível entrar. Confira os dados ou aguarde antes de tentar novamente.");
         model.Password = "";
+        ModelState.Remove(nameof(model.Password));
         return View(model);
     }
 
@@ -47,17 +48,25 @@ public sealed class ContaController(UserManager<ApplicationUser> users, SignInMa
         var result = recovery
             ? await signIn.TwoFactorRecoveryCodeSignInAsync(code.Trim())
             : await signIn.TwoFactorAuthenticatorSignInAsync(code.Trim(), false, false);
-        if (!result.Succeeded) { ModelState.AddModelError("", "Código inválido ou acesso temporariamente bloqueado."); return View(); }
-        user.LastLoginAt = DateTime.UtcNow;
-        await users.UpdateAsync(user);
-        await audit.WriteAsync(new AuditEntry { ActorId = user.Id, Action = "session.mfa_login", EntityType = "user", EntityId = user.Id }, HttpContext.RequestAborted);
-        return RedirectToAction("Index", "Editorial");
+        if (!result.Succeeded)
+        {
+            if (recovery && !result.IsLockedOut && await users.FindByIdAsync(user.Id.ToString()) is {} attempted)
+            {
+                var failed = await users.AccessFailedAsync(attempted);
+                if (!failed.Succeeded) { await signIn.SignOutAsync(); return Conflict("Reinicie o login."); }
+            }
+            ModelState.AddModelError("", "Código inválido ou acesso temporariamente bloqueado."); return View();
+        }
+        var fresh = await RecordLoginAsync(user.Id, "session.mfa_login");
+        if (fresh is null) { await signIn.SignOutAsync(); return Conflict("Reinicie o login."); }
+        return await DestinationAsync(fresh);
     }
 
     [HttpGet("mfa")]
     public async Task<IActionResult> Mfa()
     {
         var user = (await users.GetUserAsync(User))!;
+        if (user.MustChangePassword) return RedirectToAction(nameof(Perfil));
         var secret = await users.GetAuthenticatorKeyAsync(user);
         return View(new MfaModel(user.TwoFactorEnabled ? null : secret, secret is null || user.TwoFactorEnabled ? null : Totp.BuildSetup(user.Email!, "MinhaBelém", secret).OtpAuthUri, user.TwoFactorEnabled));
     }
@@ -66,10 +75,11 @@ public sealed class ContaController(UserManager<ApplicationUser> users, SignInMa
     public async Task<IActionResult> IniciarMfa()
     {
         var user = (await users.GetUserAsync(User))!;
+        if (user.MustChangePassword) return RedirectToAction(nameof(Perfil));
         if (user.TwoFactorEnabled) return BadRequest();
         var result = await users.ResetAuthenticatorKeyAsync(user);
         if (!result.Succeeded) return BadRequest("Não foi possível preparar o autenticador.");
-        await admin.RevokeSessionAsync(User.FindFirst("mb:session")!.Value, user.Id, HttpContext.RequestAborted);
+        await admin.RevokeAllSessionsAsync(user.Id, HttpContext.RequestAborted);
         await signIn.RefreshSignInAsync(user);
         return RedirectToAction(nameof(Mfa));
     }
@@ -78,15 +88,18 @@ public sealed class ContaController(UserManager<ApplicationUser> users, SignInMa
     public async Task<IActionResult> ConfirmarMfa(string code)
     {
         var user = (await users.GetUserAsync(User))!;
+        if (user.MustChangePassword) return RedirectToAction(nameof(Perfil));
         if (user.TwoFactorEnabled || code is null || code.Length != 6 || !code.All(char.IsAsciiDigit) ||
             !await users.VerifyTwoFactorTokenAsync(user, TokenOptions.DefaultAuthenticatorProvider, code))
         { TempData["Notice"] = "Código inválido. Confira o relógio e o aplicativo autenticador."; return RedirectToAction(nameof(Mfa)); }
         var result = await users.SetTwoFactorEnabledAsync(user, true);
         if (!result.Succeeded) return BadRequest("Não foi possível ativar o MFA.");
-        var codes = (await users.GenerateNewTwoFactorRecoveryCodesAsync(user, 8))!.ToArray();
+        var fresh = (await users.FindByIdAsync(user.Id.ToString()))!;
+        var codes = (await users.GenerateNewTwoFactorRecoveryCodesAsync(fresh, 8))?.ToArray();
         await audit.WriteAsync(new AuditEntry { ActorId = user.Id, Action = "user.mfa_enabled", EntityType = "user", EntityId = user.Id }, HttpContext.RequestAborted);
-        await admin.RevokeSessionAsync(User.FindFirst("mb:session")!.Value, user.Id, HttpContext.RequestAborted);
+        await admin.RevokeAllSessionsAsync(user.Id, HttpContext.RequestAborted);
         await signIn.SignOutAsync();
+        if (codes is null) return Conflict("MFA ativado, mas os códigos de recuperação não puderam ser emitidos. Entre com seu autenticador.");
         return View("Recovery", codes);
     }
 
@@ -127,13 +140,21 @@ public sealed class ContaController(UserManager<ApplicationUser> users, SignInMa
             return RedirectToAction(nameof(Perfil));
         }
         if (!ModelState.IsValid) { TempData["Notice"] = "Confira os campos. A senha deve ter pelo menos 12 caracteres."; return RedirectToAction(nameof(Perfil)); }
-        var result = await users.ChangePasswordAsync(user, model.CurrentPassword, model.NewPassword);
-        if (!result.Succeeded) { TempData["Notice"] = "Não foi possível trocar a senha. Confira a senha atual e os requisitos."; return RedirectToAction(nameof(Perfil)); }
+        // Commit the hash, stamp and first-access metadata in the SAME Identity update.
         user.MustChangePassword = false;
         user.PasswordChangedAt = DateTime.UtcNow;
-        if (!(await users.UpdateAsync(user)).Succeeded) return Conflict();
-        await audit.WriteAsync(new AuditEntry { ActorId = user.Id, Action = "user.password_changed", EntityType = "user", EntityId = user.Id }, HttpContext.RequestAborted);
+        var result = await users.ChangePasswordAsync(user, model.CurrentPassword, model.NewPassword);
+        if (!result.Succeeded)
+        {
+            if (result.Errors.Any(x => x.Code == "ConcurrencyFailure")) return Conflict("A conta mudou durante a operação. Recarregue antes de tentar novamente.");
+            TempData["Notice"] = "Não foi possível trocar a senha. Confira a senha atual e os requisitos."; return RedirectToAction(nameof(Perfil));
+        }
+        var persisted = await users.FindByIdAsync(user.Id.ToString());
+        await admin.RevokeAllSessionsAsync(user.Id, HttpContext.RequestAborted);
         await signIn.SignOutAsync();
+        if (persisted is null || persisted.MustChangePassword || !await users.CheckPasswordAsync(persisted, model.NewPassword))
+            return Conflict("Não foi possível confirmar a alteração. Entre novamente antes de continuar.");
+        await audit.WriteAsync(new AuditEntry { ActorId = user.Id, Action = "user.password_changed", EntityType = "user", EntityId = user.Id }, HttpContext.RequestAborted);
         return RedirectToAction(nameof(Login));
     }
 
@@ -154,4 +175,26 @@ public sealed class ContaController(UserManager<ApplicationUser> users, SignInMa
     }
     [AllowAnonymous, HttpGet("acesso-negado")]
     public IActionResult AcessoNegado() { Response.StatusCode = 403; return View(); }
+
+    private async Task<ApplicationUser?> RecordLoginAsync(long id, string action)
+    {
+        var fresh = await users.FindByIdAsync(id.ToString());
+        if (fresh is null || !fresh.Enabled) return null;
+        fresh.LastLoginAt = DateTime.UtcNow;
+        if (!(await users.UpdateAsync(fresh)).Succeeded) return null;
+        await audit.WriteAsync(new AuditEntry { ActorId = id, Action = action, EntityType = "user", EntityId = id }, HttpContext.RequestAborted);
+        return fresh;
+    }
+
+    private async Task<IActionResult> DestinationAsync(ApplicationUser user)
+    {
+        if (user.MustChangePassword) return RedirectToAction(nameof(Perfil));
+        if (!user.TwoFactorEnabled) return RedirectToAction(nameof(Mfa));
+        var permissions = await admin.PermissionsAsync(user.Id, HttpContext.RequestAborted);
+        if (permissions.Contains(Permissions.DashboardRead)) return Redirect("/admin");
+        if (permissions.Contains(Permissions.ContentRead)) return Redirect("/editorial");
+        if (permissions.Contains(Permissions.SubmissionModerate)) return Redirect("/admin/colaboracoes");
+        if (permissions.Contains(Permissions.AdvertiserManage)) return Redirect("/admin/anunciantes");
+        return RedirectToAction(nameof(Perfil));
+    }
 }

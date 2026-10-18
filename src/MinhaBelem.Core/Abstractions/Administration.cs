@@ -25,6 +25,7 @@ public interface IAdministrationRepository
     Task CreateSessionAsync(string id, long userId, DateTime expires, CancellationToken ct);
     Task<bool> SessionActiveAsync(string id, long userId, CancellationToken ct);
     Task RevokeSessionAsync(string id, long userId, CancellationToken ct);
+    Task RevokeAllSessionsAsync(long userId, CancellationToken ct);
     Task<IReadOnlyDictionary<string, string>> SettingsAsync(CancellationToken ct);
     Task SetSettingAsync(string key, string value, long actorId, CancellationToken ct);
     Task<IReadOnlyList<IngestionRun>> RunsAsync(CancellationToken ct);

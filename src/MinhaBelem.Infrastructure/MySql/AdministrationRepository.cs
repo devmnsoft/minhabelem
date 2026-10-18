@@ -78,6 +78,11 @@ public sealed class AdministrationRepository(MySqlDataSource data) : IAdministra
         await using var db = await data.OpenConnectionAsync(ct);
         await db.ExecuteAsync(new CommandDefinition("UPDATE mb_user_sessions SET revoked_at=UTC_TIMESTAMP(6) WHERE id=@id AND user_id=@userId", new { id, userId }, cancellationToken: ct));
     }
+    public async Task RevokeAllSessionsAsync(long userId, CancellationToken ct)
+    {
+        await using var db = await data.OpenConnectionAsync(ct);
+        await db.ExecuteAsync(new CommandDefinition("UPDATE mb_user_sessions SET revoked_at=UTC_TIMESTAMP(6) WHERE user_id=@userId AND revoked_at IS NULL", new { userId }, cancellationToken: ct));
+    }
     public async Task<IReadOnlyDictionary<string, string>> SettingsAsync(CancellationToken ct)
     {
         await using var db = await data.OpenConnectionAsync(ct);

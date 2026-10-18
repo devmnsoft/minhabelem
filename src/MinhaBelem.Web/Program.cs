@@ -28,6 +28,7 @@ builder.Services.AddControllersWithViews(o => { o.Filters.Add(new Microsoft.AspN
     });
 
 builder.Services.AddMinhaBelemInfrastructure(builder.Configuration, registerWorkers: false);
+builder.Services.AddScoped<LocalCredentialRecovery>();
 var keyProtection = builder.Services.AddDataProtection().SetApplicationName("MinhaBelem");
 if (builder.Configuration["DataProtection:KeysPath"] is { Length: > 0 } keysPath)
 {
@@ -54,6 +55,7 @@ builder.Services.Configure<IdentityOptions>(o =>
     o.Lockout.MaxFailedAccessAttempts = 5; o.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
 });
 builder.Services.AddScoped<PortalCookieEvents>();
+builder.Services.AddScoped<PortalTwoFactorCookieEvents>();
 builder.Services.ConfigureApplicationCookie(o =>
 {
     o.Cookie.Name = "__Host-MinhaBelem.Editor"; o.Cookie.HttpOnly = true;
@@ -65,6 +67,7 @@ builder.Services.Configure<Microsoft.AspNetCore.Authentication.Cookies.CookieAut
 {
     o.Cookie.Name = "__Host-MinhaBelem.Mfa"; o.Cookie.SecurePolicy = CookieSecurePolicy.Always;
     o.Cookie.SameSite = SameSiteMode.Strict; o.ExpireTimeSpan = TimeSpan.FromMinutes(5);
+    o.Cookie.HttpOnly = true; o.Cookie.Path = "/"; o.EventsType = typeof(PortalTwoFactorCookieEvents);
 });
 builder.Services.AddAntiforgery(o => { o.Cookie.Name = "__Host-MinhaBelem.Csrf"; o.Cookie.SecurePolicy = CookieSecurePolicy.Always; });
 builder.Services.AddAuthorization(o =>
@@ -84,6 +87,12 @@ builder.Services.AddRateLimiter(o =>
 
 var app = builder.Build();
 app.UseForwardedHeaders();
+if (args.Contains("--audit-auth"))
+{
+    if (!app.Environment.IsDevelopment()) throw new InvalidOperationException("Diagnóstico exclusivo de Development local.");
+    Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(await AuthenticationDiagnostics.ReadLocalAsync(app.Services.GetRequiredService<MySqlConnector.MySqlDataSource>()), new System.Text.Json.JsonSerializerOptions { WriteIndented = true }));
+    return;
+}
 if (Array.IndexOf(args, "--import-agenda") is var agendaArgument && agendaArgument >= 0)
 {
     var connection = new MySqlConnector.MySqlConnectionStringBuilder(builder.Configuration.GetConnectionString("Default") ?? "");
@@ -112,6 +121,18 @@ if (args.Contains("--bootstrap-homologation"))
     using var scope = app.Services.CreateScope();
     var report = await scope.ServiceProvider.GetRequiredService<HomologationBootstrap>().RunAsync();
     Console.WriteLine("Relatório local restrito (validade 24h): " + report);
+    return;
+}
+
+if (args.Contains("--recover-homologation-passwords"))
+{
+    using var scope = app.Services.CreateScope();
+    var accountIndex = Array.IndexOf(args, "--account");
+    if (accountIndex >= 0 && (accountIndex+1 >= args.Length || args[accountIndex+1].StartsWith("--",StringComparison.Ordinal)))
+        throw new InvalidOperationException("Informe a conta de homologação após --account.");
+    string[]? accounts = accountIndex >= 0 && accountIndex+1 < args.Length ? [args[accountIndex+1]] : null;
+    var report = await scope.ServiceProvider.GetRequiredService<LocalCredentialRecovery>().RunAsync(args.Contains("--confirm-local-homologation"),accounts);
+    Console.WriteLine("Relatório local restrito, validade 24h: " + report);
     return;
 }
 

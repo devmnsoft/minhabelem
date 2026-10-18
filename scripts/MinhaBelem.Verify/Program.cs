@@ -14,6 +14,23 @@ try
     builder.ConnectionTimeout = 5;
     await using var db = new MySqlConnection(builder.ConnectionString);
     await db.OpenAsync();
+    if (args.Contains("--auth-audit"))
+    {
+        await using var data = new MySqlDataSourceBuilder(builder.ConnectionString).Build();
+        Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(await MinhaBelem.Infrastructure.Identity.AuthenticationDiagnostics.ReadLocalAsync(data), new System.Text.Json.JsonSerializerOptions { WriteIndented = true }));
+        var files = new ConfigurationBuilder().AddJsonFile(Path.Combine(Directory.GetCurrentDirectory(), "src/MinhaBelem.Web/appsettings.json"), false).AddJsonFile(Path.Combine(Directory.GetCurrentDirectory(), "src/MinhaBelem.Web/appsettings.Development.json"), true).Build();
+        if (files.GetConnectionString("Default") is { Length: > 0 } fileConnection && fileConnection != builder.ConnectionString)
+        {
+            Console.WriteLine("Comparação somente leitura com appsettings (sem User Secrets):");
+            try
+            {
+                await using var fileData = new MySqlDataSourceBuilder(fileConnection).Build();
+                Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(await MinhaBelem.Infrastructure.Identity.AuthenticationDiagnostics.ReadLocalAsync(fileData), new System.Text.Json.JsonSerializerOptions { WriteIndented = true }));
+            }
+            catch (Exception ex) { Console.WriteLine("Comparação indisponível: " + ex.GetType().Name); }
+        }
+        return 0;
+    }
     if (args.Contains("--register-sources-local"))
     {
         builder.AllowUserVariables = true;

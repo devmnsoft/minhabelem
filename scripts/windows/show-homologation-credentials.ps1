@@ -2,7 +2,7 @@ param([Parameter(Mandatory=$true)][string]$ReportPath)
 $ErrorActionPreference='Stop'
 $allowedRoot=[IO.Path]::GetFullPath((Join-Path $env:LOCALAPPDATA 'MNSOFT\Homologacao'))+[IO.Path]::DirectorySeparatorChar
 $resolved=[IO.Path]::GetFullPath($ReportPath)
-if(-not $resolved.StartsWith($allowedRoot,[StringComparison]::OrdinalIgnoreCase)){throw 'Use somente o relatório local criado pelo bootstrap.'}
+if(-not $resolved.StartsWith($allowedRoot,[StringComparison]::OrdinalIgnoreCase)){throw 'Use somente o relatório local criado pelo bootstrap ou pela recuperação autorizada.'}
 $report=Get-Content -LiteralPath $resolved -Raw | ConvertFrom-Json
 if([datetime]$report.ExpiraEmUtc -lt [datetime]::UtcNow){Remove-Item -LiteralPath $resolved;throw 'Relatório expirado e removido.'}
 Add-Type -AssemblyName System.Windows.Forms

@@ -104,12 +104,12 @@ public sealed class MySqlUserStore(MySqlDataSource dataSource, IDataProtectionPr
                   (user_name, normalized_user_name, email, normalized_email, email_confirmed, password_hash,
                    security_stamp, concurrency_stamp, lockout_enabled, access_failed_count,
                    display_name, enabled, mfa_enabled, phone_number, phone_number_confirmed,
-                   two_factor_enabled, password_changed_at, last_login_at, created_at)
+                   two_factor_enabled, password_changed_at, last_login_at, created_at, must_change_password)
                 VALUES
                   (@UserName, @NormalizedUserName, @Email, @NormalizedEmail, @EmailConfirmed, @PasswordHash,
                    @SecurityStamp, @ConcurrencyStamp, @LockoutEnabled, @AccessFailedCount,
                    @DisplayName, @Enabled, @MfaEnabled, @PhoneNumber, @PhoneNumberConfirmed,
-                   @TwoFactorEnabled, @PasswordChangedAt, @LastLoginAt, @CreatedAt);
+                   @TwoFactorEnabled, @PasswordChangedAt, @LastLoginAt, @CreatedAt, @MustChangePassword);
                 SELECT LAST_INSERT_ID();
                 """, new
                 {
@@ -120,7 +120,7 @@ public sealed class MySqlUserStore(MySqlDataSource dataSource, IDataProtectionPr
                     user.TwoFactorEnabled,
                     PasswordChangedAt = user.PasswordHash is null ? (DateTime?)null : user.PasswordChangedAt ?? DateTime.UtcNow,
                     LastLoginAt = user.LastLoginAt,
-                    user.CreatedAt
+                    user.CreatedAt, user.MustChangePassword
                 }, cancellationToken: cancellationToken));
 
             if (id is null or <= 0)
@@ -145,7 +145,7 @@ public sealed class MySqlUserStore(MySqlDataSource dataSource, IDataProtectionPr
     {
         // Concorrência otimista: o carimbo carregado com o usuário precisa casar com o do banco.
         var originalStamp = user.ConcurrencyStamp;
-        user.ConcurrencyStamp = NewStamp();
+        var nextStamp = NewStamp();
         await using var connection = await OpenAsync(cancellationToken);
         var affected = await connection.ExecuteAsync(new CommandDefinition(
             """
@@ -164,7 +164,7 @@ public sealed class MySqlUserStore(MySqlDataSource dataSource, IDataProtectionPr
             new
             {
                 user.Id, user.UserName, user.NormalizedUserName, user.Email, user.NormalizedEmail,
-                user.EmailConfirmed, user.PasswordHash, user.SecurityStamp, user.ConcurrencyStamp,
+                user.EmailConfirmed, user.PasswordHash, user.SecurityStamp, ConcurrencyStamp = nextStamp,
                 user.LockoutEnabled, LockoutEnd = ToUtc(user.LockoutEnd), user.AccessFailedCount,
                 user.DisplayName, user.Enabled, user.MfaEnabled, user.PhoneNumber,
                 user.PhoneNumberConfirmed, user.TwoFactorEnabled, user.LockoutDate,
@@ -172,7 +172,7 @@ public sealed class MySqlUserStore(MySqlDataSource dataSource, IDataProtectionPr
                 OriginalConcurrencyStamp = originalStamp
             }, cancellationToken: cancellationToken));
 
-        if (affected == 1) return IdentityResult.Success;
+        if (affected == 1) { user.ConcurrencyStamp = nextStamp; return IdentityResult.Success; }
 
         var exists = await connection.ExecuteScalarAsync<int>(new CommandDefinition(
             "SELECT COUNT(*) FROM mb_users WHERE id = @id", new { user.Id }, cancellationToken: cancellationToken));

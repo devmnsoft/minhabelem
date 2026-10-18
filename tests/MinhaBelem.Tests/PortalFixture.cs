@@ -87,7 +87,7 @@ public sealed class PortalFixture : IAsyncLifetime
     }
 }
 
-public sealed class PortalFactory(string connection) : WebApplicationFactory<Program>
+public sealed class PortalFactory(string connection, string? keysPath = null) : WebApplicationFactory<Program>
 {
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
@@ -99,6 +99,7 @@ public sealed class PortalFactory(string connection) : WebApplicationFactory<Pro
             ["GoogleRoutes:Enabled"] = "false",
             ["Maps:BrowserKey"] = null
         }));
+        if (keysPath is not null) builder.ConfigureAppConfiguration((_, config) => config.AddInMemoryCollection(new Dictionary<string,string?> { ["DataProtection:KeysPath"] = keysPath }));
         builder.ConfigureServices(services =>
         {
             services.RemoveAll<IHostedService>();
