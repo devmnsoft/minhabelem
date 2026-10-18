@@ -10,7 +10,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..')
 const snapshots = path.resolve(root, process.env.QA_SNAPSHOTS || 'TestResults/sprint14-html');
 const output = path.resolve(root, process.env.QA_OUTPUT || 'docs/evidencias/sprint14');
 await fs.mkdir(output, { recursive: true });
-const mime = { '.html': 'text/html; charset=utf-8', '.css': 'text/css', '.js': 'text/javascript', '.svg': 'image/svg+xml', '.jpg': 'image/jpeg' };
+const mime = { '.html': 'text/html; charset=utf-8', '.css': 'text/css', '.js': 'text/javascript', '.svg': 'image/svg+xml', '.jpg': 'image/jpeg', '.webp': 'image/webp' };
 const server = http.createServer(async (req, res) => {
   if (req.method !== 'GET') { res.writeHead(405); res.end(); return; }
   try {
@@ -88,7 +88,7 @@ try {
     }
   }
 } finally { await browser.close(); await new Promise(resolve => server.close(resolve)); }
-const failures = results.filter(x => x.scrollWidth > x.width + 4 || x.brokenImages.length > 0);
+const failures = results.filter(x => x.scrollWidth > x.width + 4 || x.brokenImages.length > 0 || x.a11y.missingImageAlt > 0 || x.a11y.unnamedButtons > 0 || x.a11y.unlabeledFields.length > 0);
 await fs.writeFile(path.join(output, 'layout-results.json'), JSON.stringify({ mode: process.env.QA_MODE || 'Rendered MVC snapshots; HTTP origin recorded separately', checked: results.length, failures, results }, null, 2));
 console.log(JSON.stringify({ checked: results.length, failures: failures.map(x => ({ culture: x.culture, device: x.device, file: x.file, width: x.width, scrollWidth: x.scrollWidth, brokenImages: x.brokenImages, overflow: x.overflow })) }));
 process.exitCode = failures.length ? 1 : 0;

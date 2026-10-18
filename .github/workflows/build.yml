@@ -18,16 +18,19 @@ jobs:
       - run: dotnet build MinhaBelem.sln --no-restore --configuration Release
       - run: dotnet test MinhaBelem.sln --no-build --configuration Release --filter "FullyQualifiedName~SecurityTests|FullyQualifiedName~DiscoveryTests|FullyQualifiedName~InternationalizationTests|FullyQualifiedName~MobilityAndCommunityTests|FullyQualifiedName~RadarCrawlerTests" --logger trx --results-directory TestResults
   mysql-http:
+    strategy:
+      matrix:
+        database: ['mysql:8.0', 'mariadb:10.11']
     runs-on: ubuntu-latest
     services:
       mysql:
-        image: mysql:8.0
+        image: ${{ matrix.database }}
         env:
           MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
           MYSQL_ROOT_HOST: "%"
         ports: ["3306:3306"]
         options: >-
-          --health-cmd="mysqladmin ping --silent -h 127.0.0.1"
+          --health-cmd="mariadb-admin ping --silent -h 127.0.0.1 || mysqladmin ping --silent -h 127.0.0.1"
           --health-interval=10s --health-timeout=5s --health-retries=15
     env:
       MINHABELEM_TEST_MYSQL: Server=127.0.0.1;Port=3306;User ID=root;SslMode=None
@@ -49,5 +52,5 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: mysql-http-test-results
+          name: mysql-http-test-results-${{ strategy.job-index }}
           path: TestResults/*.trx
