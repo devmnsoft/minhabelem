@@ -1,0 +1,156 @@
+{
+  "schemaVersion": 1,
+  "generatedAtUtc": "2026-10-18T17:07:52.5990866Z",
+  "auditedBase": "3a2a43c",
+  "platform": "Windows / .NET 8 / Release",
+  "finalBuild": {
+    "configuration": "Release",
+    "warnings": 0,
+    "errors": 0
+  },
+  "testDatabase": {
+    "engine": "MySQL 8.0.46",
+    "disposable": true,
+    "transport": "local Docker loopback",
+    "schemas": "minhabelem_test_<random GUID>",
+    "realAccountsModified": false
+  },
+  "http": {
+    "server": "ASP.NET Core TestServer via WebApplicationFactory",
+    "realIdentityAndMySql": true,
+    "realAntiforgeryAndCookiePipeline": true,
+    "tlsHandshakeTested": false,
+    "iisDeploymentTested": false,
+    "restart": "host disposed; new host with same SQL database and persisted Data Protection ring"
+  },
+  "readOnlyLocalAudit": {
+    "effectiveWebDatabaseReference": "10431675E03A",
+    "appsettingsAndUserSecretsSameReference": true,
+    "version": "10.11.7-MariaDB",
+    "specifiedAccountsFound": 0,
+    "resetsExecuted": false
+  },
+  "reproducedDefects": [
+    "Password hash/stamp and MustChangePassword used separate Identity writes. A controlled database stamp change after the first write produced HTTP 409 with the flag still set in baseline.",
+    "Failed optimistic-concurrency UpdateAsync mutated the object stamp before SQL success in baseline.",
+    "Baseline completed password persistence and TOTP but redirected all three roles to /editorial instead of selecting the permitted dashboard."
+  ],
+  "historicalIncident": "Not conclusively established: the three specified accounts are absent from the available local database. No claim that MFA deleted or lost password hashes.",
+  "runs": [
+    {
+      "purpose": "Baseline role journeys: expected failures at destination assertion",
+      "localTrx": "tests/MinhaBelem.Tests/TestResults/auth-before.trx",
+      "startedUtc": "2026-10-18T16:49:54.9916619+00:00",
+      "finishedUtc": "2026-10-18T16:52:06.0400009+00:00",
+      "total": 3,
+      "passed": 0,
+      "failed": 3,
+      "skippedCount": 0,
+      "tests": [
+        {
+          "name": "MinhaBelem.Tests.AuthenticationJourneyTests.BootstrapPasswordRotationMfaRevocationAndRestart(role: \"Editor\", email: \"editor.teste@minhabelem.com.br\")",
+          "outcome": "Failed"
+        },
+        {
+          "name": "MinhaBelem.Tests.AuthenticationJourneyTests.BootstrapPasswordRotationMfaRevocationAndRestart(role: \"Moderator\", email: \"moderador.teste@minhabelem.com.br\")",
+          "outcome": "Failed"
+        },
+        {
+          "name": "MinhaBelem.Tests.AuthenticationJourneyTests.BootstrapPasswordRotationMfaRevocationAndRestart(role: \"SuperAdmin\", email: \"superadmin@minhabelem.com.br\")",
+          "outcome": "Failed"
+        }
+      ]
+    },
+    {
+      "purpose": "Baseline controlled concurrency regressions: expected failures",
+      "localTrx": "TestResults/auth-races-before.trx",
+      "startedUtc": "2026-10-18T16:52:45.2429893+00:00",
+      "finishedUtc": "2026-10-18T16:53:38.7628547+00:00",
+      "total": 2,
+      "passed": 0,
+      "failed": 2,
+      "skippedCount": 0,
+      "tests": [
+        {
+          "name": "MinhaBelem.Tests.AuthenticationJourneyTests.ConcurrencyFailureDoesNotMutateStampOrOverwriteTheNewPassword",
+          "outcome": "Failed"
+        },
+        {
+          "name": "MinhaBelem.Tests.AuthenticationJourneyTests.PasswordAndFirstAccessFlagAreCommittedTogetherEvenWhenStampChangesInDatabase",
+          "outcome": "Failed"
+        }
+      ]
+    },
+    {
+      "purpose": "Whole solution regression; before final missing-stamp and report-order hardening",
+      "localTrx": "tests/MinhaBelem.Tests/TestResults/auth-full.trx",
+      "startedUtc": "2026-10-18T17:01:33.1147840+00:00",
+      "finishedUtc": "2026-10-18T17:05:32.0268592+00:00",
+      "total": 187,
+      "passed": 186,
+      "failed": 0,
+      "skippedCount": 1,
+      "skipped": [
+        "MinhaBelem.Tests.RealOcrTests.AuthorizedVideoFrameIsProcessedByRealFfmpegAndTesseract"
+      ]
+    },
+    {
+      "purpose": "Final authentication journeys and security regressions, including final hardening",
+      "localTrx": "tests/MinhaBelem.Tests/TestResults/auth-final.trx",
+      "startedUtc": "2026-10-18T17:05:46.4925253+00:00",
+      "finishedUtc": "2026-10-18T17:07:26.6962121+00:00",
+      "total": 8,
+      "passed": 8,
+      "failed": 0,
+      "skippedCount": 0,
+      "tests": [
+        {
+          "name": "MinhaBelem.Tests.AuthenticationJourneyTests.BootstrapPasswordRotationMfaRevocationAndRestart(role: \"Editor\", email: \"editor.teste@minhabelem.com.br\")",
+          "outcome": "Passed"
+        },
+        {
+          "name": "MinhaBelem.Tests.AuthenticationJourneyTests.BootstrapPasswordRotationMfaRevocationAndRestart(role: \"Moderator\", email: \"moderador.teste@minhabelem.com.br\")",
+          "outcome": "Passed"
+        },
+        {
+          "name": "MinhaBelem.Tests.AuthenticationJourneyTests.BootstrapPasswordRotationMfaRevocationAndRestart(role: \"SuperAdmin\", email: \"superadmin@minhabelem.com.br\")",
+          "outcome": "Passed"
+        },
+        {
+          "name": "MinhaBelem.Tests.AuthenticationJourneyTests.ConcurrencyFailureDoesNotMutateStampOrOverwriteTheNewPassword",
+          "outcome": "Passed"
+        },
+        {
+          "name": "MinhaBelem.Tests.AuthenticationJourneyTests.ExplicitLocalRecoveryResetsOnlyAuthorizedAccountsAndPreservesMfa",
+          "outcome": "Passed"
+        },
+        {
+          "name": "MinhaBelem.Tests.AuthenticationJourneyTests.PasswordAndFirstAccessFlagAreCommittedTogetherEvenWhenStampChangesInDatabase",
+          "outcome": "Passed"
+        },
+        {
+          "name": "MinhaBelem.Tests.AuthenticationJourneyTests.PasswordAndTotpFailuresLockOutAndRecoveryCodesAreSingleUseOverHttp",
+          "outcome": "Passed"
+        },
+        {
+          "name": "MinhaBelem.Tests.AuthenticationJourneyTests.PasswordResetInvalidatesPendingMfaCookieAndExpiredChallengesCannotAuthenticate",
+          "outcome": "Passed"
+        }
+      ]
+    }
+  ],
+  "skippedReason": "Unrelated video OCR test requires authorized Ffmpeg fixture/executable; real image Tesseract OCR ran.",
+  "recovery": {
+    "productionOrExistingAccountsReset": false,
+    "fixtureAccountsOnly": true,
+    "optInAndDatabasePin": true,
+    "preservesMfa": true,
+    "windowsOwnerOnlyAclVerified": true,
+    "secretsExported": false
+  },
+  "limitations": [
+    "No IIS access or deployment.",
+    "No TLS handshake in TestServer.",
+    "Existing accounts require identifying their actual authorized environment before operational confirmation."
+  ]
+}
