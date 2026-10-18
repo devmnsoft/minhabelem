@@ -11,9 +11,9 @@ public sealed class FeedCollectorWorker(IServiceScopeFactory scopes, IOptions<Co
     protected override async Task ExecuteAsync(CancellationToken ct)
     {
         var last = DateTime.MinValue;
-        using var timer = new PeriodicTimer(TimeSpan.FromSeconds(30));
         while (!ct.IsCancellationRequested)
         {
+            var nextCheck = TimeSpan.FromSeconds(30);
             try
             {
                 await using var scope = scopes.CreateAsyncScope();
@@ -21,10 +21,12 @@ public sealed class FeedCollectorWorker(IServiceScopeFactory scopes, IOptions<Co
                 var enabled = bool.TryParse(settings.GetValueOrDefault("collector.enabled"), out var value) ? value : options.Value.Enabled;
                 var minutes = int.TryParse(settings.GetValueOrDefault("collector.intervalMinutes"), out var interval) ? Math.Clamp(interval, 1, 240) : Math.Clamp(options.Value.IntervalMinutes, 1, 240);
                 if (enabled && DateTime.UtcNow >= last.AddMinutes(minutes)) { last = DateTime.UtcNow; await CollectOnceAsync(ct); }
+                if (enabled)
+                    nextCheck = TimeSpan.FromMilliseconds(Math.Clamp((last.AddMinutes(minutes) - DateTime.UtcNow).TotalMilliseconds, 100, 30_000));
             }
             catch (OperationCanceledException) when (ct.IsCancellationRequested) { return; }
             catch (Exception ex) { logger.LogWarning("Coletor indisponível: {ErrorType}. Confira esquema e configurações.", ex.GetType().Name); }
-            try { if (!await timer.WaitForNextTickAsync(ct)) return; } catch (OperationCanceledException) { return; }
+            try { await Task.Delay(nextCheck, ct); } catch (OperationCanceledException) { return; }
         }
     }
     public async Task CollectOnceAsync(CancellationToken ct)

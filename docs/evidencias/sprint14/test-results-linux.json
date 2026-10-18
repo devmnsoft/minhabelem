@@ -1,0 +1,593 @@
+{
+  "platform": "Linux .NET 8 / MySQL 8 / real Tesseract and FFmpeg",
+  "counters": {
+    "total": "114",
+    "executed": "114",
+    "passed": "114",
+    "failed": "0",
+    "error": "0",
+    "timeout": "0",
+    "aborted": "0",
+    "inconclusive": "0",
+    "passedButRunAborted": "0",
+    "notRunnable": "0",
+    "notExecuted": "0",
+    "disconnected": "0",
+    "warning": "0",
+    "completed": "0",
+    "inProgress": "0",
+    "pending": "0"
+  },
+  "tests": [
+    {
+      "testName": "MinhaBelem.Tests.MobilityAndCommunityTests.TransitAlertsAcceptConfiguredSeverities(severity: \"Media\")",
+      "duration": "00:00:00.0012725",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.InternationalizationTests.CatalogReturnsAccurateNativeStringsForEachCulture(culture: \"pt-BR\", key: \"Nav_Explore\", expected: \"Explore Belém\")",
+      "duration": "00:00:00.0000041",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.RadarCrawlerTests.SafeUrlRejectsSsrfAndPrivateDestinations(rawUrl: \"http://192.168.0.1/router\")",
+      "duration": "00:00:00.0000043",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.DiscoveryTests.ReservedIpv6IsBlocked(url: \"https://[fd00::1]/\")",
+      "duration": "00:00:00.0004699",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.RadarCrawlerTests.SafeUrlRejectsSsrfAndPrivateDestinations(rawUrl: \"http://169.254.169.254/latest/meta-data\")",
+      "duration": "00:00:00.0000034",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.MobilityAndCommunityTests.AdvertiserCampaignRequiresClearAdvertisingLabelForTransparency",
+      "duration": "00:00:00.0005616",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.SecurityTests.InfrastructureDependenciesResolveWithoutDatabaseConnection",
+      "duration": "00:00:00.2624167",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.DiscoveryTests.SocialConnectorsRemainPendingWithoutCredential",
+      "duration": "00:00:00.0002632",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.SecurityTests.DangerousProtocolsAndCloudMetadataAreRejectedBySafeUrl(url: \"https://169.254.169.254/latest/meta-data\")",
+      "duration": "00:00:00.0007824",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.OperationalTests.SchemaIsIdempotentAndRevisionConcurrencyIsEnforced",
+      "duration": "00:00:00.0855944",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.OperationalTests.SourceIngestionAiReviewPublicationUpdateAndArchivePersistEndToEnd",
+      "duration": "00:00:02.7085193",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.InternationalizationTests.PermissionsForTranslationAreDeclaredInSystemPermissions",
+      "duration": "00:00:00.0003337",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.DiscoveryTests.GeographyUsesParaCatalogAndRejectsPortugal",
+      "duration": "00:00:00.0225025",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.DiscoveryTests.CalendarKeepsEventDateSeparateFromPostAndExpandsRecurringEvents",
+      "duration": "00:00:00.2712123",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.AdvancedOperationalTests.ApiBudgetIsAtomicAndGatewayRecordsActualUsageShape",
+      "duration": "00:00:00.1668549",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.RadarCrawlerTests.SafeUrlRejectsSsrfAndPrivateDestinations(rawUrl: \"file:///etc/passwd\")",
+      "duration": "00:00:00.0002702",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.RadarCrawlerTests.SafeUrlRejectsSsrfAndPrivateDestinations(rawUrl: \"http://localhost:5000/\")",
+      "duration": "00:00:00.0000151",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.OperationalTests.CsrfAndCommunityPrivacyAreEnforcedAndGuideUsesInfrastructure",
+      "duration": "00:00:00.0559166",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.RadarCrawlerTests.ContentDeduplicationServiceIdentifiesSameUrlAndSimilarTitles",
+      "duration": "00:00:00.0311602",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.InternationalizationTests.CatalogFallsBackToPortugueseWhenCultureIsUnknownOrMissing",
+      "duration": "00:00:00.0001123",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.Sprint14Tests.NewComponentsHaveTranslations(culture: \"en\")",
+      "duration": "00:00:00.0000594",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.Sprint14Tests.MainPublicAndAdministrativePagesRenderAcrossSevenLanguages",
+      "duration": "00:00:08.4975591",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.InternationalizationTests.UnicodeEncodingAndDecodingPreservesMultilingualCharactersWithoutMojibake",
+      "duration": "00:00:00.0822838",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.RadarCrawlerTests.SafeUrlRejectsSsrfAndPrivateDestinations(rawUrl: \"http://10.0.0.1/private\")",
+      "duration": "00:00:00.0001086",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.AdvancedOperationalTests.RoleRevocationsSurviveInstallerReexecutionAndInvalidateSessions",
+      "duration": "00:00:05.6978402",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.DiscoveryTests.AuthorizedConnectorsParseOfficialResponseShapesAndKeepTokensOutOfUrls(protocol: Instagram, host: \"graph.instagram.com\", json: \"{\\\"data\\\":[{\\\"caption\\\":\\\"Evento\\\",\\\"permalink\\\":\\\"···)",
+      "duration": "00:00:00.0084753",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.DiscoveryTests.JsonLdExtractsVerifiedFieldsWithoutInventingMissingValues",
+      "duration": "00:00:00.0189402",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.RadarCrawlerTests.SocialPostBindsAttributesAndPreservesAuthorAndContentLinkage",
+      "duration": "00:00:00.0051562",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.RadarCrawlerTests.RadarHeartbeatCalculatesAccurateStatusFromTelemetry",
+      "duration": "00:00:00.0045220",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.RadarCrawlerTests.EventStructuredDataExtractorParsesJsonLdAndPortugueseEventFormats",
+      "duration": "00:00:00.0015097",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.InternationalizationTests.DisplayPropertiesFallBackToOriginalWhenLocalizedTextIsEmpty",
+      "duration": "00:00:00.0015306",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.AdvancedOperationalTests.AiFallbackIsLimitedAndPersistsFailedAndSuccessfulAttempts",
+      "duration": "00:00:00.0350265",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.OperationalTests.PasswordOnlyCannotEnterEditorialAndModeratorCannotPublish",
+      "duration": "00:00:01.2152847",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.Sprint14Tests.StandaloneWorkerHostBuildsWithoutWebAuthenticationServices",
+      "duration": "00:00:00.0986323",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.MobilityAndCommunityTests.NeighborhoodGuideContainsRequiredHistoricalAndCulturalContext",
+      "duration": "00:00:00.0446686",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.SecurityTests.UnsafeUrlsAreRejected(url: \"https://[::1]/\")",
+      "duration": "00:00:00.0039843",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.Sprint14Tests.HeartbeatWithoutCompletedCycleDoesNotClaimRadarIsActive",
+      "duration": "00:00:00.0003290",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.AdvancedOperationalTests.FutureAgendaFiltersAndPublishedCancellationWorkOverHttp",
+      "duration": "00:00:00.8258420",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.Sprint14Tests.WebDoesNotRegisterWorkersOrExecutionInterfaces",
+      "duration": "00:00:00.0199806",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.Sprint14Tests.RadarMinuteScheduleCompletesTwoActualCycles",
+      "duration": "00:01:00.7415457",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.MobilityAndCommunityTests.TransitAlertsAcceptConfiguredSeverities(severity: \"Alta\")",
+      "duration": "00:00:00.0005610",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.AdvancedOperationalTests.RecoveryCodesAreEncryptedAndSingleUse",
+      "duration": "00:00:00.8751755",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.Sprint14Tests.CrawlerDiscoveryWithoutFeedRunUsesNullForeignKey",
+      "duration": "00:00:00.1073736",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.Sprint14Tests.NewComponentsHaveTranslations(culture: \"pt-BR\")",
+      "duration": "00:00:00.0000308",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.MobilityAndCommunityTests.TransitAlertsAcceptConfiguredSeverities(severity: \"Baixa\")",
+      "duration": "00:00:00.0000041",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.SecurityTests.UnsafeUrlsAreRejected(url: \"https://10.0.0.1/\")",
+      "duration": "00:00:00.0001040",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.AdvancedOperationalTests.SuspendingUserInvalidatesTheirNextRequest",
+      "duration": "00:00:01.8753652",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.SecurityTests.DangerousProtocolsAndCloudMetadataAreRejectedBySafeUrl(url: \"https://localhost:5001/admin\")",
+      "duration": "00:00:00.0018970",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.Sprint14Tests.StaleRunningHeartbeatDoesNotClaimWorkerIsRunning",
+      "duration": "00:00:00.0004183",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.SecurityTests.RolesAndPermissionsDefinitionIsStrictAndPrivilegeEscalationIsPrevented",
+      "duration": "00:00:00.0186262",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.MobilityAndCommunityTests.TransitLineEntityEnforcesValidFaresAndAccessibilityDefaults",
+      "duration": "00:00:00.0006983",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.SecurityTests.UnsafeUrlsAreRejected(url: \"https://127.0.0.1/\")",
+      "duration": "00:00:00.0000081",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.DiscoveryTests.AuthorizedConnectorsParseOfficialResponseShapesAndKeepTokensOutOfUrls(protocol: YouTube, host: \"www.googleapis.com\", json: \"{\\\"items\\\":[{\\\"id\\\":{\\\"videoId\\\":\\\"123\\\"},\\\"snippe\"···)",
+      "duration": "00:00:00.0049614",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.InternationalizationTests.AllSevenLanguagesHaveCompleteResourceKeysWithZeroMissingTranslations",
+      "duration": "00:00:00.0294984",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.MobilityAndCommunityTests.RiverRoutesSupportAmazonianIslandDestinationsWithValidTimes",
+      "duration": "00:00:00.0052569",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.InternationalizationTests.MultilingualXmlSitemapContainsAlternateHreflangForAllSupportedLanguages",
+      "duration": "00:00:00.0240397",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.InternationalizationTests.CulturalGlossaryItemsReturnLocalizedExplanationsAndFallback",
+      "duration": "00:00:00.0052802",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.Sprint14Tests.NewComponentsHaveTranslations(culture: \"es\")",
+      "duration": "00:00:00.0000602",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.SecurityTests.TotpMatchesRfcVectorAndRejectsExtraDigits",
+      "duration": "00:00:00.0124595",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.SecurityTests.DangerousProtocolsAndCloudMetadataAreRejectedBySafeUrl(url: \"ftp://example.com/file\")",
+      "duration": "00:00:00.0000169",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.DiscoveryTests.ReservedIpv6IsBlocked(url: \"https://[fc00::2]/\")",
+      "duration": "00:00:00.0000270",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.RealOcrTests.AuthorizedVideoFrameIsProcessedByRealFfmpegAndTesseract",
+      "duration": "00:00:04.5366864",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.InternationalizationTests.CatalogReturnsAccurateNativeStringsForEachCulture(culture: \"ja\", key: \"Nav_Explore\", expected: \"ベレンを巡る\")",
+      "duration": "00:00:00.0003586",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.InternationalizationTests.CatalogReturnsAccurateNativeStringsForEachCulture(culture: \"ru\", key: \"Nav_Explore\", expected: \"Откройте Белен\")",
+      "duration": "00:00:00.0000061",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.AdvancedOperationalTests.ChangedSourceCreatesProposalWithoutOverwritingPublishedEvent",
+      "duration": "00:00:01.1992931",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.DiscoveryTests.FloatingCalendarAndJsonLdWithoutTimezoneRemainUncertain",
+      "duration": "00:00:00.0003651",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.RadarCrawlerTests.HtmlContentExtractorExtractsMetaTagsAndIdentifiesBelemKeywords",
+      "duration": "00:00:00.0845142",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.DiscoveryTests.ReservedIpv6IsBlocked(url: \"https://[2001:db8::1]/\")",
+      "duration": "00:00:00.0002992",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.AdvancedOperationalTests.RecurringInstancesKeepSeparateIdentitiesAfterEditing",
+      "duration": "00:00:00.2145895",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.SecurityTests.DangerousProtocolsAndCloudMetadataAreRejectedBySafeUrl(url: \"javascript:alert(1)\")",
+      "duration": "00:00:00.0000151",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.InternationalizationTests.TouristItineraryReturnsCultureSpecificTitleAndDescription",
+      "duration": "00:00:00.0186759",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.RadarCrawlerTests.SitemapDiscoveryServiceParsesUrlSetXml",
+      "duration": "00:00:00.0264920",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.RadarCrawlerTests.SafeUrlRejectsSsrfAndPrivateDestinations(rawUrl: \"http://127.0.0.1/admin\")",
+      "duration": "00:00:00.0000142",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.AdvancedOperationalTests.EntireSingleSqlRunsTwiceWithoutDataLossOrDuplicatedSeeds",
+      "duration": "00:00:04.8887793",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.Sprint14Tests.NewComponentsHaveTranslations(culture: \"zh-Hans\")",
+      "duration": "00:00:00.0006658",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.AdvancedOperationalTests.ExpirationPreservesSourceAndWritesRevisionAndAudit",
+      "duration": "00:00:00.1153186",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.InternationalizationTests.AmazonianCulturalHeritageTermsArePreservedInTranslationGuideline",
+      "duration": "00:00:00.0004597",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.Sprint14Tests.QueueRecoversInterruptedRequestsAndStopsAfterThreeFailures",
+      "duration": "00:00:00.1116760",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.RadarCrawlerTests.SafeUrlRejectsSsrfAndPrivateDestinations(rawUrl: \"javascript:alert(1)\")",
+      "duration": "00:00:00.0000158",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.Sprint14Tests.NewComponentsHaveTranslations(culture: \"fr\")",
+      "duration": "00:00:00.0111544",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.MobilityAndCommunityTests.TransitAlertsAcceptConfiguredSeverities(severity: \"Critica\")",
+      "duration": "00:00:00.0000166",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.Sprint14Tests.ManualHttpRequestOnlyEnqueuesAndServiceProcessesPersistedRequest",
+      "duration": "00:00:00.7179655",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.AdvancedOperationalTests.SourceQuotaAndDisabledOcrDoNotPretendSuccessfulExecution",
+      "duration": "00:00:00.0658429",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.OperationalTests.IdentityMfaAdministrationAndSessionRevocationWorkOverHttp",
+      "duration": "00:00:00.9508767",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.Sprint14Tests.DetailPagesRenderWithExplicitDisposableFixtures",
+      "duration": "00:00:02.5561942",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.RadarCrawlerTests.PublicWebCrawlerDiscoversLinksAndRespectsDepth",
+      "duration": "00:00:00.0092109",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.DiscoveryTests.AuthorizedConnectorsParseOfficialResponseShapesAndKeepTokensOutOfUrls(protocol: GovernmentApi, host: \"example.com\", json: \"{\\\"items\\\":[{\\\"title\\\":\\\"Evento\\\",\\\"url\\\":\\\"https:\"···)",
+      "duration": "00:00:00.0100284",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.RadarCrawlerTests.EventStructuredDataExtractorWithoutDateFlagsUncertainWithoutHallucination",
+      "duration": "00:00:00.0278417",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.DiscoveryTests.AuthorizedConnectorsParseOfficialResponseShapesAndKeepTokensOutOfUrls(protocol: WebDiscovery, host: \"customsearch.googleapis.com\", json: \"{\\\"items\\\":[{\\\"title\\\":\\\"Evento\\\",\\\"link\\\":\\\"https\"···)",
+      "duration": "00:00:00.0179532",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.SecurityTests.UnrelatedRobotsAllowRuleCannotOverrideBlockedPath",
+      "duration": "00:00:00.0665348",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.SecurityTests.DnsWithAnyPrivateAddressIsRejected",
+      "duration": "00:00:00.0032620",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.AdvancedOperationalTests.SensitivePublicationRequiresAnExplicitHumanAcknowledgement",
+      "duration": "00:00:00.8833312",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.MobilityAndCommunityTests.HtmlSanitizerStripsMaliciousScriptsWhilePreservingAmazonianExpressions",
+      "duration": "00:00:00.0007944",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.SecurityTests.UnsafeUrlsAreRejected(url: \"https://user:password@example.com/\")",
+      "duration": "00:00:00.0018345",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.InternationalizationTests.CatalogReturnsAccurateNativeStringsForEachCulture(culture: \"zh-Hans\", key: \"Nav_Explore\", expected: \"探索贝伦\")",
+      "duration": "00:00:00.0245202",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.RadarCrawlerTests.PublicRssDiscoveryServiceParsesRssFeedItems",
+      "duration": "00:00:00.0819605",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.AdvancedOperationalTests.CasesInvolvingChildrenAreHeldBeforeCallingExternalAi",
+      "duration": "00:00:00.0018495",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.Sprint14Tests.NewComponentsHaveTranslations(culture: \"ru\")",
+      "duration": "00:00:00.0000295",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.DiscoveryTests.CredentialsCannotBeForwardedToAnotherHost",
+      "duration": "00:00:00.0039889",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.RadarCrawlerTests.RadarOperationalSourceEvaluatesLifecycleCorrectly",
+      "duration": "00:00:00.0020468",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.InternationalizationTests.CatalogReturnsAccurateNativeStringsForEachCulture(culture: \"es\", key: \"Nav_Explore\", expected: \"Explora Belém\")",
+      "duration": "00:00:00.0000048",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.DiscoveryTests.PlainTextTruncationRespectsDatabaseColumnLimit",
+      "duration": "00:00:00.0002595",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.SecurityTests.DangerousProtocolsAndCloudMetadataAreRejectedBySafeUrl(url: \"file:///etc/passwd\")",
+      "duration": "00:00:00.0000286",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.InternationalizationTests.CatalogReturnsAccurateNativeStringsForEachCulture(culture: \"en\", key: \"Nav_Explore\", expected: \"Explore Belém\")",
+      "duration": "00:00:00.0000198",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.Sprint14Tests.NewComponentsHaveTranslations(culture: \"ja\")",
+      "duration": "00:00:00.0000839",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.RealOcrTests.AuthorizedPosterIsProcessedByRealTesseract",
+      "duration": "00:00:01.4199544",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.AdvancedOperationalTests.PlacesReadsBooleanAccessibilityWithoutCreatingAPersistentCache",
+      "duration": "00:00:00.0702873",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.InternationalizationTests.CatalogReturnsAccurateNativeStringsForEachCulture(culture: \"fr\", key: \"Nav_Explore\", expected: \"Explorez Belém\")",
+      "duration": "00:00:00.0000040",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.SecurityTests.UnsafeUrlsAreRejected(url: \"http://example.com/\")",
+      "duration": "00:00:00.0000397",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.RadarCrawlerTests.SourceChangeDetectorIdentifiesETagLastModifiedAndHashChanges",
+      "duration": "00:00:00.0050218",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.DiscoveryTests.AuthorizedConnectorsParseOfficialResponseShapesAndKeepTokensOutOfUrls(protocol: TikTok, host: \"open.tiktokapis.com\", json: \"{\\\"data\\\":{\\\"videos\\\":[{\\\"title\\\":\\\"Evento\\\",\\\"sha\"···)",
+      "duration": "00:00:00.1448570",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.AdvancedOperationalTests.LegacyImportIsExplicitAdditiveAndKeepsPublicIds",
+      "duration": "00:00:00.1562485",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.Sprint14Tests.QueueLockExcludesAnotherConsumer",
+      "duration": "00:00:00.0230185",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "MinhaBelem.Tests.DiscoveryTests.AuthorizedConnectorsParseOfficialResponseShapesAndKeepTokensOutOfUrls(protocol: Facebook, host: \"graph.facebook.com\", json: \"{\\\"data\\\":[{\\\"message\\\":\\\"Evento\\\",\\\"permalink_url\"···)",
+      "duration": "00:00:00.0081315",
+      "outcome": "Passed"
+    }
+  ]
+}
