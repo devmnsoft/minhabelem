@@ -200,6 +200,45 @@ public sealed class Sprint14Tests(PortalFixture fixture)
         Assert.Null(await db.ExecuteScalarAsync<long?>("SELECT run_id FROM mb_ingestion_candidates WHERE id=@Id", new { stored.Id }));
     }
 
+    [MySqlFact]
+    public async Task RadarMinuteScheduleCompletesTwoActualCycles()
+    {
+        var (client, actor) = await new OperationalTests(fixture).Login();
+        using var owner = client;
+        using var scope = fixture.Factory.Services.CreateScope();
+        var admin = scope.ServiceProvider.GetRequiredService<IAdministrationRepository>();
+        var radar = scope.ServiceProvider.GetRequiredService<IRadarRepository>();
+        var sources = await scope.ServiceProvider.GetRequiredService<IIngestionRepository>().SourcesAsync(false, default);
+        var settings = await admin.SettingsAsync(default);
+        await using var db = await fixture.OpenAsync();
+        await db.ExecuteAsync("UPDATE mb_ingestion_sources SET enabled=0");
+        using var worker = ActivatorUtilities.CreateInstance<RadarWorker>(fixture.Factory.Services);
+        try
+        {
+            await admin.SetSettingAsync("radar.enabled", "true", actor, default);
+            await admin.SetSettingAsync("radar.intervalMinutes", "1", actor, default);
+            var before = (await radar.GetHeartbeatAsync("RadarWorker", default))?.TotalCyclesExecuted ?? 0;
+            var elapsed = System.Diagnostics.Stopwatch.StartNew();
+            await worker.StartAsync(default);
+            while (elapsed.Elapsed < TimeSpan.FromSeconds(80))
+            {
+                if ((await radar.GetHeartbeatAsync("RadarWorker", default))?.TotalCyclesExecuted >= before + 2) break;
+                await Task.Delay(1000);
+            }
+            Assert.True((await radar.GetHeartbeatAsync("RadarWorker", default))?.TotalCyclesExecuted >= before + 2);
+            Assert.InRange(elapsed.Elapsed.TotalSeconds, 58, 80);
+        }
+        finally
+        {
+            using var stop = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            await worker.StopAsync(stop.Token);
+            foreach (var source in sources)
+                await db.ExecuteAsync("UPDATE mb_ingestion_sources SET enabled=@Enabled WHERE id=@Id", source);
+            await admin.SetSettingAsync("radar.enabled", settings.GetValueOrDefault("radar.enabled") ?? "false", actor, default);
+            await admin.SetSettingAsync("radar.intervalMinutes", settings.GetValueOrDefault("radar.intervalMinutes") ?? "1", actor, default);
+        }
+    }
+
     private ServiceProvider QueueProvider(ISourceCollection collector)
     {
         var services = new ServiceCollection();

@@ -24,6 +24,7 @@ public sealed class RadarWorker(
     protected override async Task ExecuteAsync(CancellationToken ct)
     {
         var last = DateTime.MinValue;
+        using var timer = new PeriodicTimer(TimeSpan.FromSeconds(30));
 
         while (!ct.IsCancellationRequested)
         {
@@ -57,7 +58,7 @@ public sealed class RadarWorker(
 
             try
             {
-                await Task.Delay(TimeSpan.FromSeconds(30), ct);
+                if (!await timer.WaitForNextTickAsync(ct)) return;
             }
             catch (OperationCanceledException)
             {

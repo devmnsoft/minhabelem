@@ -2,7 +2,7 @@
 
 Data: 18 de outubro de 2026. Repositório: [devmnsoft/minhabelem](https://github.com/devmnsoft/minhabelem/tree/sprint14/redesign-radar).
 
-A implementação corrige a separação Web/Worker, acrescenta a fila persistente e aplica o sistema visual às páginas principais. O build Release passou sem erros ou avisos. A suíte local passou em **111 de 113 testes**, com dois testes de OCR ignorados por ausência de Tesseract/FFmpeg. A validação de layout passou em **1.204 combinações** de 43 páginas, sete idiomas e quatro resoluções. A homologação operacional de produção continua pendente: o serviço Windows não está instalado nesta máquina e não há fontes operacionais configuradas no banco local.
+A implementação corrige a separação Web/Worker, acrescenta a fila persistente e aplica o sistema visual às páginas principais. O build Release passou sem erros ou avisos. A suíte local passou em **112 de 114 testes**, com dois testes de OCR ignorados por ausência de Tesseract/FFmpeg. A validação de layout passou em **1.204 combinações** de 43 páginas, sete idiomas e quatro resoluções. A homologação operacional de produção continua pendente: o serviço Windows não está instalado nesta máquina e não há fontes operacionais configuradas no banco local.
 
 ## Problemas técnicos corrigidos
 
@@ -12,7 +12,7 @@ A implementação corrige a separação Web/Worker, acrescenta a fila persistent
 - As consultas do Radar agora usam `mb_ingestion_sources`, a coluna `name` e os protocolos do modelo atual. A promoção e a alteração de estado deixam de atingir a tabela legada.
 - Descobertas do crawler sem execução de feed usam `run_id = NULL`; o valor zero violava a chave estrangeira.
 - O host Worker deixava de iniciar em Development por depender dos serviços de autenticação HTTP. O SignInManager agora é registrado no caminho Web.
-- Radar respeita frequência e cota por fonte; feeds e crawler atendem protocolos distintos. O agendamento conta o intervalo desde o início do ciclo. Timeouts geram falha, e o lock é liberado mesmo quando a atualização de heartbeat falha.
+- Radar respeita frequência e cota por fonte; feeds e crawler atendem protocolos distintos. O agendamento usa PeriodicTimer e conta o intervalo desde o início do ciclo, sem somar o tempo de execução ao intervalo configurado. Timeouts geram falha, e o lock é liberado mesmo quando a atualização de heartbeat falha.
 - Heartbeats ociosos preservam o resultado anterior. Um heartbeat antigo ou sem ciclo concluído não apresenta o Radar como ativo. O painel Evolução deixou de apresentar testes, commits e implantação em produção como fatos fixos.
 - Os layouts ausentes de Radar/Evolução foram corrigidos com `_AdminLayout`. O seletor de idioma passou a preservar `returnUrl`.
 
@@ -40,6 +40,8 @@ Capturas selecionadas:
 - [Agenda](evidencias/sprint14/agenda-desktop.jpg), [Explore](evidencias/sprint14/explore-desktop.jpg), [login](evidencias/sprint14/conta-login-desktop.jpg) e [mobilidade](evidencias/sprint14/mobilidade-desktop.jpg).
 
 A verificação visual usa HTML efetivamente renderizado nos testes HTTP, servido por um servidor local de snapshots sem acesso ao banco. A automação verifica largura, imagens e abertura/fechamento do menu em quatro resoluções: 1440×1000, 1280×800, 768×1024 e 390×844. As capturas selecionadas foram inspecionadas visualmente. Essa técnica não substitui testes de interação real em todos os formulários; os fluxos de autenticação, MFA, permissões, coleta, publicação e persistência são cobertos pela suíte HTTP/MySQL.
+
+Um teste de integração iniciou o RadarWorker e confirmou dois ciclos reais em aproximadamente um minuto no MySQL descartável, sem fontes habilitadas. Ele valida o agendamento e a persistência de heartbeat; não comprova coleta externa nem execução pelo Service Control Manager.
 
 ## Banco local e Radar
 

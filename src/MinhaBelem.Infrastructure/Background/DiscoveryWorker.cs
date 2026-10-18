@@ -11,6 +11,7 @@ public sealed class FeedCollectorWorker(IServiceScopeFactory scopes, IOptions<Co
     protected override async Task ExecuteAsync(CancellationToken ct)
     {
         var last = DateTime.MinValue;
+        using var timer = new PeriodicTimer(TimeSpan.FromSeconds(30));
         while (!ct.IsCancellationRequested)
         {
             try
@@ -23,7 +24,7 @@ public sealed class FeedCollectorWorker(IServiceScopeFactory scopes, IOptions<Co
             }
             catch (OperationCanceledException) when (ct.IsCancellationRequested) { return; }
             catch (Exception ex) { logger.LogWarning("Coletor indisponível: {ErrorType}. Confira esquema e configurações.", ex.GetType().Name); }
-            try { await Task.Delay(TimeSpan.FromSeconds(30), ct); } catch (OperationCanceledException) { return; }
+            try { if (!await timer.WaitForNextTickAsync(ct)) return; } catch (OperationCanceledException) { return; }
         }
     }
     public async Task CollectOnceAsync(CancellationToken ct)
