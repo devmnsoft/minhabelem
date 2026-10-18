@@ -106,7 +106,18 @@ if (Array.IndexOf(args, stageAgenda?"--stage-agenda":"--import-agenda") is var a
     var connection = new MySqlConnector.MySqlConnectionStringBuilder(builder.Configuration.GetConnectionString("Default") ?? "");
     if (!app.Environment.IsDevelopment() || connection.Server is not ("localhost" or "127.0.0.1") || agendaArgument + 1 >= args.Length)
         throw new InvalidOperationException("Importação explícita exclusiva do banco local em Development.");
-    var manifest = CuratedAgendaImporter.Parse(await File.ReadAllTextAsync(args[agendaArgument + 1]));
+    string manifestPath;
+    try
+    {
+        manifestPath=MinhaBelem.Web.Operations.AgendaManifestFile.Resolve(args[agendaArgument+1],Directory.GetCurrentDirectory(),app.Environment.ContentRootPath);
+    }
+    catch(Exception ex) when(ex is FileNotFoundException or ArgumentException or NotSupportedException)
+    {
+        Console.Error.WriteLine(ex.Message);
+        Environment.ExitCode=2;
+        return;
+    }
+    var manifest = CuratedAgendaImporter.Parse(await File.ReadAllTextAsync(manifestPath));
     using var scope = app.Services.CreateScope();
     var importer = new CuratedAgendaImporter(scope.ServiceProvider.GetRequiredService<MinhaBelem.Core.Abstractions.IContentRepository>());
     var result = await importer.ImportAsync(manifest, default, stageForReview:stageAgenda);

@@ -47,8 +47,13 @@ Comando explícito de importação local (Development + servidor MySQL local):
 
 ```powershell
 $env:ASPNETCORE_ENVIRONMENT='Development'
-dotnet run --project src/MinhaBelem.Web -c Release -- --import-agenda data/agenda/2026-10-18.events.json
+$manifesto = (Resolve-Path .\data\agenda\2026-10-18.events.json).Path
+dotnet run --project src/MinhaBelem.Web -c Release -- --import-agenda "$manifesto"
 ```
+
+Execute a partir da raiz do repositório. O caminho absoluto acima funciona independentemente da mudança de diretório feita pelo `dotnet run`. O resolvedor também aceita caminhos relativos ao projeto Web e, no checkout, à raiz identificada por `MinhaBelem.sln`. Arquivo ausente encerra o comando com código 2 e mensagem direta, antes de qualquer importação.
+
+`--import-agenda` publica registros novos. Para encaminhar novos eventos à revisão humana, substitua-o por `--stage-agenda`. Nenhum dos modos sobrescreve registros já existentes.
 
 ## Verificação
 
