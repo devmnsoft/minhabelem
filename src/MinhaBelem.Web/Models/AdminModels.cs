@@ -21,7 +21,7 @@ public sealed class SourceInput
     [StringLength(200)] public string Organization { get; set; } = "";
     [StringLength(120)] public string Region { get; set; } = "Pará";
     [StringLength(500)] public string Keywords { get; set; } = "";
-    [Range(10, 1440)] public int FrequencyMinutes { get; set; } = 10;
+    [Range(1, 1440)] public int FrequencyMinutes { get; set; } = 10;
     [Range(1, 1000)] public int DailyRequestLimit { get; set; } = 24;
     [Range(1, 100)] public int MaxItems { get; set; } = 20;
     [RegularExpression("^[a-zA-Z0-9_-]{1,80}$")] public string? CredentialReference { get; set; }

@@ -2,19 +2,19 @@ namespace MinhaBelem.Web.Models;
 
 public sealed class ProjectEvolutionViewModel
 {
-    public int SprintNumber { get; set; } = 12;
-    public string SprintTitle { get; set; } = "Go-Live, Radar Autônomo, Operação Real e Lançamento Controlado";
+    public int SprintNumber { get; set; } = 14;
+    public string SprintTitle { get; set; } = "Redesign e homologação";
     public string Domain { get; set; } = "minhabelem.com.br";
     public string Environment { get; set; } = "VPS Windows / IIS / MySQL 8 / MinhaBelem.Worker";
-    public int TotalRequirements { get; set; } = 60;
-    public int MetRequirements { get; set; } = 60;
+    public int TotalRequirements { get; set; } = 0;
+    public int MetRequirements { get; set; } = 0;
     public decimal ReadinessPercentage => TotalRequirements > 0 ? Math.Round(((decimal)MetRequirements / TotalRequirements) * 100, 1) : 0;
-    public int TotalTests { get; set; } = 96;
-    public int PassedTests { get; set; } = 96;
+    public int TotalTests { get; set; } = 0;
+    public int PassedTests { get; set; } = 0;
     public int FailedTests { get; set; } = 0;
     public string LastActionsRunUrl { get; set; } = "https://github.com/devmnsoft/minhabelem/actions";
-    public string ActionsStatusText { get; set; } = "Aprovado integralmente (96 testes aprovados, 0 falhas, build Release 0 avisos / 0 erros)";
-    public string WorkerStatus { get; set; } = "Operacional em produção (Windows Service + In-Process fallback)";
+    public string ActionsStatusText { get; set; } = "Sem resultado de CI carregado";
+    public string WorkerStatus { get; set; } = "Sem evidência de execução";
     public int OperationalSourcesCount { get; set; }
     public int DiscoveredEventsCount { get; set; }
     public int SocialPostsCount { get; set; }
@@ -31,8 +31,8 @@ public sealed class ModuleEvolutionStatus
     /// <summary>
     /// Classificação oficial: "Não iniciado", "Em desenvolvimento", "Implementado", "Testado", "Homologado", "Operacional em produção", "Bloqueado"
     /// </summary>
-    public string Status { get; set; } = "Operacional em produção";
-    public int ProgressPercent { get; set; } = 100;
+    public string Status { get; set; } = "Não verificado";
+    public int ProgressPercent { get; set; } = 0;
     public string Evidence { get; set; } = string.Empty;
 }
 
@@ -41,7 +41,7 @@ public sealed class QualityIndicator
     public string Name { get; set; } = string.Empty;
     public string Target { get; set; } = string.Empty;
     public string Actual { get; set; } = string.Empty;
-    public bool Passed { get; set; } = true;
+    public bool Passed { get; set; } = false;
     public string Notes { get; set; } = string.Empty;
 }
 

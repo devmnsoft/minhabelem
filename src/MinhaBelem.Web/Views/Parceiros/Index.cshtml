@@ -24,7 +24,7 @@
             <span class="eyebrow">VITRINE LOCAL</span>
             <h3>Guia Gastronômico & Comercial</h3>
             <p>Destaque permanente para o seu restaurante, hotel, comércio ou atração no Guia de Belém com links e fotos oficiais.</p>
-            <ul style="padding-left:18px;margin:16px 0;font-size:0.95rem;line-height:1.7;">
+            <ul class="view-a4881c29">
                 <li>Perfil completo no Guia de Lugares</li>
                 <li>Integração verificada Google Places</li>
                 <li>Selo "Estabelecimento Parceiro"</li>
@@ -36,7 +36,7 @@
             <span class="eyebrow" style="color:var(--orange);">MAIS POPULAR</span>
             <h3>Patrocínio de Categoria</h3>
             <p>Sua marca associada às principais seções do portal: Cultura, Gastronomia, Turismo, Esportes ou Agenda de Fim de Semana.</p>
-            <ul style="padding-left:18px;margin:16px 0;font-size:0.95rem;line-height:1.7;">
+            <ul class="view-a4881c29">
                 <li>Banner editorial de topo de categoria</li>
                 <li>Identificação "Apoio Cultural"</li>
                 <li>Relatório mensal de cliques e impressões</li>
@@ -48,7 +48,7 @@
             <span class="eyebrow">HIPERLOCAL</span>
             <h3>Circuito "Meu Bairro"</h3>
             <p>Comunicação focada nos moradores da sua região: Umarizal, Nazaré, Batista Campos, Cidade Velha, Marco ou Icoaraci.</p>
-            <ul style="padding-left:18px;margin:16px 0;font-size:0.95rem;line-height:1.7;">
+            <ul class="view-a4881c29">
                 <li>Presença no guia exclusivo do bairro</li>
                 <li>Promoção de eventos comunitários</li>
                 <li>Alcance direcionado aos vizinhos</li>
@@ -58,7 +58,7 @@
 </section>
 
 <!-- Formulário de Proposta Comercial -->
-<section class="section cta" style="margin-top:40px;">
+<section class="view-543ac430 section cta">
     <h2>Solicite uma Proposta Personalizada</h2>
     <p>Preencha os dados abaixo para receber nossa tabela comercial e plano de veiculação.</p>
 
@@ -71,7 +71,7 @@
 
     <form asp-action="Anunciar" method="post">
         @Html.AntiForgeryToken()
-        <div class="grid" style="grid-template-columns:1fr 1fr;gap:16px;">
+        <div class="view-0e3686f0 grid">
             <label>
                 Nome da Empresa / Estabelecimento *
                 <input name="empresa" maxlength="150" required placeholder="Ex: Restaurante Sabores do Pará" />
@@ -90,7 +90,7 @@
             </label>
         </div>
 
-        <label style="margin-top:14px;">
+        <label class="view-8d842990">
             Plano de Interesse
             <select name="plano">
                 <option value="Guia">Vitrine do Guia de Estabelecimentos</option>
@@ -100,11 +100,11 @@
             </select>
         </label>
 
-        <label style="margin-top:14px;">
+        <label class="view-8d842990">
             Mensagem ou Detalhes da Campanha
             <textarea name="mensagem" rows="3" placeholder="Conte-nos um pouco sobre o objetivo da sua campanha em Belém..."></textarea>
         </label>
 
-        <button type="submit" style="margin-top:16px;">Enviar Solicitação Comercial</button>
+        <button type="submit" class="view-76977cc9">Enviar Solicitação Comercial</button>
     </form>
 </section>

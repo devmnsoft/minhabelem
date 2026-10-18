@@ -12,8 +12,8 @@ public sealed class RadarRepository(MySqlDataSource data) : IRadarRepository
     {
         await using var db = await data.OpenConnectionAsync(ct);
 
-        var totalSources = await db.ExecuteScalarAsync<int>(new CommandDefinition("SELECT COUNT(*) FROM ingestion_sources", cancellationToken: ct));
-        var activeSources = await db.ExecuteScalarAsync<int>(new CommandDefinition("SELECT COUNT(*) FROM ingestion_sources WHERE enabled=TRUE AND approved=TRUE", cancellationToken: ct));
+        var totalSources = await db.ExecuteScalarAsync<int>(new CommandDefinition("SELECT COUNT(*) FROM mb_ingestion_sources", cancellationToken: ct));
+        var activeSources = await db.ExecuteScalarAsync<int>(new CommandDefinition("SELECT COUNT(*) FROM mb_ingestion_sources WHERE enabled=TRUE AND approved=TRUE", cancellationToken: ct));
         var discoveredItems = await db.ExecuteScalarAsync<int>(new CommandDefinition("SELECT COUNT(*) FROM mb_ingestion_candidates", cancellationToken: ct));
         var pendingReview = await db.ExecuteScalarAsync<int>(new CommandDefinition("SELECT COUNT(*) FROM mb_ingestion_candidates WHERE status='Pending'", cancellationToken: ct));
         var duplicates = await db.ExecuteScalarAsync<int>(new CommandDefinition("SELECT COUNT(*) FROM mb_ingestion_candidates WHERE status='Duplicate'", cancellationToken: ct));
@@ -35,7 +35,7 @@ public sealed class RadarRepository(MySqlDataSource data) : IRadarRepository
             CrawlErrorsCount = errors,
             AiTokensConsumed = aiTokens,
             LastCrawlAt = lastCrawl,
-            NextCrawlDueAt = lastCrawl?.AddMinutes(10) ?? DateTime.UtcNow.AddMinutes(10),
+            NextCrawlDueAt = heartbeat?.NextCycleDueAt,
             SocialProfilesCount = socialCount,
             Heartbeat = heartbeat
         };
@@ -135,14 +135,14 @@ public sealed class RadarRepository(MySqlDataSource data) : IRadarRepository
                 var hash = Hashing.UrlHash(source.Url);
                 var protocol = source.FeedProtocolCandidate.ToLowerInvariant() switch
                 {
-                    "rss" => "rss",
-                    "atom" => "atom",
-                    "jsonld" => "api",
-                    _ => "rss"
+                    "rss" => "Rss",
+                    "atom" => "Atom",
+                    "jsonld" => "JsonLd",
+                    _ => "WebDiscovery"
                 };
 
                 await db.ExecuteAsync(new CommandDefinition("""
-                    INSERT IGNORE INTO ingestion_sources (source_name, feed_url, feed_url_hash, protocol, enabled, approved, license_note, created_at)
+                    INSERT IGNORE INTO mb_ingestion_sources (name, feed_url, feed_url_hash, protocol, enabled, approved, license_note, created_at)
                     VALUES (@SourceName, @Url, @hash, @protocol, TRUE, TRUE, 'Aprovada via MinhaBelém Radar', UTC_TIMESTAMP(6));
                     """, new { source.SourceName, source.Url, hash, protocol }, tx, cancellationToken: ct));
             }
@@ -278,14 +278,16 @@ public sealed class RadarRepository(MySqlDataSource data) : IRadarRepository
     {
         await using var db = await data.OpenConnectionAsync(ct);
         var sql = """
-            INSERT INTO mb_radar_heartbeats (worker_name, last_heartbeat_at, last_cycle_status, last_cycle_summary, last_error, is_running, total_cycles_executed)
-            VALUES (@workerName, UTC_TIMESTAMP(6), @status, @summary, @error, @isRunning, 1)
+            INSERT INTO mb_radar_heartbeats (worker_name, last_heartbeat_at, last_cycle_status, last_cycle_summary, last_error, is_running, total_cycles_executed, last_cycle_started_at, last_cycle_finished_at)
+            VALUES (@workerName, UTC_TIMESTAMP(6), @status, @summary, @error, @isRunning, IF(@status IN ('success','partial','failed'),1,0), IF(@isRunning,UTC_TIMESTAMP(6),NULL), IF(@status IN ('success','partial','failed'),UTC_TIMESTAMP(6),NULL))
             ON DUPLICATE KEY UPDATE
                 last_heartbeat_at = UTC_TIMESTAMP(6),
-                last_cycle_status = VALUES(last_cycle_status),
-                last_cycle_summary = VALUES(last_cycle_summary),
-                last_error = VALUES(last_error),
-                is_running = VALUES(is_running),
+                last_cycle_started_at = IF(@isRunning, UTC_TIMESTAMP(6), last_cycle_started_at),
+                last_cycle_finished_at = IF(@status IN ('success','partial','failed'), UTC_TIMESTAMP(6), last_cycle_finished_at),
+                last_cycle_status = IF(@status='idle', last_cycle_status, VALUES(last_cycle_status)),
+                last_cycle_summary = IF(@status='idle', last_cycle_summary, VALUES(last_cycle_summary)),
+                last_error = IF(@status='idle', last_error, VALUES(last_error)),
+                is_running = IF(@status='idle', is_running, VALUES(is_running)),
                 total_cycles_executed = total_cycles_executed + (CASE WHEN VALUES(last_cycle_status) IN ('success', 'partial', 'failed') THEN 1 ELSE 0 END),
                 consecutive_errors = (CASE WHEN VALUES(last_cycle_status) = 'failed' THEN consecutive_errors + 1 WHEN VALUES(last_cycle_status) = 'success' THEN 0 ELSE consecutive_errors END);
             """;
@@ -342,14 +344,14 @@ public sealed class RadarRepository(MySqlDataSource data) : IRadarRepository
     {
         await using var db = await data.OpenConnectionAsync(ct);
         var sql = """
-            SELECT id AS Id, source_name AS Name, feed_url AS FeedUrl, protocol AS Protocol,
+            SELECT id AS Id, name AS Name, feed_url AS FeedUrl, protocol AS Protocol,
                    topics AS Topics, municipality AS Municipality, enabled AS Enabled,
                    approved AS Approved, respect_robots AS RespectRobots, license_note AS LicenseNote,
                    last_checked_at AS LastCheckedAt, last_success_at AS LastSuccessAt,
                    last_error AS LastError, consecutive_failures AS ConsecutiveFailures,
                    etag AS ETag, last_modified AS LastModified, created_at AS CreatedAt
-            FROM ingestion_sources
-            ORDER BY source_name ASC
+            FROM mb_ingestion_sources
+            ORDER BY name ASC
             """;
         var sources = await db.QueryAsync<IngestionSource>(new CommandDefinition(sql, cancellationToken: ct));
         return sources.Select(s => new RadarOperationalSource { Source = s }).ToList();
@@ -359,7 +361,7 @@ public sealed class RadarRepository(MySqlDataSource data) : IRadarRepository
     {
         await using var db = await data.OpenConnectionAsync(ct);
         var rows = await db.ExecuteAsync(new CommandDefinition(
-            "UPDATE ingestion_sources SET enabled=@enabled WHERE id=@sourceId",
+            "UPDATE mb_ingestion_sources SET enabled=@enabled WHERE id=@sourceId",
             new { sourceId, enabled }, cancellationToken: ct));
         return rows > 0;
     }

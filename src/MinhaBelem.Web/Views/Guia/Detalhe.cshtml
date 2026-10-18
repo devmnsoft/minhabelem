@@ -1,7 +1,7 @@
 @model MinhaBelem.Core.Entities.Place
 
-@{ 
-    ViewData["Title"] = $"{Model.DisplayName} — {Loc["Nav_Guide"].Value}"; 
+@{
+    ViewData["Title"] = $"{Model.DisplayName} — {Loc["Nav_Guide"].Value}";
 }
 
 <article class="section article">
@@ -27,7 +27,7 @@
                 <p><strong>Telefone:</strong> @Model.Phone</p>
             }
             <p><strong>Preço informado:</strong> @(Model.PriceText ?? "Consulte o estabelecimento")</p>
-            
+
             @if (Model.OpeningHours.Count > 0)
             {
                 <h4>Horários de Funcionamento:</h4>
@@ -47,12 +47,12 @@
                         @foreach (var author in Model.PhotoAuthors)
                         {
                             <span>
-                                Foto: 
+                                Foto:
                                 @if (author.PhotoUri is not null)
                                 {
                                     <img class="author-avatar" src="@author.PhotoUri" alt="" />
                                 }
-                                <a href="@author.Uri" target="_blank" rel="noopener noreferrer">@author.Name</a> 
+                                <a href="@author.Uri" target="_blank" rel="noopener noreferrer">@author.Name</a>
                             </span>
                         }
                         @if (MinhaBelem.Core.Security.SafeUrl.Validate(Model.PhotoGoogleMapsUri).IsValid)
@@ -73,7 +73,7 @@
     @if (ViewData["Live"] is true && Model.WheelchairAccessible is { } accessible)
     {
         <p>
-            <strong>Acessibilidade para cadeira de rodas:</strong> 
+            <strong>Acessibilidade para cadeira de rodas:</strong>
             @(accessible ? "✅ Informado como disponível pelo Google Maps" : "Informado como indisponível pelo Google Maps"). Confirme as condições com o estabelecimento.
         </p>
     }

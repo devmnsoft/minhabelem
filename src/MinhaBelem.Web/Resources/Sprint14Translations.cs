@@ -1,0 +1,105 @@
+namespace MinhaBelem.Web.Resources;
+
+internal static class Sprint14Translations
+{
+    internal static void Register(Dictionary<string, Dictionary<string, string>> catalogs)
+    {
+        var rows = new Dictionary<string, string[]>
+        {
+            ["CinemaTheater"] = ["Cinema e teatro", "Cinema and theater", "Cinéma et théâtre", "Cine y teatro", "Кино и театр", "电影与戏剧", "映画と演劇"],
+            ["Category_cultura"] = ["Cultura", "Culture", "Culture", "Cultura", "Культура", "文化", "文化"],
+            ["Category_familia"] = ["Família e religião", "Family and religion", "Famille et religion", "Familia y religión", "Семья и религия", "家庭与宗教", "家族と宗教"],
+            ["Category_esporte"] = ["Esporte", "Sports", "Sports", "Deportes", "Спорт", "体育", "スポーツ"],
+            ["Category_politica"] = ["Política e administração", "Politics and government", "Politique et administration", "Política y gobierno", "Политика и управление", "政治与行政", "政治と行政"],
+            ["Category_mobilidade"] = ["Mobilidade", "Mobility", "Mobilité", "Movilidad", "Транспорт", "交通", "交通"],
+            ["Category_servicos"] = ["Serviços", "Services", "Services", "Servicios", "Услуги", "服务", "サービス"],
+            ["Category_turismo"] = ["Turismo e lazer", "Travel and leisure", "Tourisme et loisirs", "Turismo y ocio", "Туризм и отдых", "旅游与休闲", "観光とレジャー"],
+            ["Category_publico"] = ["Serviços públicos", "Public services", "Services publics", "Servicios públicos", "Государственные услуги", "公共服务", "公共サービス"],
+            ["Category_cidades"] = ["Belém e Pará", "Belém and Pará", "Belém et Pará", "Belém y Pará", "Белен и Пара", "贝伦与帕拉", "ベレンとパラー"],
+            ["Explore_Accessibility_Title"] = ["Acessibilidade", "Accessibility", "Accessibilité", "Accesibilidad", "Доступность", "无障碍设施", "アクセシビリティ"],
+            ["Explore_Stops"] = ["Paradas", "Stops", "Étapes", "Paradas", "Остановки", "站点", "立ち寄り先"],
+            ["Translation_OriginalLanguage"] = ["Idioma original", "Original language", "Langue originale", "Idioma original", "Язык оригинала", "原始语言", "原文の言語"],
+            ["LoginTitle"] = ["Entre na sua conta", "Sign in to your account", "Connectez-vous à votre compte", "Inicia sesión en tu cuenta", "Войдите в аккаунт", "登录您的账户", "アカウントにログイン"],
+            ["LoginDescription"] = ["Acesso para editores, curadores e administradores com verificação em duas etapas.", "Access for editors, curators and administrators with two-step verification.", "Accès pour les équipes éditoriales avec validation en deux étapes.", "Acceso editorial con verificación en dos pasos.", "Доступ для редакторов и администраторов с двухэтапной проверкой.", "编辑和管理员使用两步验证登录。", "編集者と管理者向けの二段階認証ログイン。"],
+            ["EmailLabel"] = ["E-mail", "Email", "E-mail", "Correo electrónico", "Электронная почта", "电子邮箱", "メールアドレス"],
+            ["PasswordLabel"] = ["Senha", "Password", "Mot de passe", "Contraseña", "Пароль", "密码", "パスワード"],
+            ["AdminContent"] = ["Conteúdo", "Content", "Contenu", "Contenido", "Материалы", "内容", "コンテンツ"],
+            ["AdminEditorial"] = ["Fila editorial", "Editorial queue", "File éditoriale", "Cola editorial", "Редакционная очередь", "编辑队列", "編集キュー"],
+            ["AdminSources"] = ["Fontes", "Sources", "Sources", "Fuentes", "Источники", "信息源", "情報源"],
+            ["AdminPlaces"] = ["Lugares", "Places", "Lieux", "Lugares", "Места", "地点", "スポット"],
+            ["AdminUsers"] = ["Usuários e acessos", "Users and access", "Utilisateurs et accès", "Usuarios y acceso", "Пользователи и доступ", "用户与访问", "ユーザーとアクセス"],
+            ["AdminRoles"] = ["Perfis e permissões", "Roles and permissions", "Rôles et autorisations", "Roles y permisos", "Роли и разрешения", "角色与权限", "役割と権限"],
+            ["AdminAudit"] = ["Auditoria", "Audit", "Audit", "Auditoría", "Аудит", "审计", "監査"],
+            ["AdminSettings"] = ["Configurações", "Settings", "Paramètres", "Configuración", "Настройки", "设置", "設定"],
+            ["AdminIntegrations"] = ["Integrações", "Integrations", "Intégrations", "Integraciones", "Интеграции", "集成", "連携"],
+            ["AdminReports"] = ["Relatórios", "Reports", "Rapports", "Informes", "Отчёты", "报表", "レポート"],
+            ["AdminProgress"] = ["Evolução e homologação", "Progress and validation", "Avancement et validation", "Avance y validación", "Прогресс и проверка", "进展与验证", "進捗と検証"],
+            ["OperationalSettings"] = ["Configurações operacionais", "Operational settings", "Paramètres opérationnels", "Configuración operativa", "Рабочие настройки", "运行设置", "運用設定"],
+            ["CollectorEnable"] = ["Ativar coleta supervisionada", "Enable supervised collection", "Activer la collecte supervisée", "Activar recopilación supervisada", "Включить контролируемый сбор", "启用受监督采集", "監督付き収集を有効化"],
+            ["IntervalMinutes"] = ["Intervalo em minutos", "Interval in minutes", "Intervalle en minutes", "Intervalo en minutos", "Интервал в минутах", "间隔分钟数", "間隔（分）"],
+            ["SettingsDescription"] = ["O mínimo é de um minuto. A coleta respeita a disponibilidade e os limites das fontes.", "The minimum is one minute. Collection respects source availability and limits.", "Le minimum est une minute. La collecte respecte les limites des sources.", "El mínimo es un minuto. Se respetan la disponibilidad y los límites de las fuentes.", "Минимум — одна минута. Сбор учитывает доступность и ограничения источников.", "最短为一分钟。采集遵守来源的可用性和限制。", "最短は1分です。情報源の稼働状況と制限に従います。"],
+            ["AgendaDescription"] = ["Programação com fonte identificada e revisão editorial. Horários no fuso de Belém.", "Events with identified sources and editorial review. Times are local to Belém.", "Événements avec sources identifiées et vérification éditoriale. Heure de Belém.", "Eventos con fuentes identificadas y revisión editorial. Hora de Belém.", "События с проверенными источниками. Время указано для Белена.", "活动注明来源并经编辑审核。时间为贝伦当地时间。", "出典を明示し編集部が確認したイベント。時刻はベレン現地時間です。"],
+            ["Period"] = ["Período", "Period", "Période", "Período", "Период", "时间段", "期間"],
+            ["Neighborhood"] = ["Bairro", "Neighborhood", "Quartier", "Barrio", "Район", "街区", "街区"],
+            ["Municipality"] = ["Município", "Municipality", "Municipalité", "Municipio", "Муниципалитет", "市镇", "自治体"],
+            ["Audience"] = ["Público", "Audience", "Public", "Público", "Аудитория", "受众", "対象者"],
+            ["AgeRating"] = ["Classificação etária até", "Maximum age rating", "Classification par âge maximum", "Clasificación de edad máxima", "Максимальный возрастной рейтинг", "最高年龄分级", "年齢制限の上限"],
+            ["Hero_Title"] = ["Uma cidade. Infinitas descobertas.", "One city. Endless discoveries.", "Une ville. Des découvertes infinies.", "Una ciudad. Infinitos descubrimientos.", "Один город. Бесконечные открытия.", "一座城市，无尽发现。", "ひとつの街、無限の発見。"],
+            ["Hero_Subtitle"] = ["Entre rios, sabores e histórias, encontre a sua Belém.", "Between rivers, flavors and stories, find your Belém.", "Entre fleuves, saveurs et histoires, trouvez votre Belém.", "Entre ríos, sabores e historias, encuentra tu Belém.", "Реки, вкусы и истории — откройте свой Белен.", "在河流、美食与故事之间，发现你的贝伦。", "川と味と物語のあいだに、あなたのベレンを。"],
+            ["CityNow"] = ["Belém agora", "Belém now", "Belém maintenant", "Belém ahora", "Белен сейчас", "贝伦此刻", "いまのベレン"],
+            ["Home_LatestNews"] = ["A cidade em pauta", "The city in focus", "La ville à la une", "La ciudad al día", "Город в фокусе", "城市焦点", "街のニュース"],
+            ["EmptyTitle"] = ["Novas histórias estão por vir", "New stories are on their way", "De nouvelles histoires arrivent", "Nuevas historias están por llegar", "Новые истории скоро появятся", "新的故事即将到来", "新しい物語をお待ちください"],
+            ["EmptyDescription"] = ["Ainda não há publicações verificadas nesta seleção. Explore o guia ou escolha outros filtros.", "No verified publications in this selection yet. Explore the guide or change your filters.", "Aucune publication vérifiée ici. Explorez le guide ou modifiez les filtres.", "Aún no hay publicaciones verificadas. Explora la guía o cambia los filtros.", "Проверенных публикаций пока нет. Откройте путеводитель или измените фильтры.", "此选项暂无已核实内容。请浏览指南或更改筛选条件。", "確認済みの記事はまだありません。ガイドや別の条件をご覧ください。"],
+            ["ReadStory"] = ["Ler matéria", "Read story", "Lire l’article", "Leer artículo", "Читать", "阅读全文", "記事を読む"],
+            ["EditorialNote"] = ["Informação com fonte. Histórias com identidade.", "Sourced information. Stories with identity.", "Des sources fiables. Des histoires authentiques.", "Información con fuentes. Historias con identidad.", "Информация с источниками. Истории с характером.", "信息有据，故事有魂。", "出典のある情報、個性のある物語。"],
+            ["NavNeighborhood"] = ["Meu bairro", "Neighborhoods", "Quartiers", "Barrios", "Районы", "街区", "街区"],
+            ["NavPartners"] = ["Parceiros", "Partners", "Partenaires", "Socios", "Партнёры", "合作伙伴", "パートナー"],
+            ["WeeklyAgenda"] = ["A semana pede um encontro", "Make room for a great week", "Une semaine de rencontres", "Una semana para encontrarse", "Планы на неделю", "本周相约", "今週の出会い"],
+            ["AgendaEmpty"] = ["A programação será exibida após confirmação editorial de datas e locais.", "Events appear after editorial confirmation of dates and venues.", "Les événements apparaîtront après vérification des dates et lieux.", "Los eventos aparecerán tras verificar fechas y lugares.", "События появятся после проверки дат и мест.", "日期和地点经编辑核实后，将在此显示活动。", "日時と会場の確認後にイベントを掲載します。"],
+            ["GastronomyTitle"] = ["Sabores que só a Amazônia tem", "Flavors found only in the Amazon", "Les saveurs uniques de l’Amazonie", "Sabores únicos de la Amazonía", "Уникальные вкусы Амазонии", "亚马孙独有的风味", "アマゾンだけの味わい"],
+            ["RiverMobility"] = ["Pelos caminhos da cidade e dos rios", "Along city streets and rivers", "Au fil des rues et des fleuves", "Por la ciudad y sus ríos", "По улицам и рекам", "沿街道与河流出行", "街路と川をめぐって"],
+            ["MobilityDescription"] = ["Consulte linhas, travessias e avisos antes de sair.", "Check routes, river crossings and notices before leaving.", "Consultez lignes, traversées et avis avant de partir.", "Consulta líneas, travesías y avisos antes de salir.", "Проверьте маршруты, переправы и сообщения перед поездкой.", "出发前查看线路、渡船和公告。", "お出かけ前に路線、渡船、お知らせを確認。"],
+            ["NeighborhoodTitle"] = ["Cada bairro, uma Belém", "A different Belém in every neighborhood", "Un Belém dans chaque quartier", "Un Belém en cada barrio", "В каждом районе — свой Белен", "每个街区都有自己的贝伦", "街区ごとに出会うベレン"],
+            ["VideoTitle"] = ["Olhares sobre Belém", "Views of Belém", "Regards sur Belém", "Miradas de Belém", "Взгляды на Белен", "贝伦视角", "ベレンの風景"],
+            ["PartnerTitle"] = ["O seu negócio faz parte da cidade", "Your business is part of the city", "Votre activité fait partie de la ville", "Tu negocio es parte de la ciudad", "Ваш бизнес — часть города", "您的企业也是城市的一部分", "あなたのお店も街の一部"],
+            ["PartnerDescription"] = ["Conecte sua marca a quem vive e descobre Belém. Espaços comerciais identificados com transparência.", "Connect your brand with people living in and discovering Belém. Clearly labeled commercial placements.", "Faites connaître votre marque aux habitants et visiteurs. Espaces commerciaux clairement identifiés.", "Conecta tu marca con habitantes y visitantes. Espacios comerciales identificados.", "Познакомьте жителей и гостей с вашим брендом. Реклама обозначается явно.", "让居民和游客认识您的品牌。商业展示均有明确标识。", "ベレンの住民や旅行者にブランドを届けましょう。広告は明示します。"],
+            ["PublicServices"] = ["Serviços públicos", "Public services", "Services publics", "Servicios públicos", "Государственные услуги", "公共服务", "公共サービス"],
+            ["ServicesDescription"] = ["Informação de utilidade pública, sempre com a fonte identificada.", "Useful public information with identified sources.", "Des informations pratiques avec leurs sources.", "Información útil con fuentes identificadas.", "Полезная информация с указанием источников.", "标明来源的实用公共信息。", "出典を明示した暮らしの情報。"],
+            ["MenuToggle"] = ["Abrir navegação", "Open navigation", "Ouvrir la navigation", "Abrir navegación", "Открыть меню", "打开导航", "メニューを開く"],
+            ["NextPage"] = ["Próxima página", "Next page", "Page suivante", "Página siguiente", "Следующая страница", "下一页", "次のページ"],
+            ["PreviousPage"] = ["Página anterior", "Previous page", "Page précédente", "Página anterior", "Предыдущая страница", "上一页", "前のページ"],
+            ["ImageDisclosure"] = ["Belém em imagem ilustrativa criada com IA", "AI-generated illustration of Belém", "Illustration de Belém créée par IA", "Ilustración de Belém creada con IA", "Иллюстрация Белена, созданная ИИ", "AI生成的贝伦示意图", "AIによるベレンのイメージ"],
+            ["QueueTitle"] = ["Solicitações de coleta", "Collection requests", "Demandes de collecte", "Solicitudes de recopilación", "Запросы сбора", "采集请求", "収集リクエスト"],
+            ["QueueHelp"] = ["O Web registra pedidos. A execução depende do Serviço do Windows e dos limites de cada fonte.", "The web app queues requests. Execution depends on the Windows service and source limits.", "Le Web enregistre les demandes. Le service Windows respecte les limites des sources.", "La web registra solicitudes. El servicio Windows respeta los límites de las fuentes.", "Веб-приложение ставит запросы в очередь. Их выполняет служба Windows с учётом лимитов.", "网页将请求加入队列，由Windows服务按来源限制处理。", "Webで要求を登録し、Windowsサービスが情報源の制限内で実行します。"],
+            ["QueueKind"] = ["Tipo", "Type", "Type", "Tipo", "Тип", "类型", "種類"],
+            ["QueueStatus"] = ["Estado", "Status", "État", "Estado", "Статус", "状态", "状態"],
+            ["QueueAttempts"] = ["Tentativas", "Attempts", "Tentatives", "Intentos", "Попытки", "尝试次数", "試行回数"],
+            ["QueueRequested"] = ["Solicitação", "Requested", "Demandé", "Solicitado", "Запрошено", "请求时间", "要求日時"],
+            ["QueueEmpty"] = ["Nenhuma solicitação registrada.", "No requests yet.", "Aucune demande.", "Sin solicitudes.", "Запросов пока нет.", "暂无请求。", "リクエストはまだありません。"],
+            ["Queue_pending"] = ["Na fila", "Queued", "En attente", "En cola", "В очереди", "排队中", "待機中"],
+            ["Queue_running"] = ["Em execução", "Running", "En cours", "En ejecución", "Выполняется", "执行中", "実行中"],
+            ["Queue_completed"] = ["Concluída", "Completed", "Terminée", "Completada", "Завершено", "已完成", "完了"],
+            ["Queue_failed"] = ["Falhou", "Failed", "Échec", "Falló", "Ошибка", "失败", "失敗"],
+            ["Admin_Dashboard"] = ["Painel", "Dashboard", "Tableau de bord", "Panel", "Панель", "控制台", "ダッシュボード"],
+            ["Admin_Languages"] = ["Idiomas", "Languages", "Langues", "Idiomas", "Языки", "语言", "言語"],
+            ["General_Empty"] = ["Nenhum resultado disponível", "No results available", "Aucun résultat", "Sin resultados", "Нет результатов", "暂无结果", "結果はありません"],
+            ["Collab_Subtitle"] = ["Compartilhe um evento, uma história ou uma sugestão. Toda colaboração passa por revisão editorial.", "Share an event, a story or a suggestion. Every submission is editorially reviewed.", "Partagez un événement, une histoire ou une idée. Chaque proposition est vérifiée.", "Comparte un evento, una historia o una sugerencia. Cada envío se revisa.", "Поделитесь событием, историей или идеей. Все сообщения проверяет редакция.", "分享活动、故事或建议。所有投稿均经编辑审核。", "イベント、物語、ご提案をお寄せください。すべて編集部が確認します。"],
+        };
+        var aliases = new Dictionary<string, string>
+        {
+            ["Brand_Name"] = "SiteTitle", ["General_AllRightsReserved"] = "AllRightsReserved", ["General_Back"] = "SkipToContent",
+            ["Nav_Account"] = "NavMyAccount", ["Nav_Privacy"] = "PrivacyPolicy", ["Nav_Terms"] = "TermsOfUse",
+            ["Language_Selector_Title"] = "SelectLanguage", ["Glossary_Title"] = "CulturalGlossary",
+            ["Collab_Title"] = "CollaborateTitle", ["Collab_Name"] = "YourName", ["Collab_Message"] = "YourMessage", ["Collab_Consent"] = "ConsentTerms", ["Collab_Submit"] = "Send",
+            ["Explore_Hero_Title"] = "ExploreTitle", ["Explore_Hero_Subtitle"] = "ExploreSubtitle", ["Explore_Itineraries"] = "ItinerariesTitle", ["Explore_Places"] = "WhatToVisit",
+            ["Explore_Practical_Advice"] = "PracticalTips", ["Explore_Safety_Title"] = "PracticalTips", ["Explore_Weather_Title"] = "EquatorialWeather", ["Explore_VerifiedSource"] = "VerifiedSource",
+            ["Translation_Status_Pending"] = "PendingStatus", ["Category_Culture"] = "NavCulture", ["Category_Mobility"] = "NavMobility", ["Category_Gastronomy"] = "WhereToEat",
+        };
+        for (var i = 0; i < SupportedCultures.All.Length; i++)
+        {
+            var catalog = catalogs[SupportedCultures.All[i]];
+            foreach (var row in rows) catalog[row.Key] = row.Value[i];
+            foreach (var alias in aliases) catalog[alias.Key] = catalog[alias.Value];
+        }
+    }
+}

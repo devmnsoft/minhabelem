@@ -62,9 +62,13 @@
     }
     <link rel="alternate" hreflang="x-default" href="@($"{Context.Request.Scheme}://{Context.Request.Host}/pt-BR")" />
 
+    <link rel="icon" type="image/svg+xml" href="~/images/favicon.svg" />
+    <meta name="theme-color" content="#123f36" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/view-formats.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/components.css" asp-append-version="true" />
 </head>
-<body class="culture-@currentCulture.ToLowerInvariant()">
+<body class="culture-@currentCulture.ToLowerInvariant() @(Context.Request.Path.StartsWithSegments("/admin") || Context.Request.Path.StartsWithSegments("/editorial") ? "administration" : "portal")">
     <a class="skip-link" href="#conteudo">@Loc["General_Back"]</a>
 
     <header class="header">
@@ -72,15 +76,16 @@
             <img src="/images/minhabelem-marca.svg" width="220" height="62" alt="MinhaBelém — Nossa cidade. Mil histórias." class="brand-logo" />
         </a>
 
-        <nav class="main-nav" aria-label="@Loc["Nav_Home"]">
+        <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="main-navigation">@Loc["MenuToggle"] <span aria-hidden="true">☰</span></button>
+        <nav id="main-navigation" class="main-nav" aria-label="@Loc["Nav_Home"]">
             <a href="/">@Loc["Nav_Home"]</a>
-            <a href="/explore" class="nav-highlight">🌎 @Loc["Nav_Explore"]</a>
+            <a href="/explore" class="nav-highlight">@Loc["Nav_Explore"]</a>
             <a href="/guia">@Loc["Nav_Guide"]</a>
             <a href="/agenda">@Loc["Nav_Agenda"]</a>
-            <a href="/mobilidade">🚌 Mobilidade</a>
-            <a href="/meu-bairro">🏘️ Meu Bairro</a>
-            <a href="/parceiros">💼 Parceiros</a>
-            <a href="/explore/glossario">📖 @Loc["Glossary_Title"]</a>
+            <a href="/mobilidade">@Loc["NavMobility"]</a>
+            <a href="/meu-bairro">@Loc["NavNeighborhood"]</a>
+            <a href="/parceiros">@Loc["NavPartners"]</a>
+            <a href="/explore/glossario">@Loc["Glossary_Title"]</a>
             @if (User.Identity?.IsAuthenticated == true)
             {
                 <a href="/conta/perfil">@Loc["Nav_Account"]</a>
@@ -94,7 +99,7 @@
         <div class="header-tools">
             <!-- Language Switcher Selector -->
             <form action="/idioma/mudar" method="get" class="lang-selector-form" aria-label="@Loc["Language_Selector_Title"]">
-                <input type="hidden" name="retorno" value="@returnUrl" />
+                <input type="hidden" name="returnUrl" value="@returnUrl" />
                 <span class="lang-icon" aria-hidden="true">🌐</span>
                 <select name="cultura" onchange="this.form.submit()" aria-label="@Loc["Language_Selector_Title"]" class="lang-select">
                     @foreach (var lang in languages)
@@ -148,6 +153,10 @@
                 <span>@notice</span>
             </div>
         }
+        @if (Context.Request.Path != "/" && !MinhaBelem.Web.Resources.SupportedCultures.All.Any(c => Context.Request.Path == "/" + c))
+        {
+            <nav class="breadcrumbs" aria-label="@Loc["NavHome"]"><a href="/">@Loc["NavHome"]</a><span aria-hidden="true">/</span><span>@(ViewData["Title"] ?? Loc["SiteTitle"].Value)</span></nav>
+        }
         @RenderBody()
     </main>
 
@@ -160,7 +169,7 @@
                 <p class="small footer-copy">&copy; @DateTime.UtcNow.Year MNSOFT — @Loc["General_AllRightsReserved"]</p>
             </div>
             <div class="footer-col">
-                <h4>🌎 @Loc["Nav_Explore"]</h4>
+                <h4>@Loc["Nav_Explore"]</h4>
                 <nav aria-label="@Loc["Nav_Explore"]">
                     <a href="/explore">@Loc["Explore_Hero_Title"]</a>
                     <a href="/explore/roteiro/belem-express-1-dia">1 Dia em Belém</a>
@@ -193,7 +202,7 @@
                     <div class="footer-lang-links">
                         @foreach (var lang in languages)
                         {
-                            <a href="/idioma/mudar?cultura=@lang.Item1&retorno=@returnUrl" class="lang-pill @(string.Equals(currentCulture, lang.Item1, StringComparison.OrdinalIgnoreCase) ? "active" : "")">
+                            <a href="/idioma/mudar?cultura=@lang.Item1&returnUrl=@Uri.EscapeDataString(returnUrl)" class="lang-pill @(string.Equals(currentCulture, lang.Item1, StringComparison.OrdinalIgnoreCase) ? "active" : "")">
                                 @lang.Item3 @lang.Item1
                             </a>
                         }

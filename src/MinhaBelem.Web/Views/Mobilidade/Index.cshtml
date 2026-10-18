@@ -11,7 +11,7 @@
         <div class="eyebrow">TRANSPORTE & TRÂNSITO EM BELÉM 🚌 🚤</div>
         <h1>Mobilidade Urbana</h1>
         <p>Linhas de ônibus, estações BRT, travessias fluviais amazônicas e alertas oficiais de trânsito em tempo real.</p>
-        
+
         <form method="get" action="/mobilidade" class="search" role="search">
             <label for="busca-linha" class="sr-only">Buscar linha, bairro ou trajeto</label>
             <input id="busca-linha" name="busca" maxlength="120" placeholder="Digite número da linha, rua ou destino (ex: 758, Ver-o-Peso, BRT)..." value="@Model.SearchQuery" />
@@ -54,7 +54,7 @@
                 <span class="eyebrow">TRANSPORTE COLETIVO</span>
                 <h2>Linhas de Ônibus & BRT</h2>
             </div>
-            <div class="filter-pills" style="display:flex;gap:8px;flex-wrap:wrap;">
+            <div class="view-31e4e2a2 filter-pills">
                 <a href="/mobilidade" class="button @(string.IsNullOrEmpty(Model.SelectedType) ? "" : "secondary") small">Todas</a>
                 <a href="/mobilidade?tipo=BRT" class="button @(Model.SelectedType == "BRT" ? "" : "secondary") small">BRT Metropolitano</a>
                 <a href="/mobilidade?tipo=Urbano" class="button @(Model.SelectedType == "Urbano" ? "" : "secondary") small">Urbanas</a>

@@ -15,11 +15,11 @@
         <div class="admin-header">
             <div>
                 <span class="eyebrow">CENTRAL DE INTELIGÊNCIA DIGITAL</span>
-                <h1 style="font-size:2.2rem;margin-top:4px;">Fontes de Ingestão & Monitoramento</h1>
+                <h1 class="view-26731c99">Fontes de Ingestão & Monitoramento</h1>
                 <p class="small text-muted">Apenas fontes autorizadas e habilitadas são consultadas em ciclos programados, respeitando robots.txt e cotas.</p>
             </div>
-            <div style="display:flex;gap:10px;flex-wrap:wrap;">
-                <form method="post" asp-action="ExecutarColeta" style="display:inline;">
+            <div class="view-88785587">
+                <form method="post" asp-action="ExecutarColeta" class="view-a91548c5">
                     @Html.AntiForgeryToken()
                     <button type="submit" class="button small">⚡ Executar Coleta Imediata</button>
                 </form>
@@ -35,7 +35,7 @@
         }
 
         <!-- TABELA DE FONTES CADASTRADAS -->
-        <h2 style="font-size:1.4rem;margin:24px 0 12px;">Fontes Ativas e Monitoradas (@Model.Count)</h2>
+        <h2 class="view-2f21105d">Fontes Ativas e Monitoradas (@Model.Count)</h2>
         <div class="table-wrap">
             <table>
                 <thead>
@@ -51,7 +51,7 @@
                     @if (Model.Count == 0)
                     {
                         <tr>
-                            <td colspan="5" style="text-align:center;padding:24px;">Nenhuma fonte configurada no momento.</td>
+                            <td colspan="5" class="view-1e09158a">Nenhuma fonte configurada no momento.</td>
                         </tr>
                     }
                     @foreach (var source in Model)
@@ -70,7 +70,7 @@
                                     }
                                 </strong>
                                 <div class="small text-muted" style="margin-top:4px;">
-                                    <span>Protocolo: <span class="badge badge-info">@source.Protocol</span></span> · 
+                                    <span>Protocolo: <span class="badge badge-info">@source.Protocol</span></span> ·
                                     <span>Região: @(profile?.Region ?? "Pará")</span>
                                 </div>
                                 <div class="small" style="color:var(--text-secondary);margin-top:2px;">
@@ -118,7 +118,7 @@
                                 <div style="display:flex;gap:6px;flex-direction:column;">
                                     <form method="post" asp-action="SuspenderFonte" asp-route-id="@source.Id">
                                         @Html.AntiForgeryToken()
-                                        <button type="submit" class="button secondary small" style="width:100%;">
+                                        <button type="submit" class="view-9ccc4ca9 button secondary small">
                                             @(source.Enabled ? "Suspender" : "Reativar")
                                         </button>
                                     </form>
@@ -132,10 +132,10 @@
                                                 <textarea name="license" maxlength="1000" rows="2" required placeholder="Termo de autorização..."></textarea>
                                             </label>
                                             <label style="display:flex;align-items:center;gap:6px;font-size:0.8rem;margin-bottom:8px;">
-                                                <input type="checkbox" name="allowed" value="true" style="width:auto;margin:0;" /> 
+                                                <input type="checkbox" name="allowed" value="true" class="view-ba78805d" />
                                                 <span>Autorizar OCR/Mídia local</span>
                                             </label>
-                                            <button type="submit" class="button small" style="width:100%;">Salvar</button>
+                                            <button type="submit" class="view-9ccc4ca9 button small">Salvar</button>
                                         </form>
                                     </details>
                                 </div>
@@ -147,8 +147,8 @@
         </div>
 
         <!-- FORMULÁRIO DE CADASTRO DE FONTE -->
-        <div id="nova-fonte" class="card" style="margin-top:34px;border-top:4px solid var(--green-forest);">
-            <h2 style="font-size:1.4rem;margin-bottom:14px;">Cadastrar ou Atualizar Fonte Autorizada</h2>
+        <div id="nova-fonte" class="view-c7eab27c card">
+            <h2 class="view-a0b99945">Cadastrar ou Atualizar Fonte Autorizada</h2>
             <form method="post" asp-action="SalvarFonte">
                 @Html.AntiForgeryToken()
 
@@ -164,7 +164,7 @@
                     </label>
                 </div>
 
-                <div class="grid" style="grid-template-columns:1fr 1fr 1fr;gap:18px;">
+                <div class="view-3ec84969 grid">
                     <label>
                         Protocolo de Conexão *
                         <select name="Protocol">
@@ -191,7 +191,7 @@
                     <textarea name="LicenseNote" maxlength="500" rows="2" required placeholder="Fonte pública governamental / Parceria editorial firmada em..."></textarea>
                 </label>
 
-                <div class="grid" style="grid-template-columns:1fr 1fr 1fr;gap:18px;">
+                <div class="view-3ec84969 grid">
                     <label>
                         Responsável Legal
                         <input name="OwnerName" maxlength="180" placeholder="Nome do contato ou editor" />
@@ -204,18 +204,18 @@
 
                     <label>
                         Frequência de Checagem (minutos)
-                        <input name="FrequencyMinutes" type="number" value="10" min="10" max="1440" />
+                        <input name="FrequencyMinutes" type="number" value="10" min="1" max="1440" />
                     </label>
                 </div>
 
                 <div style="display:flex;gap:24px;margin:16px 0;flex-wrap:wrap;">
-                    <label class="checkbox-label" style="display:flex;align-items:center;gap:8px;font-weight:600;">
-                        <input type="checkbox" name="Approved" value="true" checked style="width:auto;margin:0;" />
+                    <label class="view-4d955e31 checkbox-label">
+                        <input type="checkbox" name="Approved" value="true" checked class="view-ba78805d" />
                         <span>Fonte autorizada após conferência documental</span>
                     </label>
 
-                    <label class="checkbox-label" style="display:flex;align-items:center;gap:8px;font-weight:600;">
-                        <input type="checkbox" name="Enabled" value="true" checked style="width:auto;margin:0;" />
+                    <label class="view-4d955e31 checkbox-label">
+                        <input type="checkbox" name="Enabled" value="true" checked class="view-ba78805d" />
                         <span>Habilitar coleta contínua em segundo plano</span>
                     </label>
                 </div>
@@ -226,7 +226,7 @@
 
         <!-- EXECUÇÕES RECENTES DA INGESTÃO -->
         <div class="card" style="margin-top:30px;">
-            <h3 style="font-size:1.2rem;margin-bottom:12px;">Histórico de Execuções Recentes da Coleta</h3>
+            <h3 class="view-142f69ff">Histórico de Execuções Recentes da Coleta</h3>
             @if (runs.Count == 0)
             {
                 <p class="small text-muted">Nenhuma execução registrada no banco.</p>
