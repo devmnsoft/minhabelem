@@ -24,7 +24,13 @@ public sealed class ContaController(UserManager<ApplicationUser> users, SignInMa
             ? await signIn.PasswordSignInAsync(user, model.Password, false, true)
             : Microsoft.AspNetCore.Identity.SignInResult.Failed;
         if (result.RequiresTwoFactor) return RedirectToAction(nameof(Verificar));
-        if (result.Succeeded) return RedirectToAction(nameof(Mfa));
+        if (result.Succeeded)
+        {
+            user!.LastLoginAt = DateTime.UtcNow;
+            await users.UpdateAsync(user);
+            await audit.WriteAsync(new AuditEntry { ActorId = user.Id, Action = "session.password_login", EntityType = "user", EntityId = user.Id }, HttpContext.RequestAborted);
+            return RedirectToAction(user.MustChangePassword ? nameof(Perfil) : nameof(Mfa));
+        }
         ModelState.AddModelError("", "Não foi possível entrar. Confira os dados ou aguarde antes de tentar novamente.");
         model.Password = "";
         return View(model);
@@ -85,7 +91,31 @@ public sealed class ContaController(UserManager<ApplicationUser> users, SignInMa
     }
 
     [HttpGet("perfil")]
-    public async Task<IActionResult> Perfil() => View(await users.GetUserAsync(User));
+    public async Task<IActionResult> Perfil()
+    {
+        var user=(await users.GetUserAsync(User))!;
+        var preferences=await users.GetClaimsAsync(user);
+        ViewData["PreferredCulture"]=preferences.FirstOrDefault(x=>x.Type=="mb:preference:culture")?.Value;
+        ViewData["PrefersAccessible"]=preferences.Any(x=>x.Type=="mb:preference:accessible"&&x.Value=="true");
+        return View(user);
+    }
+    [HttpPost("preferencias")]
+    public async Task<IActionResult> Preferencias(string culture,bool accessible)
+    {
+        if(!MinhaBelem.Web.Resources.SupportedCultures.All.Contains(culture))return BadRequest();
+        var user=(await users.GetUserAsync(User))!;
+        var existing=await users.GetClaimsAsync(user);
+        foreach(var (type,value) in new[]{("mb:preference:culture",culture),("mb:preference:accessible",accessible?"true":"false")})
+        {
+            var old=existing.FirstOrDefault(c=>c.Type==type);
+            var claim=new System.Security.Claims.Claim(type,value);
+            var result=old is null?await users.AddClaimAsync(user,claim):await users.ReplaceClaimAsync(user,old,claim);
+            if(!result.Succeeded)return Conflict();
+        }
+        await audit.WriteAsync(new AuditEntry{ActorId=user.Id,Action="user.preferences_updated",EntityType="user",EntityId=user.Id},HttpContext.RequestAborted);
+        Response.Cookies.Append(Microsoft.AspNetCore.Localization.CookieRequestCultureProvider.DefaultCookieName,Microsoft.AspNetCore.Localization.CookieRequestCultureProvider.MakeCookieValue(new Microsoft.AspNetCore.Localization.RequestCulture(culture)),new CookieOptions{Secure=true,HttpOnly=true,SameSite=SameSiteMode.Strict,Expires=DateTimeOffset.UtcNow.AddYears(1)});
+        return RedirectToAction(nameof(Perfil));
+    }
 
     [HttpPost("senha")]
     public async Task<IActionResult> Senha(PasswordInput model)
@@ -94,6 +124,10 @@ public sealed class ContaController(UserManager<ApplicationUser> users, SignInMa
         if (!ModelState.IsValid) { TempData["Notice"] = "Confira os campos. A senha deve ter pelo menos 12 caracteres."; return RedirectToAction(nameof(Perfil)); }
         var result = await users.ChangePasswordAsync(user, model.CurrentPassword, model.NewPassword);
         if (!result.Succeeded) { TempData["Notice"] = "Não foi possível trocar a senha. Confira a senha atual e os requisitos."; return RedirectToAction(nameof(Perfil)); }
+        user.MustChangePassword = false;
+        user.PasswordChangedAt = DateTime.UtcNow;
+        if (!(await users.UpdateAsync(user)).Succeeded) return Conflict();
+        await audit.WriteAsync(new AuditEntry { ActorId = user.Id, Action = "user.password_changed", EntityType = "user", EntityId = user.Id }, HttpContext.RequestAborted);
         await signIn.SignOutAsync();
         return RedirectToAction(nameof(Login));
     }

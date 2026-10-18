@@ -27,6 +27,15 @@
 </nav>
 
 <section class="section">
+    @{var calendarMonth=Model.Month??DateOnly.FromDateTime(PortalTime.Local(DateTime.UtcNow));var firstDay=new DateOnly(calendarMonth.Year,calendarMonth.Month,1);}
+    <nav class="pagination" aria-label="@Loc["MonthlyEvents"]"><a href="/agenda?mes=@firstDay.AddMonths(-1).ToString("yyyy-MM-dd")">←</a><h2>@firstDay.ToString("MMMM yyyy",currentCulture)</h2><a href="/agenda?mes=@firstDay.AddMonths(1).ToString("yyyy-MM-dd")">→</a></nav>
+    <div class="month-calendar">
+    @for(var blank=0;blank<(int)firstDay.DayOfWeek;blank++){<span aria-hidden="true"></span>}
+    @for(var n=1;n<=DateTime.DaysInMonth(firstDay.Year,firstDay.Month);n++){
+        var calendarDay=new DateOnly(firstDay.Year,firstDay.Month,n);var eventCount=Model.Items.Count(x=>x.EventStartAt is {} start&&DateOnly.FromDateTime(PortalTime.Local(start))==calendarDay);
+        <a href="/agenda?data=@calendarDay.ToString("yyyy-MM-dd")"><strong>@n</strong>@if(eventCount>0){<small>@eventCount · @Loc["Nav_Agenda"]</small>}</a>
+    }
+    </div>
     <nav class="week-calendar" aria-label="@Loc["ThisWeek"]">
     @for (var offset = 0; offset < 7; offset++)
     {

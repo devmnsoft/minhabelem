@@ -1,0 +1,6 @@
+@using Dapper
+@using MinhaBelem.Web.Controllers
+@inject MySqlConnector.MySqlDataSource MediaData
+@model long
+@{await using var db=await MediaData.OpenConnectionAsync();var assets=(await db.QueryAsync<MediaAsset>("SELECT id,description,credit,license,youtube_id AS YoutubeId,storage_key AS StorageKey FROM mb_media_assets WHERE content_id=@id ORDER BY id LIMIT 30",new{id=Model})).ToArray();}
+<partial name="_MediaAssets" model="assets"/>

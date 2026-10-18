@@ -24,6 +24,8 @@
             <a href="/editorial" class="@(currentPath.StartsWith("/editorial") ? "active" : "")">
                 <span>✍️</span> @Loc["AdminEditorial"]
             </a>
+            <a href="/editorial/lotes">@Loc["BatchTitle"]</a>
+            @if(User.HasClaim("mb:permission",Permissions.ContentWrite)){<a href="/admin/midias">@Loc["PhotoGallery"]</a>}
         }
         @if (User.HasClaim("mb:permission", Permissions.PlaceManage))
         {

@@ -4,4 +4,8 @@
 <symbol id="calendar" viewBox="0 0 120 80"><rect x="29" y="15" width="62" height="54" rx="4"/><path d="M29 30h62M44 9v14M76 9v14m-31 8v0M44 44h8m16 0h8M44 56h8m16 0h8"/></symbol>
 <symbol id="boat" viewBox="0 0 64 64"><path d="m8 39 8 13h32l8-13ZM17 39V22h30v17M23 22V14h19v8M7 58q8-5 16 0t16 0 17 0M25 28v6m8-6v6m8-6v6"/></symbol>
 <symbol id="city" viewBox="0 0 64 64"><path d="M7 55h50M13 55V29l10-9 10 9v26M33 55V15h19v40M20 34v5m0 7v5m21-29v5m6-5v5m-6 9v5m6-5v5M41 55v-8h6v8"/></symbol>
+<symbol id="bus" viewBox="0 0 64 64"><rect x="12" y="8" width="40" height="44" rx="8"/><path d="M12 32h40M22 8v24m20-24v24M18 52v6m28-6v6M7 22v12m50-12v12"/><circle cx="22" cy="43" r="3"/><circle cx="42" cy="43" r="3"/></symbol>
+<symbol id="walk" viewBox="0 0 64 64"><circle cx="35" cy="11" r="6"/><path d="m31 22-9 10-11 2m21-13 9 13 12 3M31 24l-4 17-13 16m13-16 14 5 8 12M27 41l10-16"/></symbol>
+<symbol id="brt" viewBox="0 0 64 64"><rect x="9" y="10" width="46" height="40" rx="6"/><path d="M9 30h46M23 10v20m18-20v20M17 50l-4 9m34-9 4 9M7 59h50M17 39h8m14 0h8M5 5h54"/></symbol>
+<symbol id="route" viewBox="0 0 64 64"><circle cx="13" cy="13" r="7"/><circle cx="51" cy="51" r="7"/><path d="M13 21v15q0 8 10 8h15q13 0 13-13V12m-8 8 8-8 8 8"/></symbol>
 </svg>

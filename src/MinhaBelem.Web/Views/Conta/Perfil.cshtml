@@ -3,6 +3,8 @@
 @{
     ViewData["Title"] = "Meu Perfil — MinhaBelém";
 }
+@if(Model.MustChangePassword){<div class="notice" role="alert">Troque a senha temporária para continuar e configure o autenticador MFA.</div>}
+<section class="section"><form method="post" action="/conta/preferencias" class="card route-form">@Html.AntiForgeryToken()<h2>@Loc["AccountPreferences"]</h2><label>@Loc["AccountLanguage"]<select name="culture">@foreach(var language in MinhaBelem.Web.Resources.SupportedCultures.All){<option value="@language" selected="@(ViewData["PreferredCulture"] as string==language)">@System.Globalization.CultureInfo.GetCultureInfo(language).NativeName</option>}</select></label><label><input name="accessible" type="checkbox" value="true" checked="@(ViewData["PrefersAccessible"] as bool?==true)"/> @Loc["RouteAccessible"]</label><button>@Loc["Save"]</button></form></section>
 
 <section class="section" style="max-width:760px;margin:50px auto 80px;">
     <div class="card" style="padding:36px;border-top:6px solid var(--green-forest);box-shadow:var(--shadow-md);">

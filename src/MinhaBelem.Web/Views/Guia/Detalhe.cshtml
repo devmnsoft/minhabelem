@@ -1,4 +1,5 @@
 @model MinhaBelem.Core.Entities.Place
+<section class="section"><a class="button" href="/como-chegar?placeId=@Model.Id">@Loc["RouteTitle"] →</a></section>
 
 @{
     ViewData["Title"] = $"{Model.DisplayName} — {Loc["Nav_Guide"].Value}";
@@ -99,3 +100,5 @@
         <a class="button secondary" href="/explore">🌎 Explore Belém</a>
     </div>
 </article>
+
+<partial name="_PlaceMediaGallery" model="Model.Id" />

@@ -91,12 +91,12 @@
                         }
 
                         <div class="line-features" style="display:flex;gap:12px;margin:12px 0;font-size:0.85rem;">
-                            <span>💰 R$ @line.Fare.ToString("F2")</span>
-                            @if (line.HasAirConditioning)
+                            <span>💰 @(line.ConfirmedFare is {} fare ? "R$ " + fare.ToString("F2") : "Tarifa não confirmada")</span>
+                            @if (line.IsVerified && line.HasAirConditioning)
                             {
                                 <span>❄️ Ar-condicionado</span>
                             }
-                            @if (line.HasWheelchairLift)
+                            @if (line.IsVerified && line.HasWheelchairLift)
                             {
                                 <span>♿ Elevador acessível</span>
                             }
@@ -130,10 +130,10 @@
                     <p><strong>Embarque:</strong> @route.DeparturePort</p>
                     <p><strong>Desembarque:</strong> @route.DestinationPort</p>
                     <div class="river-meta" style="margin:12px 0;font-size:0.9rem;">
-                        <p>⏱️ <strong>Duração estimada:</strong> ~@route.EstimatedDurationMinutes minutos</p>
-                        <p>💰 <strong>Tarifa:</strong> R$ @route.Fare.ToString("F2")</p>
+                        <p>⏱️ <strong>Duração estimada:</strong> @(route.IsVerified && route.EstimatedDurationMinutes>0 ? route.EstimatedDurationMinutes + " min" : "Não confirmada")</p>
+                        <p>💰 <strong>Tarifa:</strong> @(route.ConfirmedFare is {} riverFare ? "R$ " + riverFare.ToString("F2") : "Não confirmada")</p>
                         <p>🚢 <strong>Embarcação:</strong> @route.VesselType</p>
-                        <p>🕒 <strong>Horários:</strong> @route.OperatingHours</p>
+                        <p>🕒 <strong>Horários:</strong> @(route.IsVerified ? route.OperatingHours : "Confirme a operação com o responsável")</p>
                     </div>
                     @if (!string.IsNullOrWhiteSpace(route.OperatorNotes))
                     {

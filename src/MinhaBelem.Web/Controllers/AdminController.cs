@@ -373,6 +373,7 @@ public sealed class AdminController(IAdministrationRepository admin, IDashboardR
         line.Origin = HtmlText.Clean(line.Origin, 150);
         line.Destination = HtmlText.Clean(line.Destination, 150);
 
+        if (line.Fare < 0 || line.SourceUrl is { Length: > 0 } && (!SafeUrl.Validate(line.SourceUrl).IsValid || line.VerifiedAt is null || line.VerifiedAt > DateTime.UtcNow || line.ValidUntil <= DateTime.UtcNow || line.ValidUntil is null || line.FareValidUntil > line.ValidUntil)) return BadRequest("Confira fonte e vigência da verificação.");
         await transit.UpsertLineAsync(line, ct);
         await Audit("transit.line_saved", "transit_line", null, ct);
         TempData["Notice"] = $"Linha {line.Code} salva com sucesso!";

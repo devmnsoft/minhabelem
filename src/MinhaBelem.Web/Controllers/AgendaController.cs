@@ -9,7 +9,7 @@ namespace MinhaBelem.Web.Controllers;
 public sealed class AgendaController(IContentRepository content, IStringLocalizer<SharedResource> loc) : Controller
 {
     [HttpGet("agenda"), HttpGet("{culture:regex(^(pt-BR|en|fr|es|ru|zh-Hans|ja)$)}/agenda"), HttpGet("agenda/semana"), HttpGet("proximos-eventos"), HttpGet("programacao-infantil"), HttpGet("cinema-teatro"), HttpGet("esporte-lazer"), HttpGet("eventos-gratuitos"), HttpGet("agenda/meu-bairro"), HttpGet("fim-de-semana"), HttpGet("eventos-do-para"), HttpGet("feriados"), HttpGet("agora")]
-    public async Task<IActionResult> Index(int dias = 30, string? busca = null, string? bairro = null, string? municipio = null, string? categoria = null, Audience? publico = null, AccessibilityFeature? acessibilidade = null, int? idade = null, bool gratuito = false, DateOnly? data = null, CancellationToken ct = default)
+    public async Task<IActionResult> Index(int dias = 30, string? busca = null, string? bairro = null, string? municipio = null, string? categoria = null, Audience? publico = null, AccessibilityFeature? acessibilidade = null, int? idade = null, bool gratuito = false, DateOnly? data = null, DateOnly? mes = null, CancellationToken ct = default)
     {
         if (!new[] { 0, 1, 7, 30, 90, 180, 365 }.Contains(dias) || busca?.Length > 120 || bairro?.Length > 120 || municipio?.Length > 120 || idade is < 0 or > 18 || publico is { } p && !Enum.IsDefined(p) || acessibilidade is { } a && !Enum.IsDefined(a)) return BadRequest();
         var today = PortalTime.Local(DateTime.UtcNow).Date;
@@ -49,6 +49,14 @@ public sealed class AgendaController(IContentRepository content, IStringLocalize
             query.StartsBeforeUtc = PortalTime.Utc(selected.AddDays(1).ToDateTime(TimeOnly.MinValue));
         }
         var items = await content.SearchAsync(query, ct);
-        return View(new AgendaPage(title, loc["AgendaDescription"], items, dias) { SelectedDate = data });
+        if (mes is { } month)
+        {
+            if(month.Year is <2000 or >2099)return BadRequest();
+            var first=new DateOnly(month.Year,month.Month,1);
+            query.StartsFromUtc=PortalTime.Utc(first.ToDateTime(TimeOnly.MinValue));
+            query.StartsBeforeUtc=PortalTime.Utc(first.AddMonths(1).ToDateTime(TimeOnly.MinValue));
+            query.OnlyUpcomingEvents=true;items=await content.SearchAsync(query,ct);
+        }
+        return View(new AgendaPage(title, loc["AgendaDescription"], items, dias) { SelectedDate = data,Month=mes });
     }
 }

@@ -21,7 +21,7 @@ builder.Services.AddTransient(typeof(IStringLocalizer<>), typeof(StringLocalizer
 builder.Services.AddSingleton<IStringLocalizer, MinhaBelemStringLocalizer>();
 builder.Services.AddSingleton<IStringLocalizer<SharedResource>, MinhaBelemStringLocalizer>();
 
-builder.Services.AddControllersWithViews(o => o.Filters.Add(new Microsoft.AspNetCore.Mvc.AutoValidateAntiforgeryTokenAttribute()))
+builder.Services.AddControllersWithViews(o => { o.Filters.Add(new Microsoft.AspNetCore.Mvc.AutoValidateAntiforgeryTokenAttribute()); o.ModelBinderProviders.Insert(0,new MinhaBelem.Web.Models.DecimalInputBinderProvider()); })
     .AddViewLocalization()
     .AddDataAnnotationsLocalization(o => {
         o.DataAnnotationLocalizerProvider = (_, factory) => factory.Create(typeof(SharedResource));
@@ -79,10 +79,29 @@ builder.Services.AddRateLimiter(o =>
     void Add(string name, int limit) => o.AddPolicy(name, ctx => RateLimitPartition.GetFixedWindowLimiter(
         ctx.Connection.RemoteIpAddress?.ToString() ?? "unknown", _ => new FixedWindowRateLimiterOptions { PermitLimit = limit, Window = TimeSpan.FromMinutes(1), QueueLimit = 0 }));
     Add("public", 120); Add("login", 12); Add("submission", 3);
+    Add("routing",10); Add("assistant",5); Add("itinerary",2);
 });
 
 var app = builder.Build();
 app.UseForwardedHeaders();
+if (args.Contains("--register-researched-sources"))
+{
+    if (!app.Environment.IsDevelopment()) throw new InvalidOperationException("Comando exclusivo de Development local.");
+    using var scope = app.Services.CreateScope();
+    var count = await scope.ServiceProvider.GetRequiredService<MinhaBelem.Infrastructure.Discovery.ResearchedSourceBootstrap>().RegisterAsync(default);
+    Console.WriteLine("Fontes pesquisadas cadastradas, inativas e aguardando autorização: " + count);
+    return;
+}
+
+if (args.Contains("--bootstrap-homologation"))
+{
+    if (!app.Environment.IsDevelopment() || !OperatingSystem.IsWindows())
+        throw new InvalidOperationException("Bootstrap exclusivo do computador Windows local em Development.");
+    using var scope = app.Services.CreateScope();
+    var report = await scope.ServiceProvider.GetRequiredService<HomologationBootstrap>().RunAsync();
+    Console.WriteLine("Relatório local restrito (validade 24h): " + report);
+    return;
+}
 
 // Operacao explicita. Nunca aplicar SQL no startup ou publish normal.
 if (args.Contains("--initialize-database"))
@@ -137,7 +156,7 @@ app.Use(async (ctx, next) =>
     ctx.Response.Headers["X-Content-Type-Options"] = "nosniff";
     ctx.Response.Headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
     ctx.Response.Headers["X-Frame-Options"] = "DENY";
-    ctx.Response.Headers["Content-Security-Policy"] = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https:; connect-src 'self' https:; frame-ancestors 'none'; form-action 'self'; base-uri 'self'";
+    ctx.Response.Headers["Content-Security-Policy"] = "default-src 'self'; script-src 'self' 'unsafe-inline' https://maps.googleapis.com https://maps.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https:; connect-src 'self' https:; frame-ancestors 'none'; form-action 'self'; base-uri 'self'";
     if (ctx.Request.Path.StartsWithSegments("/conta") || ctx.Request.Path.StartsWithSegments("/editorial") || ctx.Request.Path.StartsWithSegments("/admin")) ctx.Response.Headers.CacheControl = "no-store";
     await next();
 });
@@ -148,6 +167,16 @@ app.UseRouting();
 
 app.UseRateLimiter();
 app.UseAuthentication();
+app.Use(async (ctx, next) =>
+{
+    if (ctx.User.Identity?.IsAuthenticated == true &&
+        !ctx.Request.Path.StartsWithSegments("/conta") && !ctx.Request.Path.StartsWithSegments("/health"))
+    {
+        var user = await ctx.RequestServices.GetRequiredService<UserManager<ApplicationUser>>().GetUserAsync(ctx.User);
+        if (user?.MustChangePassword == true) { ctx.Response.Redirect("/conta/perfil"); return; }
+    }
+    await next();
+});
 app.UseAuthorization();
 
 app.UseWhen(ctx => HttpMethods.IsGet(ctx.Request.Method), branch => branch.UseStatusCodePagesWithReExecute("/Home/Status", "?code={0}"));

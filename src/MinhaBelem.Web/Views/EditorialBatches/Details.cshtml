@@ -1,0 +1,10 @@
+@using Microsoft.Extensions.Localization
+@using MinhaBelem.Web.Resources
+@inject IStringLocalizer<SharedResource> L
+@model MinhaBelem.Core.Abstractions.EditorialBatch
+@{ ViewData["Title"] = L["BatchPreview"]; }
+<div class="admin-shell"><partial name="_AdminSidebar"/><main class="admin-content"><header><span class="eyebrow">@L["BatchTitle"]</span><h1>@L["BatchPreview"]</h1><p>@L["BatchAction"]: @Model.Action · @L["BatchCount"]: @Model.Items.Count</p><p>@Model.Reason</p><p role="status">@L["BatchStatus"]: @Model.Status · @L["BatchCompleted"]: @Model.Items.Count(x=>x.Status=="completed") · @L["BatchFailures"]: @Model.Items.Count(x=>x.Status is "blocked" or "failed")</p></header>
+<div class="table-wrap"><table><thead><tr><th>ID</th><th>@L["BatchType"]</th><th>@L["BatchVersion"]</th><th>@L["BatchStatus"]</th><th>@L["BatchResult"]</th></tr></thead><tbody>@foreach(var item in Model.Items){<tr><td>@item.TargetId</td><td>@item.TargetKind</td><td>@item.Revision</td><td>@item.Status</td><td>@item.Result</td></tr>}</tbody></table></div>
+@if(Model.Status=="preview"){<form method="post" asp-action="Confirm" asp-route-id="@Model.Id" class="card"><p>@L["BatchSafety"]</p><label><input name="confirmed" type="checkbox" value="true" required/> @L["BatchConfirmation"]</label><button>@L["BatchConfirm"]</button></form>}
+else {<p>@L["BatchWorkerNotice"]</p><a href="/editorial/lotes/@Model.Id" class="button secondary">@L["BatchRefresh"]</a>}
+<a href="/editorial/lotes">@L["BatchTitle"]</a></main></div>
