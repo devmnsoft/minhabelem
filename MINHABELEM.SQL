@@ -1434,3 +1434,19 @@ VALUES ('RadarWorker', UTC_TIMESTAMP(6), 'idle', 'Worker inicializado e aguardan
 
 
 
+
+-- @migration SPRINT14_COLLECTION_QUEUE
+CREATE TABLE IF NOT EXISTS collection_requests (
+    id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    kind VARCHAR(16) NOT NULL,
+    target_url VARCHAR(1000) NULL,
+    requested_by_id BIGINT NOT NULL,
+    status VARCHAR(16) NOT NULL DEFAULT 'pending',
+    attempts INT NOT NULL DEFAULT 0,
+    requested_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+    available_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+    started_at DATETIME(6) NULL,
+    finished_at DATETIME(6) NULL,
+    error VARCHAR(500) NULL,
+    INDEX ix_collection_queue (status, available_at, id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

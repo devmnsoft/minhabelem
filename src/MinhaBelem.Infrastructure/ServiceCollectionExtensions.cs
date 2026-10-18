@@ -116,6 +116,7 @@ public static class InfrastructureServiceCollectionExtensions
         services.AddScoped<ITransitRepository, TransitRepository>();
         services.AddScoped<INeighborhoodRepository, NeighborhoodRepository>();
         services.AddScoped<IRadarRepository, RadarRepository>();
+        services.AddScoped<ICollectionQueue, CollectionQueue>();
         services.AddScoped<IHtmlContentExtractor, HtmlContentExtractor>();
         services.AddScoped<IEventStructuredDataExtractor, EventStructuredDataExtractor>();
         services.AddScoped<ISitemapDiscoveryService, SitemapDiscoveryService>();
@@ -133,9 +134,10 @@ public static class InfrastructureServiceCollectionExtensions
 
         services.AddIdentityCore<ApplicationUser>()
             .AddRoles<IdentityRole<long>>()
-            .AddSignInManager()
             .AddClaimsPrincipalFactory<PermissionClaimsPrincipalFactory>()
             .AddDefaultTokenProviders();
+        if (!registerWorkers)
+            new IdentityBuilder(typeof(ApplicationUser), typeof(IdentityRole<long>), services).AddSignInManager();
         services.AddScoped<IUserStore<ApplicationUser>, MySqlUserStore>();
         services.AddScoped<IRoleStore<IdentityRole<long>>, MySqlRoleStore>();
 
@@ -143,6 +145,8 @@ public static class InfrastructureServiceCollectionExtensions
 
         if (registerWorkers)
         {
+        services.AddSingleton<CollectionQueueWorker>();
+        services.AddHostedService(sp => sp.GetRequiredService<CollectionQueueWorker>());
         services.AddSingleton<FeedCollectorWorker>();
         services.AddSingleton<ISourceCollection>(sp => sp.GetRequiredService<FeedCollectorWorker>());
         services.AddHostedService(sp => sp.GetRequiredService<FeedCollectorWorker>());

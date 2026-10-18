@@ -40,10 +40,13 @@ if (args.Contains("--run-once"))
     using var scope = host.Services.CreateScope();
     var radar = scope.ServiceProvider.GetRequiredService<IRadarWorker>();
     var collector = scope.ServiceProvider.GetRequiredService<ISourceCollection>();
-    var cts = new CancellationTokenSource(TimeSpan.FromMinutes(10));
+    using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(10));
 
     try
     {
+        logger.LogInformation("Processando solicitações manuais pendentes...");
+        var queue = scope.ServiceProvider.GetRequiredService<CollectionQueueWorker>();
+        for (var i = 0; i < 10 && await queue.ProcessNextAsync(cts.Token); i++) { }
         logger.LogInformation("Disparando coleta de feeds...");
         await collector.CollectOnceAsync(cts.Token);
 
@@ -54,7 +57,7 @@ if (args.Contains("--run-once"))
     }
     catch (Exception ex)
     {
-        logger.LogError(ex, "Erro durante a execução do ciclo pontual.");
+        logger.LogError("Ciclo pontual interrompido: {ErrorType}", ex.GetType().Name);
         return 1;
     }
 

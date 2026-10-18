@@ -140,10 +140,11 @@ public sealed class RadarHeartbeat
     {
         if (LastHeartbeatAt == default) return WorkerStatus.Unknown;
         var diff = DateTime.UtcNow - LastHeartbeatAt;
+        if (diff > TimeSpan.FromMinutes(3)) return WorkerStatus.Off;
+        if (diff > TimeSpan.FromSeconds(90)) return WorkerStatus.Delayed;
         if (IsRunning) return WorkerStatus.Running;
         if (ConsecutiveErrors >= 3 || LastCycleStatus.Equals("failed", StringComparison.OrdinalIgnoreCase)) return WorkerStatus.Error;
-        if (diff > TimeSpan.FromMinutes(25)) return WorkerStatus.Off;
-        if (diff > TimeSpan.FromMinutes(12)) return WorkerStatus.Delayed;
+        if (TotalCyclesExecuted == 0 || LastCycleFinishedAt is null) return WorkerStatus.Unknown;
         return WorkerStatus.Active;
     }
 
@@ -169,12 +170,12 @@ public sealed class RadarHeartbeat
 
     public string StatusText => CalculateStatus() switch
     {
-        WorkerStatus.Active => "Ativo (No Horário)",
+        WorkerStatus.Active => "Serviço respondendo",
         WorkerStatus.Running => "Em Execução...",
-        WorkerStatus.Delayed => "Atrasado (>12m)",
+        WorkerStatus.Delayed => "Sem batimento há mais de 90s",
         WorkerStatus.Error => "Falha / Alerta",
-        WorkerStatus.Off => "Desligado (>25m)",
-        _ => "Sem Informação"
+        WorkerStatus.Off => "Sem batimento há mais de 3m",
+        _ => "Sem ciclo concluído"
     };
 }
 

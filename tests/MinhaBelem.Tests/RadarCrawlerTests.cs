@@ -284,18 +284,20 @@ public sealed class RadarCrawlerTests
 
         var activeHeartbeat = new RadarHeartbeat
         {
-            LastHeartbeatAt = now.AddMinutes(-5),
+            LastHeartbeatAt = now.AddSeconds(-30),
+            TotalCyclesExecuted = 1,
+            LastCycleFinishedAt = now.AddSeconds(-30),
             IsRunning = false,
             ConsecutiveErrors = 0,
             LastCycleStatus = "success"
         };
         Assert.Equal(WorkerStatus.Active, activeHeartbeat.CalculateStatus());
         Assert.Equal("badge-success", activeHeartbeat.StatusBadgeClass);
-        Assert.Contains("Ativo", activeHeartbeat.StatusText);
+        Assert.Contains("respondendo", activeHeartbeat.StatusText);
 
         var runningHeartbeat = new RadarHeartbeat
         {
-            LastHeartbeatAt = now.AddMinutes(-2),
+            LastHeartbeatAt = now.AddSeconds(-20),
             IsRunning = true,
             ConsecutiveErrors = 0
         };
@@ -303,7 +305,7 @@ public sealed class RadarCrawlerTests
 
         var delayedHeartbeat = new RadarHeartbeat
         {
-            LastHeartbeatAt = now.AddMinutes(-15),
+            LastHeartbeatAt = now.AddSeconds(-100),
             IsRunning = false,
             ConsecutiveErrors = 0
         };
@@ -319,7 +321,9 @@ public sealed class RadarCrawlerTests
 
         var errorHeartbeat = new RadarHeartbeat
         {
-            LastHeartbeatAt = now.AddMinutes(-5),
+            LastHeartbeatAt = now.AddSeconds(-30),
+            TotalCyclesExecuted = 1,
+            LastCycleFinishedAt = now.AddSeconds(-30),
             IsRunning = false,
             ConsecutiveErrors = 3
         };

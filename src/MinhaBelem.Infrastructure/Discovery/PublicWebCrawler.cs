@@ -93,6 +93,15 @@ public sealed class PublicWebCrawler(
 
             try
             {
+                if (source.Id > 0)
+                {
+                    var profile = await discoveryRepo.ProfileAsync(source.Id, ct);
+                    if (!await discoveryRepo.ReserveRequestAsync(source.Id, Math.Clamp(profile.DailyRequestLimit, 1, 1000), ct))
+                    {
+                        result.Errors.Add("Limite diário de consultas atingido.");
+                        break;
+                    }
+                }
                 // Polite delay between requests
                 if (visited.Count > 1 && options.DelayBetweenRequestsMs > 0)
                 {
@@ -158,8 +167,8 @@ public sealed class PublicWebCrawler(
             catch (Exception ex) when (ex is not OperationCanceledException)
             {
                 consecutiveErrors++;
-                errorMessage = ex.Message;
-                result.Errors.Add($"Falha ao requisitar {currentUrl}: {ex.Message}");
+                errorMessage = "Falha na requisição: " + ex.GetType().Name;
+                result.Errors.Add(errorMessage);
             }
             finally
             {
