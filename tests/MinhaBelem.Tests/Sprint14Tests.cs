@@ -56,8 +56,8 @@ public sealed class Sprint14Tests(PortalFixture fixture)
                 client.DefaultRequestHeaders.AcceptLanguage.ParseAdd(culture);
                 foreach (var path in new[] {
                     "/", "/?busca=Belém", "/agenda", "/agenda/semana", "/agora", "/cinema-teatro", "/programacao-infantil",
-                    "/guia", "/explore", "/explore/glossario", "/mobilidade", "/meu-bairro", "/parceiros", "/conta/login", "/conta/perfil", "/conta/sessoes", "/privacidade", "/termos",
-                    "/admin", "/admin/radar", "/admin/evolucao", "/admin/conteudo", "/admin/fontes", "/admin/usuarios", "/admin/perfis", "/admin/integracoes", "/admin/anunciantes", "/admin/mobilidade", "/admin/bairros", "/admin/idiomas", "/admin/traducoes", "/admin/auditoria", "/admin/relatorios", "/admin/configuracoes", "/admin/colaboracoes", "/admin/lugares", "/editorial"
+                    "/guia", "/explore", "/explore/glossario", "/explore/planejar", "/mobilidade", "/mobilidade/fluvial", "/mobilidade/alertas", "/como-chegar", "/guia-ia", "/meu-bairro", "/parceiros", "/conta/login", "/conta/perfil", "/conta/sessoes", "/privacidade", "/termos",
+                    "/admin", "/admin/radar", "/admin/evolucao", "/admin/conteudo", "/admin/fontes", "/admin/usuarios", "/admin/perfis", "/admin/integracoes", "/admin/anunciantes", "/admin/mobilidade", "/admin/bairros", "/admin/idiomas", "/admin/traducoes", "/admin/auditoria", "/admin/relatorios", "/admin/configuracoes", "/admin/colaboracoes", "/admin/lugares", "/editorial", "/editorial/lotes", "/admin/midias"
                 })
                 {
                     var response = await client.GetAsync(path);

@@ -7,8 +7,8 @@ import { fileURLToPath } from 'node:url';
 // Visual QA uses HTML rendered by real MVC HTTP integration tests on a disposable database.
 // The snapshot server never executes POST requests or connects to application data.
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
-const snapshots = path.resolve(root, 'TestResults/sprint14-html');
-const output = path.resolve(root, 'docs/evidencias/sprint14');
+const snapshots = path.resolve(root, process.env.QA_SNAPSHOTS || 'TestResults/sprint14-html');
+const output = path.resolve(root, process.env.QA_OUTPUT || 'docs/evidencias/sprint14');
 await fs.mkdir(output, { recursive: true });
 const mime = { '.html': 'text/html; charset=utf-8', '.css': 'text/css', '.js': 'text/javascript', '.svg': 'image/svg+xml', '.jpg': 'image/jpeg' };
 const server = http.createServer(async (req, res) => {
@@ -53,7 +53,7 @@ try {
           }).slice(0, 5).map(el => ({ tag: el.tagName, class: el.className, width: Math.round(el.getBoundingClientRect().width) }))
         }));
         results.push({ culture, device, file, ...layout });
-        if (culture === 'pt-BR' && ['home.html', 'admin.html', 'admin-radar.html', 'agenda.html', 'explore.html', 'conta-login.html', 'mobilidade.html'].includes(file)) {
+        if (culture === 'pt-BR' && ['home.html', 'admin.html', 'admin-radar.html', 'agenda.html', 'explore.html', 'conta-login.html', 'mobilidade.html', 'como-chegar.html', 'editorial-lotes.html', 'admin-midias.html', 'explore-planejar.html', 'guia-ia.html'].includes(file)) {
           await page.screenshot({ path: path.join(output, `${file.replace('.html', '')}-${device}.jpg`), type: 'jpeg', quality: 82, fullPage: device === 'mobile' });
         }
         if (file === 'home.html' && device === 'mobile') {
