@@ -1,0 +1,9 @@
+{
+  "fixtureOnly": true,
+  "passed": [
+    "duplicate POST prevented; submitter and antiforgery preserved",
+    "back-forward cache return permits next submission",
+    "offline POST prevented with visible message",
+    "map requested only on click; provider failure leaves retry and fallback"
+  ]
+}

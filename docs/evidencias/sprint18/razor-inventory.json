@@ -1,0 +1,352 @@
+{
+  "capturedAtUtc": "2026-10-18T21:15:09.5634863Z",
+  "totalRazorFiles": 69,
+  "reviewScope": "Shared layout, navigation, forms, responsive CSS and route render matrix. Individual workflow states are not all visually certified.",
+  "files": [
+    {
+      "path": "src/MinhaBelem.Web/Views/_ViewImports.cshtml",
+      "lines": 6,
+      "inheritsLayout": false
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/_ViewStart.cshtml",
+      "lines": 1,
+      "inheritsLayout": false
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Admin/Anunciantes.cshtml",
+      "lines": 112,
+      "inheritsLayout": true
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Admin/Auditoria.cshtml",
+      "lines": 65,
+      "inheritsLayout": true
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Admin/Bairros.cshtml",
+      "lines": 108,
+      "inheritsLayout": true
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Admin/Colaboracoes.cshtml",
+      "lines": 67,
+      "inheritsLayout": true
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Admin/Comparar.cshtml",
+      "lines": 114,
+      "inheritsLayout": true
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Admin/Configuracoes.cshtml",
+      "lines": 3,
+      "inheritsLayout": true
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Admin/Conteudo.cshtml",
+      "lines": 161,
+      "inheritsLayout": true
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Admin/Evolucao.cshtml",
+      "lines": 11,
+      "inheritsLayout": true
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Admin/Fontes.cshtml",
+      "lines": 266,
+      "inheritsLayout": true
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Admin/Idiomas.cshtml",
+      "lines": 155,
+      "inheritsLayout": true
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Admin/Index.cshtml",
+      "lines": 44,
+      "inheritsLayout": true
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Admin/Integracoes.cshtml",
+      "lines": 4,
+      "inheritsLayout": true
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Admin/Lugares.cshtml",
+      "lines": 127,
+      "inheritsLayout": true
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Admin/Mobilidade.cshtml",
+      "lines": 142,
+      "inheritsLayout": true
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Admin/Perfis.cshtml",
+      "lines": 4,
+      "inheritsLayout": true
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Admin/Radar.cshtml",
+      "lines": 712,
+      "inheritsLayout": true
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Admin/Relatorios.cshtml",
+      "lines": 84,
+      "inheritsLayout": true
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Admin/Traducoes.cshtml",
+      "lines": 203,
+      "inheritsLayout": true
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Admin/Usuarios.cshtml",
+      "lines": 127,
+      "inheritsLayout": true
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/AdminVisit/Index.cshtml",
+      "lines": 11,
+      "inheritsLayout": true
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Agenda/Index.cshtml",
+      "lines": 57,
+      "inheritsLayout": true
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Bairro/Detalhe.cshtml",
+      "lines": 98,
+      "inheritsLayout": true
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Bairro/Index.cshtml",
+      "lines": 52,
+      "inheritsLayout": true
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Conta/AcessoNegado.cshtml",
+      "lines": 1,
+      "inheritsLayout": true
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Conta/Login.cshtml",
+      "lines": 3,
+      "inheritsLayout": true
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Conta/Mfa.cshtml",
+      "lines": 56,
+      "inheritsLayout": true
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Conta/Perfil.cshtml",
+      "lines": 67,
+      "inheritsLayout": true
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Conta/Recovery.cshtml",
+      "lines": 2,
+      "inheritsLayout": true
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Conta/Sessoes.cshtml",
+      "lines": 2,
+      "inheritsLayout": true
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Conta/Verificar.cshtml",
+      "lines": 2,
+      "inheritsLayout": true
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Editorial/Comparar.cshtml",
+      "lines": 107,
+      "inheritsLayout": true
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Editorial/Editar.cshtml",
+      "lines": 266,
+      "inheritsLayout": true
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Editorial/Index.cshtml",
+      "lines": 118,
+      "inheritsLayout": true
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Editorial/Ocr.cshtml",
+      "lines": 4,
+      "inheritsLayout": true
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/EditorialBatches/Details.cshtml",
+      "lines": 14,
+      "inheritsLayout": true
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/EditorialBatches/Index.cshtml",
+      "lines": 37,
+      "inheritsLayout": true
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Explore/Glossario.cshtml",
+      "lines": 47,
+      "inheritsLayout": true
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Explore/Index.cshtml",
+      "lines": 164,
+      "inheritsLayout": true
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Explore/Roteiro.cshtml",
+      "lines": 66,
+      "inheritsLayout": true
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Guia/Detalhe.cshtml",
+      "lines": 68,
+      "inheritsLayout": true
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Guia/Index.cshtml",
+      "lines": 77,
+      "inheritsLayout": true
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Home/Detalhe.cshtml",
+      "lines": 248,
+      "inheritsLayout": true
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Home/Error.cshtml",
+      "lines": 1,
+      "inheritsLayout": true
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Home/Index.cshtml",
+      "lines": 114,
+      "inheritsLayout": true
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Home/Privacidade.cshtml",
+      "lines": 1,
+      "inheritsLayout": true
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Home/Status.cshtml",
+      "lines": 1,
+      "inheritsLayout": true
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Home/Termos.cshtml",
+      "lines": 1,
+      "inheritsLayout": true
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/ItineraryPlanning/Index.cshtml",
+      "lines": 13,
+      "inheritsLayout": true
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Media/Index.cshtml",
+      "lines": 5,
+      "inheritsLayout": true
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Mobilidade/Alertas.cshtml",
+      "lines": 3,
+      "inheritsLayout": true
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Mobilidade/Fluvial.cshtml",
+      "lines": 23,
+      "inheritsLayout": true
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Mobilidade/Index.cshtml",
+      "lines": 146,
+      "inheritsLayout": true
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Mobilidade/Linha.cshtml",
+      "lines": 63,
+      "inheritsLayout": true
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Parceiros/Index.cshtml",
+      "lines": 32,
+      "inheritsLayout": true
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Shared/_AdminLayout.cshtml",
+      "lines": 12,
+      "inheritsLayout": true
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Shared/_AdminSidebar.cshtml",
+      "lines": 131,
+      "inheritsLayout": true
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Shared/_CampaignForm.cshtml",
+      "lines": 15,
+      "inheritsLayout": true
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Shared/_CityWindows.cshtml",
+      "lines": 20,
+      "inheritsLayout": true
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Shared/_CollectionQueue.cshtml",
+      "lines": 15,
+      "inheritsLayout": true
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Shared/_Layout.cshtml",
+      "lines": 223,
+      "inheritsLayout": true
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Shared/_MediaAssets.cshtml",
+      "lines": 2,
+      "inheritsLayout": true
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Shared/_MediaGallery.cshtml",
+      "lines": 6,
+      "inheritsLayout": true
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Shared/_PlaceMediaGallery.cshtml",
+      "lines": 6,
+      "inheritsLayout": true
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Shared/_RadarOperations.cshtml",
+      "lines": 40,
+      "inheritsLayout": true
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Shared/_SponsoredCampaigns.cshtml",
+      "lines": 18,
+      "inheritsLayout": true
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/TouristAssistant/Index.cshtml",
+      "lines": 5,
+      "inheritsLayout": true
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Visit/Index.cshtml",
+      "lines": 21,
+      "inheritsLayout": true
+    }
+  ]
+}

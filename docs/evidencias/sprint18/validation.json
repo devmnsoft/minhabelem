@@ -188,5 +188,15 @@
     "restartExplicitlyConfirmed": true,
     "restartStatement": "Sim, confirmei após reiniciar"
   },
-  "continuousSourceAuthorization": "Operator confirms no documented authorization; sources remain inactive"
+  "continuousSourceAuthorization": "Operator confirms no documented authorization; sources remain inactive",
+  "operatorAcceptanceReconciledWithAuditedDatabase": false,
+  "latestReadOnlyAccountState": {
+    "reference": "10431675E03A",
+    "accounts": 3,
+    "mustChangePassword": 3,
+    "mfaConfigured": 0,
+    "activeSessions": 0,
+    "operatorInstanceClarificationPending": true,
+    "evidence": "auth-after-personal-acceptance.json"
+  }
 }

@@ -1,0 +1,152 @@
+{
+  "database": "MySQL 8.0.46 disposable Docker; guarded random schemas",
+  "http": "ASP.NET Core TestServer; not real TLS/IIS",
+  "externalProviders": "fixtures or blocked; no real Google Routes call",
+  "operatorReportedRestartAcceptance": true,
+  "operatorInstanceReconciled": false,
+  "continuousSourceAuthorization": false,
+  "runs": [
+    {
+      "localTrx": "tests/MinhaBelem.Tests/TestResults/sprint18-full.trx",
+      "times": {
+        "creation": "2026-10-18T18:11:09.5973188-03:00",
+        "queuing": "2026-10-18T18:11:09.5973193-03:00",
+        "start": "2026-10-18T18:11:06.1853528-03:00",
+        "finish": "2026-10-18T18:17:17.1476706-03:00"
+      },
+      "counters": {
+        "total": "198",
+        "executed": "197",
+        "passed": "195",
+        "failed": "2",
+        "error": "0",
+        "timeout": "0",
+        "aborted": "0",
+        "inconclusive": "0",
+        "passedButRunAborted": "0",
+        "notRunnable": "0",
+        "notExecuted": "0",
+        "disconnected": "0",
+        "warning": "0",
+        "completed": "0",
+        "inProgress": "0",
+        "pending": "0"
+      },
+      "failedTests": [
+        "MinhaBelem.Tests.Sprint18EvolutionTests.BoatPlanningUsesOfficialSourceWithoutSendingVisitorOriginToGoogle",
+        "MinhaBelem.Tests.Sprint18EvolutionTests.ModeratorDoesNotSeePublicationControlsAndCannotForgePublishAction"
+      ]
+    },
+    {
+      "localTrx": "tests/MinhaBelem.Tests/TestResults/sprint18-evolution-final.trx",
+      "times": {
+        "creation": "2026-10-18T18:18:09.0552439-03:00",
+        "queuing": "2026-10-18T18:18:09.0552447-03:00",
+        "start": "2026-10-18T18:17:47.2474981-03:00",
+        "finish": "2026-10-18T18:18:12.6693719-03:00"
+      },
+      "counters": {
+        "total": "9",
+        "executed": "9",
+        "passed": "9",
+        "failed": "0",
+        "error": "0",
+        "timeout": "0",
+        "aborted": "0",
+        "inconclusive": "0",
+        "passedButRunAborted": "0",
+        "notRunnable": "0",
+        "notExecuted": "0",
+        "disconnected": "0",
+        "warning": "0",
+        "completed": "0",
+        "inProgress": "0",
+        "pending": "0"
+      },
+      "failedTests": []
+    },
+    {
+      "localTrx": "tests/MinhaBelem.Tests/TestResults/sprint18-full-final.trx",
+      "times": {
+        "creation": "2026-10-18T18:18:25.3709825-03:00",
+        "queuing": "2026-10-18T18:18:25.3709834-03:00",
+        "start": "2026-10-18T18:18:24.3368378-03:00",
+        "finish": "2026-10-18T18:22:59.75446-03:00"
+      },
+      "counters": {
+        "total": "198",
+        "executed": "197",
+        "passed": "197",
+        "failed": "0",
+        "error": "0",
+        "timeout": "0",
+        "aborted": "0",
+        "inconclusive": "0",
+        "passedButRunAborted": "0",
+        "notRunnable": "0",
+        "notExecuted": "0",
+        "disconnected": "0",
+        "warning": "0",
+        "completed": "0",
+        "inProgress": "0",
+        "pending": "0"
+      },
+      "failedTests": []
+    },
+    {
+      "localTrx": "tests/MinhaBelem.Tests/TestResults/sprint18-instance-final.trx",
+      "times": {
+        "creation": "2026-10-18T18:24:04.3670494-03:00",
+        "queuing": "2026-10-18T18:24:04.36705-03:00",
+        "start": "2026-10-18T18:23:41.061109-03:00",
+        "finish": "2026-10-18T18:24:10.9071543-03:00"
+      },
+      "counters": {
+        "total": "10",
+        "executed": "10",
+        "passed": "10",
+        "failed": "0",
+        "error": "0",
+        "timeout": "0",
+        "aborted": "0",
+        "inconclusive": "0",
+        "passedButRunAborted": "0",
+        "notRunnable": "0",
+        "notExecuted": "0",
+        "disconnected": "0",
+        "warning": "0",
+        "completed": "0",
+        "inProgress": "0",
+        "pending": "0"
+      },
+      "failedTests": []
+    }
+  ],
+  "visual": {
+    "checked": 1484,
+    "pages": 53,
+    "cultures": 7,
+    "viewportSizes": 4,
+    "failures": 0,
+    "evidence": "visual/layout-results.json"
+  },
+  "browserInteractionGroups": 4,
+  "build": {
+    "configuration": "Release",
+    "warnings": 0,
+    "errors": 0
+  },
+  "externalGates": [
+    "Identify the operator instance because current database account states contradict reported completed onboarding",
+    "Documented continuous source authorization",
+    "Human editorial publication of staged IDs 1-9",
+    "Protected Google configuration and real provider validation",
+    "Actual Worker installation/monitoring and deployment verification"
+  ],
+  "codeCommit": "4d989a7fe4bc9aaf9e7f81f4ff07ec39039b33a2",
+  "cleanup": {
+    "randomTestSchemasRemoved": true,
+    "disposableContainerStoppedAndRemoved": true,
+    "operatorDatabaseReset": false
+  }
+}

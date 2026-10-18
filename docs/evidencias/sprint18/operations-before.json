@@ -1,0 +1,132 @@
+{
+  "capturedAtUtc": "2026-10-18T20:55:08.2901619Z",
+  "host": "localhost",
+  "port": 3308,
+  "database": "minhabelem",
+  "environment": "Development",
+  "databaseReference": "10431675E03A",
+  "radarEnabled": false,
+  "checkIntervalMinutes": 10,
+  "sources": [
+    {
+      "id": 1,
+      "name": "Theatro da Paz — consulta factual pontual",
+      "enabled": false,
+      "approved": false,
+      "protocol": "JsonLd",
+      "hasLicenseNote": 1,
+      "lastCheckedAt": null,
+      "frequencyMinutes": 1440,
+      "dailyRequestLimit": 1
+    },
+    {
+      "id": 2,
+      "name": "SECULT Pará",
+      "enabled": false,
+      "approved": false,
+      "protocol": "WebDiscovery",
+      "hasLicenseNote": 1,
+      "lastCheckedAt": null,
+      "frequencyMinutes": 1440,
+      "dailyRequestLimit": 1
+    },
+    {
+      "id": 3,
+      "name": "FUMBEL — institucional municipal",
+      "enabled": false,
+      "approved": false,
+      "protocol": "WebDiscovery",
+      "hasLicenseNote": 1,
+      "lastCheckedAt": null,
+      "frequencyMinutes": 1440,
+      "dailyRequestLimit": 1
+    },
+    {
+      "id": 4,
+      "name": "Fundação Cultural do Pará — Agenda",
+      "enabled": false,
+      "approved": false,
+      "protocol": "WebDiscovery",
+      "hasLicenseNote": 1,
+      "lastCheckedAt": null,
+      "frequencyMinutes": 1440,
+      "dailyRequestLimit": 1
+    },
+    {
+      "id": 5,
+      "name": "SEGBEL — Serviços SEMOB",
+      "enabled": false,
+      "approved": false,
+      "protocol": "WebDiscovery",
+      "hasLicenseNote": 1,
+      "lastCheckedAt": null,
+      "frequencyMinutes": 1440,
+      "dailyRequestLimit": 1
+    },
+    {
+      "id": 6,
+      "name": "SEGBEL — Integra Belém",
+      "enabled": false,
+      "approved": false,
+      "protocol": "WebDiscovery",
+      "hasLicenseNote": 1,
+      "lastCheckedAt": null,
+      "frequencyMinutes": 1440,
+      "dailyRequestLimit": 1
+    },
+    {
+      "id": 7,
+      "name": "Estação das Docas",
+      "enabled": false,
+      "approved": false,
+      "protocol": "WebDiscovery",
+      "hasLicenseNote": 1,
+      "lastCheckedAt": null,
+      "frequencyMinutes": 1440,
+      "dailyRequestLimit": 1
+    },
+    {
+      "id": 8,
+      "name": "Mangal das Garças",
+      "enabled": false,
+      "approved": false,
+      "protocol": "WebDiscovery",
+      "hasLicenseNote": 1,
+      "lastCheckedAt": null,
+      "frequencyMinutes": 1440,
+      "dailyRequestLimit": 1
+    },
+    {
+      "id": 9,
+      "name": "Museu Paraense Emílio Goeldi",
+      "enabled": false,
+      "approved": false,
+      "protocol": "WebDiscovery",
+      "hasLicenseNote": 1,
+      "lastCheckedAt": null,
+      "frequencyMinutes": 1440,
+      "dailyRequestLimit": 1
+    }
+  ],
+  "operationalSources": 0,
+  "heartbeat": {
+    "lastHeartbeatAt": "2026-10-18T20:44:45.157722Z",
+    "lastCycleStartedAt": "2026-10-18T20:44:15.06157Z",
+    "lastCycleFinishedAt": "2026-10-18T20:44:15.126693Z",
+    "totalCycles": 49
+  },
+  "persistedCycles": 36,
+  "consultedPages": 0,
+  "publishedEvents": 0,
+  "futureEvents": 0,
+  "pendingCandidates": 1,
+  "routes": {
+    "enabled": false,
+    "serverKeyConfigured": false,
+    "browserKeyConfigured": false,
+    "dailyLimit": 0,
+    "providerRequestPerformed": false
+  },
+  "workerInstallationVerified": false,
+  "continuousCollectionProven": false
+}
