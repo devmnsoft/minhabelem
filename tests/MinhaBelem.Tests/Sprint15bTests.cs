@@ -36,7 +36,13 @@ public sealed class Sprint15bTests(PortalFixture fixture)
             var hours=Enumerable.Range(0,7).Select(d=>new VisitHours{Weekday=d,Is24h=true}).ToArray();
             Assert.True(await visits.SaveAsync(info,hours,0,actor,default));Assert.False(await visits.SaveAsync(info,hours,0,actor,default));
             Assert.Equal(1,(await visits.GetAsync(id,default)).Info!.Revision);
-            foreach(var culture in SupportedCultures.All){editor.DefaultRequestHeaders.AcceptLanguage.Clear();editor.DefaultRequestHeaders.AcceptLanguage.ParseAdd(culture);Assert.Equal(HttpStatusCode.OK,(await editor.GetAsync("/como-chegar?placeId="+id)).StatusCode);Assert.Equal(HttpStatusCode.OK,(await editor.GetAsync($"/admin/lugares/{id}/visita")).StatusCode);}
+            foreach(var culture in SupportedCultures.All){
+                editor.DefaultRequestHeaders.AcceptLanguage.Clear();editor.DefaultRequestHeaders.AcceptLanguage.ParseAdd(culture);
+                foreach(var (name,url) in new[]{("visit-place","/como-chegar?placeId="+id),("admin-visit-hours",$"/admin/lugares/{id}/visita")}){
+                    var pageResponse=await editor.GetAsync(url);Assert.Equal(HttpStatusCode.OK,pageResponse.StatusCode);
+                    if(Environment.GetEnvironmentVariable("MINHABELEM_VISUAL_SNAPSHOTS") is {Length:>0} output){var directory=Path.Combine(output,culture);Directory.CreateDirectory(directory);var html=await pageResponse.Content.ReadAsStringAsync();html=System.Text.RegularExpressions.Regex.Replace(html,"<input[^>]*name=\"__RequestVerificationToken\"[^>]*>","");await File.WriteAllTextAsync(Path.Combine(directory,name+".html"),html);}
+                }
+            }
             await using var db=await fixture.OpenAsync();Assert.Equal(1,await db.ExecuteScalarAsync<int>("SELECT COUNT(*) FROM mb_place_visit_history WHERE place_id=@id",new{id}));
             var response=await PortalFixture.Post(editor,"/mobilidade/como-chegar","/como-chegar",new(){{"PlaceId",id.ToString()},{"Origin","Pedreira, Belém"},{"Destination","Ver-o-Peso, Belém"},{"Mode","transit"}});Assert.Equal(HttpStatusCode.OK,response.StatusCode);Assert.Contains("maps",await response.Content.ReadAsStringAsync());
             Assert.Equal(HttpStatusCode.BadRequest,(await editor.PostAsync("/mobilidade/como-chegar",new FormUrlEncodedContent(new Dictionary<string,string>()))).StatusCode);

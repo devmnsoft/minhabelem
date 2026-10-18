@@ -91,7 +91,9 @@ public sealed class PortalFactory(string connection) : WebApplicationFactory<Pro
         builder.ConfigureAppConfiguration((_, config) => config.AddInMemoryCollection(new Dictionary<string, string?>
         {
             ["ConnectionStrings:Default"] = connection,
-            ["Collector:Enabled"] = "false"
+            ["Collector:Enabled"] = "false",
+            ["GoogleRoutes:Enabled"] = "false",
+            ["Maps:BrowserKey"] = null
         }));
         builder.ConfigureServices(services =>
         {

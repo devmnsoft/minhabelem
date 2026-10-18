@@ -84,5 +84,19 @@ public sealed class Sprint15Tests(PortalFixture fixture)
             Assert.True(await service.ProcessNextAsync(default));Assert.Equal("blocked",Assert.Single((await service.GetAsync(id,actor,default))!.Items).Status);Assert.Equal(ContentStatus.Draft,(await repo.GetAsync(item.Id,default))!.Status);
         }
     }
+    [MySqlFact]public async Task HttpSelectionPreviewAndConfirmationChangeOnlySelectedItems()
+    {
+        var(client,actor)=await new OperationalTests(fixture).Login(Roles.Editor);using(client)using(var scope=fixture.Factory.Services.CreateScope())
+        {
+            var repo=scope.ServiceProvider.GetRequiredService<IContentRepository>();var items=new List<ContentItem>();
+            for(var i=0;i<3;i++){var item=new ContentItem{Title="Seleção HTTP fixture "+i,Summary="Teste de seleção por formulário",Slug=Guid.NewGuid().ToString("N"),SourceName="Fixture",SourceUrl="https://example.com/"+Guid.NewGuid()};await repo.InsertAsync(item,actor,"Fixture",default);items.Add(item);}
+            var preview=await PortalFixture.Post(client,"/editorial/lotes/previa","/editorial/lotes",new(){{"Action","review"},{"Reason","Revisão selecionada pelo editor no formulário"},{"kind","content"},{"selected[0]",$"content:{items[0].Id}:{items[0].Revision}"},{"selected[1]",$"content:{items[1].Id}:{items[1].Revision}"}});
+            Assert.Equal(HttpStatusCode.Redirect,preview.StatusCode);var location=preview.Headers.Location!.ToString();var id=location.Split('/').Last();
+            Assert.Equal(HttpStatusCode.Redirect,(await PortalFixture.Post(client,location+"/confirmar",location,new(){{"confirmed","true"}})).StatusCode);
+            Assert.True(await scope.ServiceProvider.GetRequiredService<IEditorialBatches>().ProcessNextAsync(default));
+            Assert.Equal(ContentStatus.InReview,(await repo.GetAsync(items[0].Id,default))!.Status);Assert.Equal(ContentStatus.InReview,(await repo.GetAsync(items[1].Id,default))!.Status);Assert.Equal(ContentStatus.Draft,(await repo.GetAsync(items[2].Id,default))!.Status);
+            Assert.Equal(2,(await scope.ServiceProvider.GetRequiredService<IEditorialBatches>().GetAsync(id,actor,default))!.Items.Count);
+        }
+    }
 }
 
