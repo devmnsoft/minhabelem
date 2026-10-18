@@ -1,0 +1,36 @@
+{
+  "environment": "Windows / .NET 8 / local MariaDB 10.11.7",
+  "fullSuite": {
+    "total": 179,
+    "passed": 178,
+    "failed": 0,
+    "skipped": 1,
+    "skipReason": "Real video test requires configured FFmpeg and video fixture; real Tesseract poster test passed."
+  },
+  "databaseIsolation": "Fixture verifies the host resolves the randomly created disposable database before tests; no production database is configured.",
+  "releaseBuild": {
+    "succeeded": true,
+    "warnings": 0,
+    "errors": 0
+  },
+  "ciOfNewCommits": "Not pushed or remotely validated",
+  "visualMatrix": {
+    "checked": 1456,
+    "failures": 0,
+    "routeSnapshots": 52,
+    "cultures": 7,
+    "viewports": 4
+  },
+  "browserInteractions": {
+    "passed": 3,
+    "mode": "Controlled fixtures exercising production JavaScript"
+  },
+  "focusedRecheck": {
+    "passed": 18,
+    "failed": 0,
+    "scope": "HTTP in seven cultures, latest commercial page, editorial history/progress, group costs and Sprint17 regressions before final full suite."
+  },
+  "applicationCommit": "dfb59b7",
+  "qaCommit": "52905a3",
+  "cleanupCommit": "adc5210"
+}

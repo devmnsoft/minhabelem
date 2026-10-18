@@ -1,0 +1,17 @@
+{
+  "mode": "Controlled DOM fixtures exercising production JavaScript in Edge/Playwright",
+  "results": [
+    {
+      "test": "share_excludes_private_form_fields",
+      "passed": true
+    },
+    {
+      "test": "batch_selection_keyboard_and_text_field_isolation",
+      "passed": true
+    },
+    {
+      "test": "batch_progress_updates_and_renders_results_as_text",
+      "passed": true
+    }
+  ]
+}

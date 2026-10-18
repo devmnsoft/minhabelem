@@ -1,0 +1,15 @@
+Conexão local: OK. Versão: 10.11.7-MariaDB
+Tabelas: 73
+Matérias: 0
+Eventos publicados: 0
+Fontes operacionais: 0
+Fontes cadastradas: 9
+Candidatos aguardando revisão: 1
+Migration Sprint 14: presente
+Ciclos registrados pelo Radar: 28
+Histórico de páginas consultadas: 0
+Linhas cadastradas: 5
+Paradas cadastradas: 0
+Travessias cadastradas: 0
+Contas de homologação persistidas: 0
+Auditoria somente leitura concluída.
