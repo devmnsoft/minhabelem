@@ -1,0 +1,23 @@
+[
+  {
+    "Login": "superadmin@minhabelem.com.br",
+    "LoginHttp": true,
+    "Status": 302,
+    "Perfil": 200,
+    "TrocaSenhaAntesPainel": true
+  },
+  {
+    "Login": "editor.teste@minhabelem.com.br",
+    "LoginHttp": true,
+    "Status": 302,
+    "Perfil": 200,
+    "TrocaSenhaAntesPainel": true
+  },
+  {
+    "Login": "moderador.teste@minhabelem.com.br",
+    "LoginHttp": true,
+    "Status": 302,
+    "Perfil": 200,
+    "TrocaSenhaAntesPainel": true
+  }
+]
