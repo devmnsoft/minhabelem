@@ -89,6 +89,6 @@ try {
   }
 } finally { await browser.close(); await new Promise(resolve => server.close(resolve)); }
 const failures = results.filter(x => x.scrollWidth > x.width + 4 || x.brokenImages.length > 0);
-await fs.writeFile(path.join(output, 'layout-results.json'), JSON.stringify({ mode: 'Rendered MVC snapshots; functional HTTP coverage in Sprint14Tests', checked: results.length, failures, results }, null, 2));
+await fs.writeFile(path.join(output, 'layout-results.json'), JSON.stringify({ mode: process.env.QA_MODE || 'Rendered MVC snapshots; HTTP origin recorded separately', checked: results.length, failures, results }, null, 2));
 console.log(JSON.stringify({ checked: results.length, failures: failures.map(x => ({ culture: x.culture, device: x.device, file: x.file, width: x.width, scrollWidth: x.scrollWidth, brokenImages: x.brokenImages, overflow: x.overflow })) }));
 process.exitCode = failures.length ? 1 : 0;
