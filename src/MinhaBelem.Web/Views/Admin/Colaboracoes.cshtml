@@ -11,7 +11,7 @@
         <div class="admin-header">
             <div>
                 <span class="eyebrow">PARTICIPAÇÃO CIDADÃ & MODERAÇÃO</span>
-                <h1 style="font-size:2.2rem;margin-top:4px;">Colaborações da Comunidade</h1>
+                <h1 class="view-26731c99">Colaborações da Comunidade</h1>
                 <p class="small text-muted">Mensagens, sugestões de eventos e relatos enviados por moradores através do formulário público. A aprovação não expõe dados sensíveis sem consentimento (LGPD).</p>
             </div>
         </div>
@@ -23,11 +23,11 @@
             </div>
         }
 
-        <h2 style="font-size:1.4rem;margin:24px 0 14px;">Envios Pendentes e Recentes (@Model.Count)</h2>
+        <h2 class="view-975245e1">Envios Pendentes e Recentes (@Model.Count)</h2>
         <div class="grid">
             @if (Model.Count == 0)
             {
-                <div class="card empty" style="grid-column:1/-1;">
+                <div class="view-01d607cb card empty">
                     <p>Nenhuma colaboração da comunidade registrada no momento.</p>
                 </div>
             }
@@ -51,11 +51,11 @@
                     </div>
 
                     <div style="margin-top:14px;display:flex;gap:10px;">
-                        <form method="post" asp-action="Moderar" asp-route-id="@submission.Id" style="display:inline;">
+                        <form method="post" asp-action="Moderar" asp-route-id="@submission.Id" class="view-a91548c5">
                             @Html.AntiForgeryToken()
                             <button name="approve" value="true" class="button small">✓ Aprovar</button>
                         </form>
-                        <form method="post" asp-action="Moderar" asp-route-id="@submission.Id" style="display:inline;">
+                        <form method="post" asp-action="Moderar" asp-route-id="@submission.Id" class="view-a91548c5">
                             @Html.AntiForgeryToken()
                             <button name="approve" value="false" class="button secondary small">✕ Rejeitar</button>
                         </form>

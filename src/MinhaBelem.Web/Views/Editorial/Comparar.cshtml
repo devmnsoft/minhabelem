@@ -11,10 +11,10 @@
         <div class="admin-header">
             <div>
                 <span class="eyebrow">CENTRAL DE INTELIGÊNCIA EDITORIAL</span>
-                <h1 style="font-size:2.2rem;margin-top:4px;">Comparação entre Fonte e Conteúdo</h1>
+                <h1 class="view-26731c99">Comparação entre Fonte e Conteúdo</h1>
                 <p class="small text-muted">Contraste entre os dados brutos capturados na fonte e o conteúdo editorial em edição.</p>
             </div>
-            <div style="display:flex;gap:10px;">
+            <div class="view-4a5cec13">
                 @if (MinhaBelem.Core.Security.SafeUrl.Validate(Model.Candidate.SourceUrl).IsValid)
                 {
                     <a href="@Model.Candidate.SourceUrl" target="_blank" rel="noopener noreferrer" class="button secondary small">Abrir Publicação Original ↗</a>
@@ -28,7 +28,7 @@
             <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
                 <div>
                     <h3 style="font-size:1.1rem;margin-bottom:4px;">Análise Óptica (OCR) de Cartazes e Mídias</h3>
-                    <p class="small text-muted" style="margin:0;">Disponível exclusivamente para mídias com licença de uso e créditos autorizados pela fonte parceira.</p>
+                    <p class="view-38965f9b small text-muted">Disponível exclusivamente para mídias com licença de uso e créditos autorizados pela fonte parceira.</p>
                 </div>
                 <form method="post" asp-action="Ocr" asp-route-id="@Model.Candidate.Id">
                     @Html.AntiForgeryToken()
@@ -42,12 +42,12 @@
             <!-- DADOS RECEBIDOS DA FONTE -->
             <article class="card" style="border-top:4px solid var(--terracotta);">
                 <span class="eyebrow">DADOS BRUTOS DA FONTE</span>
-                <h3 style="margin:8px 0 12px;font-size:1.25rem;">@Model.Candidate.Title</h3>
-                <p style="background:var(--creme);padding:14px;border-radius:var(--radius-sm);font-size:0.95rem;line-height:1.6;">
+                <h3 class="view-68576ca4">@Model.Candidate.Title</h3>
+                <p class="view-066b0823">
                     @Model.Candidate.Summary
                 </p>
 
-                <div class="card-meta" style="flex-direction:column;align-items:flex-start;gap:4px;">
+                <div class="view-13707a49 card-meta">
                     <div><strong>Canal de Origem:</strong> @Model.Candidate.SourceName</div>
                     <div><strong>Publicado em:</strong> @Model.Candidate.PublishedAt.ToString("dd/MM/yyyy HH:mm") UTC</div>
                     @if (Model.Event is not null)
@@ -61,16 +61,16 @@
             </article>
 
             <!-- CONTEÚDO EDITORIAL EM PROCESSAMENTO -->
-            <article class="card" style="border-top:4px solid var(--green-forest);">
+            <article class="view-5afd4f17 card">
                 <span class="eyebrow">CONTEÚDO EDITORIAL PREPARADO</span>
                 @if (Model.Content is { } item)
                 {
-                    <h3 style="margin:8px 0 12px;font-size:1.25rem;">@item.Title</h3>
-                    <p style="background:var(--creme);padding:14px;border-radius:var(--radius-sm);font-size:0.95rem;line-height:1.6;">
+                    <h3 class="view-68576ca4">@item.Title</h3>
+                    <p class="view-066b0823">
                         @item.Summary
                     </p>
 
-                    <div class="card-meta" style="flex-direction:column;align-items:flex-start;gap:4px;">
+                    <div class="view-13707a49 card-meta">
                         <div><strong>Status Editorial:</strong> <span class="badge badge-success">@item.Status</span></div>
                         <div><strong>Número de Revisão:</strong> #@item.Revision</div>
                         @if (item.EventStartAt is not null)
@@ -80,12 +80,12 @@
                         }
                     </div>
 
-                    <div style="margin-top:20px;">
+                    <div class="view-910f53fb">
                         <form method="post" asp-action="AplicarAtualizacao" asp-route-id="@Model.Candidate.Id">
                             @Html.AntiForgeryToken()
                             <input type="hidden" name="revision" value="@item.Revision" />
                             <input type="hidden" name="candidateTicks" value="@Model.Candidate.UpdatedAt.Ticks" />
-                            <button type="submit" class="button" style="width:100%;">
+                            <button type="submit" class="view-9ccc4ca9 button">
                                 📥 Trazer Atualização para Revisão Humana
                             </button>
                         </form>
@@ -94,7 +94,7 @@
                 else
                 {
                     <div style="padding:40px 20px;text-align:center;">
-                        <p class="text-muted" style="margin-bottom:16px;">Ainda não há conteúdo editorial associado a esta proposta.</p>
+                        <p class="view-7564ec60 text-muted">Ainda não há conteúdo editorial associado a esta proposta.</p>
                         <form method="post" asp-action="Importar" asp-route-id="@Model.Candidate.Id">
                             @Html.AntiForgeryToken()
                             <button type="submit" class="button">Importar para Mesa Editorial</button>

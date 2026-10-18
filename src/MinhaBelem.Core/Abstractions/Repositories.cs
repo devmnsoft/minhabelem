@@ -27,6 +27,7 @@ public interface IEditorialWorkflow
 
 public sealed class ContentQuery
 {
+    public bool EventsOverlapWindow { get; set; }
     public ContentCategory? Category { get; set; }
     public string? Subject { get; set; }
     public IReadOnlyList<string>? Subjects { get; set; }

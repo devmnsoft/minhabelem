@@ -1,0 +1,3 @@
+@model IReadOnlyList<MinhaBelem.Core.Entities.TransitAlert>
+@{ViewData["Title"]=Loc["RouteAlerts"];}
+<section class="hero"><h1>@Loc["RouteAlerts"]</h1></section><main class="section">@foreach(var alert in Model){<article class="card"><h2>@alert.Title</h2><p>@alert.Description</p><p>@alert.Neighborhood · @alert.StartAt.ToString("g") → @alert.EndAt?.ToString("g")</p>@if(alert.IsVerified){<a href="@alert.SourceUrl" target="_blank" rel="noopener noreferrer">@Loc["RouteSource"] ↗</a>}</article>}@if(Model.Count==0){<p>@Loc["General_Empty"]</p>}</main>

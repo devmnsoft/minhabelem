@@ -34,7 +34,7 @@
                             <div class="stop-badge">Parada #@stop.StopOrder • @stop.PeriodOfDay</div>
                             <div class="stop-main">
                                 <h3>@stop.GetTitle(currentCulture)</h3>
-                                
+
                                 @if (!string.IsNullOrWhiteSpace(stop.GetTip(currentCulture)))
                                 {
                                     <div class="cultural-badge">💡 <strong>Dica:</strong> @stop.GetTip(currentCulture)</div>

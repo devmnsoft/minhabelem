@@ -16,7 +16,7 @@
             <span class="eyebrow">GUIAS DE BAIRROS</span>
             <h2>Bairros de Belém</h2>
         </div>
-        <div class="filter-pills" style="display:flex;gap:8px;flex-wrap:wrap;">
+        <div class="view-31e4e2a2 filter-pills">
             <a href="/meu-bairro" class="button @(string.IsNullOrEmpty(Model.SelectedZone) ? "" : "secondary") small">Todos</a>
             <a href="/meu-bairro?zona=Centro+Histórico" class="button @(Model.SelectedZone == "Centro Histórico" ? "" : "secondary") small">Centro Histórico</a>
             <a href="/meu-bairro?zona=Região+Central" class="button @(Model.SelectedZone == "Região Central" ? "" : "secondary") small">Região Central</a>
@@ -38,7 +38,7 @@
 
                 @if (!string.IsNullOrWhiteSpace(n.PopularAttractions))
                 {
-                    <p class="small text-muted" style="margin-top:10px;">
+                    <p class="view-726e8b31 small text-muted">
                         🏛️ <strong>Destaques:</strong> @n.PopularAttractions
                     </p>
                 }

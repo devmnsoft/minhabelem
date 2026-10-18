@@ -11,7 +11,7 @@
         <div class="admin-header">
             <div>
                 <span class="eyebrow">MONETIZAÇÃO ÉTICA & PARCERIAS</span>
-                <h1 style="font-size:2.2rem;margin-top:4px;">Anunciantes & Campanhas</h1>
+                <h1 class="view-26731c99">Anunciantes & Campanhas</h1>
                 <p class="small text-muted">Acompanhamento de planos comerciais, ativação de banners e prestação de contas.</p>
             </div>
             <a href="/parceiros" class="button secondary small" target="_blank">Página de Planos Públicos ↗</a>
@@ -69,7 +69,7 @@
                                 }
                             </td>
                             <td>
-                                <form action="/admin/anunciantes/@c.Id/estado" method="post" style="display:inline;">
+                                <form action="/admin/anunciantes/@c.Id/estado" method="post" class="view-a91548c5">
                                     @Html.AntiForgeryToken()
                                     <input type="hidden" name="active" value="@(c.Active ? "false" : "true")" />
                                     <button type="submit" class="button small @(c.Active ? "secondary" : "")">

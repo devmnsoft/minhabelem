@@ -54,7 +54,7 @@ public sealed class DiscoveryRepository(MySqlDataSource data) : IDiscoveryReposi
             id = await db.ExecuteScalarAsync<long>(new CommandDefinition("""
                 INSERT INTO mb_ingestion_candidates (source_id,source_name,run_id,title,summary,source_url,source_url_hash,fingerprint,author_name,published_at,status,duplicate_of_id)
                 VALUES (@SourceId,@Name,@runId,@title,@summary,@url,@hash,@fingerprint,@author,@posted,@status,@duplicate); SELECT LAST_INSERT_ID();
-                """, new { SourceId = source.Id, source.Name, runId, title = HtmlText.Clean(item.Title, 300), summary = HtmlText.ToPlainText(item.Summary, 1500), url = item.Url, hash, fingerprint, author = HtmlText.Clean(item.Author, 240), posted = item.PostedAt ?? DateTime.UtcNow, status = duplicate is null ? "Pending" : "Duplicate", duplicate }, tx, cancellationToken: ct));
+                """, new { SourceId = source.Id, source.Name, runId = runId > 0 ? (long?)runId : null, title = HtmlText.Clean(item.Title, 300), summary = HtmlText.ToPlainText(item.Summary, 1500), url = item.Url, hash, fingerprint, author = HtmlText.Clean(item.Author, 240), posted = item.PostedAt ?? DateTime.UtcNow, status = duplicate is null ? "Pending" : "Duplicate", duplicate }, tx, cancellationToken: ct));
         }
         await db.ExecuteAsync(new CommandDefinition("INSERT IGNORE INTO mb_discovery_versions (candidate_id,fingerprint,snapshot) VALUES (@id,@fingerprint,@snapshot)", new { id, fingerprint, snapshot }, tx, cancellationToken: ct));
         await tx.CommitAsync(ct);

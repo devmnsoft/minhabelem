@@ -24,6 +24,7 @@ internal sealed class UserRow
     public int AccessFailedCount { get; set; }
     public string DisplayName { get; set; } = string.Empty;
     public bool Enabled { get; set; }
+    public bool MustChangePassword { get; set; }
     public bool MfaEnabled { get; set; }
     public string? PhoneNumber { get; set; }
     public bool PhoneNumberConfirmed { get; set; }
@@ -49,7 +50,7 @@ public sealed class MySqlUserStore(MySqlDataSource dataSource, IDataProtectionPr
         display_name AS DisplayName, enabled AS Enabled, mfa_enabled AS MfaEnabled, phone_number AS PhoneNumber,
         phone_number_confirmed AS PhoneNumberConfirmed, two_factor_enabled AS TwoFactorEnabled,
         lockout_date AS LockoutDate, password_changed_at AS PasswordChangedAt,
-        last_login_at AS LastLoginAt, created_at AS CreatedAt
+        last_login_at AS LastLoginAt, created_at AS CreatedAt, must_change_password AS MustChangePassword
         """;
 
     private static ApplicationUser Map(UserRow row) => new()
@@ -68,6 +69,7 @@ public sealed class MySqlUserStore(MySqlDataSource dataSource, IDataProtectionPr
         AccessFailedCount = row.AccessFailedCount,
         DisplayName = row.DisplayName,
         Enabled = row.Enabled,
+        MustChangePassword = row.MustChangePassword,
         MfaEnabled = row.MfaEnabled,
         PhoneNumber = row.PhoneNumber,
         PhoneNumberConfirmed = row.PhoneNumberConfirmed,
@@ -156,7 +158,7 @@ public sealed class MySqlUserStore(MySqlDataSource dataSource, IDataProtectionPr
                 display_name = @DisplayName, enabled = @Enabled, mfa_enabled = @MfaEnabled,
                 phone_number = @PhoneNumber, phone_number_confirmed = @PhoneNumberConfirmed,
                 two_factor_enabled = @TwoFactorEnabled, lockout_date = @LockoutDate,
-                password_changed_at = @PasswordChangedAt, last_login_at = @LastLoginAt
+                password_changed_at = @PasswordChangedAt, last_login_at = @LastLoginAt, must_change_password = @MustChangePassword
             WHERE id = @Id AND concurrency_stamp = @OriginalConcurrencyStamp
             """,
             new
@@ -166,7 +168,7 @@ public sealed class MySqlUserStore(MySqlDataSource dataSource, IDataProtectionPr
                 user.LockoutEnabled, LockoutEnd = ToUtc(user.LockoutEnd), user.AccessFailedCount,
                 user.DisplayName, user.Enabled, user.MfaEnabled, user.PhoneNumber,
                 user.PhoneNumberConfirmed, user.TwoFactorEnabled, user.LockoutDate,
-                user.PasswordChangedAt, user.LastLoginAt,
+                user.PasswordChangedAt, user.LastLoginAt, user.MustChangePassword,
                 OriginalConcurrencyStamp = originalStamp
             }, cancellationToken: cancellationToken));
 

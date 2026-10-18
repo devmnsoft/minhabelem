@@ -2,16 +2,23 @@ namespace MinhaBelem.Core.Entities;
 
 public sealed class TransitLine
 {
+    public string? SourceUrl { get; set; }
+    public DateTime? VerifiedAt { get; set; }
+    public DateTime? ValidUntil { get; set; }
+    public bool IsVerified => MinhaBelem.Core.Security.SafeUrl.Validate(SourceUrl).IsValid && VerifiedAt <= DateTime.UtcNow && ValidUntil > DateTime.UtcNow;
+    public DateTime? FareValidUntil { get; set; }
+    public decimal? ConfirmedFare => IsVerified && FareValidUntil > DateTime.UtcNow ? Fare : null;
+
     public long Id { get; set; }
     public string Code { get; set; } = string.Empty;
     public string Name { get; set; } = string.Empty;
     public string Origin { get; set; } = string.Empty;
     public string Destination { get; set; } = string.Empty;
-    public decimal Fare { get; set; } = 4.00m;
+    public decimal Fare { get; set; }
     public string TransitType { get; set; } = "Urbano"; // Urbano, BRT, Distrital, Fluvial
     public string? OperatorName { get; set; }
     public bool HasAirConditioning { get; set; }
-    public bool HasWheelchairLift { get; set; } = true;
+    public bool HasWheelchairLift { get; set; }
     public string? ItinerarySummary { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
@@ -19,6 +26,11 @@ public sealed class TransitLine
 
 public sealed class TransitStop
 {
+    public string? SourceUrl { get; set; }
+    public DateTime? VerifiedAt { get; set; }
+    public DateTime? ValidUntil { get; set; }
+    public bool IsVerified => MinhaBelem.Core.Security.SafeUrl.Validate(SourceUrl).IsValid && VerifiedAt <= DateTime.UtcNow && ValidUntil > DateTime.UtcNow;
+
     public long Id { get; set; }
     public string Name { get; set; } = string.Empty;
     public string? Address { get; set; }
@@ -27,13 +39,18 @@ public sealed class TransitStop
     public double? Latitude { get; set; }
     public double? Longitude { get; set; }
     public string StopType { get; set; } = "Parada"; // Parada, Terminal, Estação BRT, Trapiche Fluvial
-    public bool IsAccessible { get; set; } = true;
+    public bool IsAccessible { get; set; }
     public string? LinesServiced { get; set; }
     public DateTime CreatedAt { get; set; }
 }
 
 public sealed class TransitAlert
 {
+    public string? SourceUrl { get; set; }
+    public DateTime? VerifiedAt { get; set; }
+    public DateTime? ValidUntil { get; set; }
+    public bool IsVerified => MinhaBelem.Core.Security.SafeUrl.Validate(SourceUrl).IsValid && VerifiedAt <= DateTime.UtcNow && ValidUntil > DateTime.UtcNow;
+
     public long Id { get; set; }
     public string Title { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
@@ -50,15 +67,22 @@ public sealed class TransitAlert
 
 public sealed class RiverRoute
 {
+    public string? SourceUrl { get; set; }
+    public DateTime? VerifiedAt { get; set; }
+    public DateTime? ValidUntil { get; set; }
+    public bool IsVerified => MinhaBelem.Core.Security.SafeUrl.Validate(SourceUrl).IsValid && VerifiedAt <= DateTime.UtcNow && ValidUntil > DateTime.UtcNow;
+    public DateTime? FareValidUntil { get; set; }
+    public decimal? ConfirmedFare => IsVerified && FareValidUntil > DateTime.UtcNow ? Fare : null;
+
     public long Id { get; set; }
     public string Name { get; set; } = string.Empty;
     public string DeparturePort { get; set; } = string.Empty;
     public string DestinationPort { get; set; } = string.Empty;
     public string DestinationIsland { get; set; } = string.Empty;
-    public int EstimatedDurationMinutes { get; set; } = 15;
-    public decimal Fare { get; set; } = 10.00m;
+    public int EstimatedDurationMinutes { get; set; }
+    public decimal Fare { get; set; }
     public string VesselType { get; set; } = "Popopô / Barco Regional";
-    public string OperatingHours { get; set; } = "Diário das 07h às 19h";
+    public string OperatingHours { get; set; } = "";
     public string? OperatorNotes { get; set; }
     public bool IsActive { get; set; } = true;
     public DateTime CreatedAt { get; set; }

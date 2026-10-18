@@ -11,6 +11,7 @@ public sealed class ApplicationUser : IdentityUser<long>
     public DateTime? LockoutDate { get; set; }
     public string DisplayName { get; set; } = string.Empty;
     public bool Enabled { get; set; } = true;
+    public bool MustChangePassword { get; set; }
     public bool MfaEnabled { get; set; }
     public DateTime? PasswordChangedAt { get; set; }
     public DateTime? LastLoginAt { get; set; }

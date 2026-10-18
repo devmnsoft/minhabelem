@@ -50,7 +50,7 @@ public sealed class MobilidadeController(ITransitRepository transit) : Controlle
         var vm = new TransitLineDetailViewModel
         {
             Line = line,
-            RelatedStops = stops,
+            RelatedStops = stops.Where(s => (s.LinesServiced ?? "").Split(new[]{',',';','|'}, StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries).Contains(line.Code, StringComparer.OrdinalIgnoreCase)).ToArray(),
             ActiveAlerts = alerts
         };
 

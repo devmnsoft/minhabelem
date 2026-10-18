@@ -65,6 +65,7 @@ public sealed class HomeController(
                 ViewData["UpcomingEvents"] = await content.SearchAsync(new ContentQuery
                 {
                     OnlyUpcomingEvents = true,
+                    Sort = ContentSort.Upcoming,
                     PageSize = 4,
                     Culture = currentCulture
                 }, ct);

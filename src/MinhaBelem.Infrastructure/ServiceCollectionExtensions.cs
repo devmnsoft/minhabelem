@@ -114,8 +114,14 @@ public static class InfrastructureServiceCollectionExtensions
         services.AddScoped<ITranslationRepository, TranslationRepository>();
         services.AddScoped<ITouristRepository, TouristRepository>();
         services.AddScoped<ITransitRepository, TransitRepository>();
+        services.AddScoped<IRoutePlanner, GoogleRoutePlanner>();
+        services.AddScoped<IItineraryPlanning, ItineraryPlanning>();
+        services.AddScoped<IVisitRepository, VisitRepository>();
+        services.AddHttpClient("routes", c => c.Timeout = TimeSpan.FromSeconds(20)).ConfigurePrimaryHttpMessageHandler(PublicHttpTransport.Create);
         services.AddScoped<INeighborhoodRepository, NeighborhoodRepository>();
         services.AddScoped<IRadarRepository, RadarRepository>();
+        services.AddScoped<ICollectionQueue, CollectionQueue>();
+        services.AddScoped<IEditorialBatches, EditorialBatches>();
         services.AddScoped<IHtmlContentExtractor, HtmlContentExtractor>();
         services.AddScoped<IEventStructuredDataExtractor, EventStructuredDataExtractor>();
         services.AddScoped<ISitemapDiscoveryService, SitemapDiscoveryService>();
@@ -129,20 +135,27 @@ public static class InfrastructureServiceCollectionExtensions
         services.AddScoped<AiRunLogger>();
         services.AddSingleton<IAiClientResolver, AiClientResolver>();
         services.AddScoped<IAiAnalysisService, AiAnalysisService>();
+        services.AddScoped<ITouristAssistant, TouristAssistant>();
         services.AddScoped<IContentTranslationService, ContentTranslationService>();
 
         services.AddIdentityCore<ApplicationUser>()
             .AddRoles<IdentityRole<long>>()
-            .AddSignInManager()
             .AddClaimsPrincipalFactory<PermissionClaimsPrincipalFactory>()
             .AddDefaultTokenProviders();
+        if (!registerWorkers)
+            new IdentityBuilder(typeof(ApplicationUser), typeof(IdentityRole<long>), services).AddSignInManager();
         services.AddScoped<IUserStore<ApplicationUser>, MySqlUserStore>();
         services.AddScoped<IRoleStore<IdentityRole<long>>, MySqlRoleStore>();
 
         services.AddScoped<IdentitySeeder>();
+        services.AddScoped<HomologationBootstrap>();
+        services.AddScoped<ResearchedSourceBootstrap>();
 
         if (registerWorkers)
         {
+        services.AddHostedService<EditorialBatchWorker>();
+        services.AddSingleton<CollectionQueueWorker>();
+        services.AddHostedService(sp => sp.GetRequiredService<CollectionQueueWorker>());
         services.AddSingleton<FeedCollectorWorker>();
         services.AddSingleton<ISourceCollection>(sp => sp.GetRequiredService<FeedCollectorWorker>());
         services.AddHostedService(sp => sp.GetRequiredService<FeedCollectorWorker>());

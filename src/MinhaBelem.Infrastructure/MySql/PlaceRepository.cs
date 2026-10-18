@@ -200,6 +200,15 @@ public sealed class PlaceRepository(MySqlDataSource dataSource) : IPlaceReposito
         await using var connection = await dataSource.OpenConnectionAsync(ct);
         await using var tx = await connection.BeginTransactionAsync(ct);
 
+        // New slugs include the provider ID hash: equal names must never merge different places.
+        // Preserve established URLs when this provider ID is already present.
+        var existingSlug = await connection.ExecuteScalarAsync<string?>(new CommandDefinition(
+            "SELECT slug FROM mb_places WHERE google_place_id=@GooglePlaceId",new{place.GooglePlaceId},tx,cancellationToken:ct));
+        if(existingSlug is not null) place.Slug=existingSlug;
+        else {
+            var baseSlug=MinhaBelem.Core.Text.HtmlText.Slugify(string.IsNullOrWhiteSpace(place.Slug)?place.Name:place.Slug);
+            place.Slug=baseSlug[..Math.Min(120,baseSlug.Length)]+"-"+Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(place.GooglePlaceId)))[..24].ToLowerInvariant();
+        }
         var id = await connection.ExecuteScalarAsync<long?>(new CommandDefinition(
             """
             INSERT INTO mb_places

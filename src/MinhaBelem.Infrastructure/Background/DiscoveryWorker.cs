@@ -13,17 +13,20 @@ public sealed class FeedCollectorWorker(IServiceScopeFactory scopes, IOptions<Co
         var last = DateTime.MinValue;
         while (!ct.IsCancellationRequested)
         {
+            var nextCheck = TimeSpan.FromSeconds(30);
             try
             {
                 await using var scope = scopes.CreateAsyncScope();
                 var settings = await scope.ServiceProvider.GetRequiredService<IAdministrationRepository>().SettingsAsync(ct);
                 var enabled = bool.TryParse(settings.GetValueOrDefault("collector.enabled"), out var value) ? value : options.Value.Enabled;
                 var minutes = int.TryParse(settings.GetValueOrDefault("collector.intervalMinutes"), out var interval) ? Math.Clamp(interval, 1, 240) : Math.Clamp(options.Value.IntervalMinutes, 1, 240);
-                if (enabled && DateTime.UtcNow >= last.AddMinutes(minutes)) { await CollectOnceAsync(ct); last = DateTime.UtcNow; }
+                if (enabled && DateTime.UtcNow >= last.AddMinutes(minutes)) { last = DateTime.UtcNow; await CollectOnceAsync(ct); }
+                if (enabled)
+                    nextCheck = TimeSpan.FromMilliseconds(Math.Clamp((last.AddMinutes(minutes) - DateTime.UtcNow).TotalMilliseconds, 100, 30_000));
             }
             catch (OperationCanceledException) when (ct.IsCancellationRequested) { return; }
             catch (Exception ex) { logger.LogWarning("Coletor indisponível: {ErrorType}. Confira esquema e configurações.", ex.GetType().Name); }
-            try { await Task.Delay(TimeSpan.FromSeconds(30), ct); } catch (OperationCanceledException) { return; }
+            try { await Task.Delay(nextCheck, ct); } catch (OperationCanceledException) { return; }
         }
     }
     public async Task CollectOnceAsync(CancellationToken ct)
@@ -32,7 +35,7 @@ public sealed class FeedCollectorWorker(IServiceScopeFactory scopes, IOptions<Co
         timeout.CancelAfter(TimeSpan.FromSeconds(55));
         ct = timeout.Token;
         await using var lease = await data.OpenConnectionAsync(ct);
-        if (await lease.ExecuteScalarAsync<int>(new CommandDefinition("SELECT GET_LOCK('minhabelem_collector',0)", cancellationToken: ct)) != 1) return;
+        if (await lease.ExecuteScalarAsync<int>(new CommandDefinition("SELECT GET_LOCK('minhabelem_collector',0)", cancellationToken: ct)) != 1) throw new InvalidOperationException("Outra instância está executando o coletor.");
         try
         {
             await using var scope = scopes.CreateAsyncScope();
@@ -40,7 +43,7 @@ public sealed class FeedCollectorWorker(IServiceScopeFactory scopes, IOptions<Co
             var run = new IngestionRun { Id = await repository.StartRunAsync(ct), StartedAt = DateTime.UtcNow, Status = RunStatus.Running };
             try
             {
-                var sources = await repository.SourcesAsync(true, ct);
+                var sources = (await repository.SourcesAsync(true, ct)).Where(s => s.Protocol is not (FeedProtocol.Html or FeedProtocol.WebDiscovery or FeedProtocol.JsonLd));
                 await Parallel.ForEachAsync(sources, new ParallelOptions { MaxDegreeOfParallelism = Math.Clamp(options.Value.MaxConcurrentSources, 1, 4), CancellationToken = ct }, async (source, token) =>
                 {
                     // Um escopo por fonte evita compartilhar servicos scoped entre tarefas.
@@ -95,7 +98,7 @@ public sealed class FeedCollectorWorker(IServiceScopeFactory scopes, IOptions<Co
         var context = new SourceContext(source, profile, DateTime.UtcNow);
         var connector = services.GetServices<ISourceConnector>().SingleOrDefault(x => x.Supports(source.Protocol));
         var status = "Error"; var records = 0; string? error = null; string? checkpoint = null;
-        var due = DateTime.UtcNow.AddMinutes(Math.Clamp(profile.FrequencyMinutes, 10, 1440));
+        var due = DateTime.UtcNow.AddMinutes(Math.Clamp(profile.FrequencyMinutes, 1, 1440));
         try
         {
             if (string.IsNullOrWhiteSpace(source.LicenseNote)) { status = "Unauthorized"; throw new InvalidOperationException("Fonte sem autorização documentada."); }

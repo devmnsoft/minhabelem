@@ -729,6 +729,10 @@ public static class LocalizationCatalog
             ["ErrorTitle"] = "予期しないエラーが発生しました",
             ["ErrorMessage"] = "技術チームに通知されました。しばらく時間をおいてから再度お試しください。"
         };
+            Sprint14Translations.Register(Translations);
+            Sprint15Translations.Register(Translations);
+            Sprint15bTranslations.Register(Translations);
+            AgendaTranslations.Register(Translations);
     }
 
     public static string Get(string key, string? culture = null)

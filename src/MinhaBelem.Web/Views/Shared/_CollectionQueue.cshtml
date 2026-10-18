@@ -1,0 +1,15 @@
+@model IReadOnlyList<MinhaBelem.Core.Abstractions.CollectionRequest>
+<section class="section queue-panel" aria-labelledby="queue-title">
+    <div class="sectionhead"><div><span class="eyebrow">Windows Service</span><h2 id="queue-title">@Loc["QueueTitle"]</h2></div></div>
+    <p class="small">@Loc["QueueHelp"]</p>
+    <div class="table-scroll" tabindex="0" role="region" aria-label="@Loc["QueueTitle"]">
+        <table><thead><tr><th>ID</th><th>@Loc["QueueKind"]</th><th>@Loc["QueueStatus"]</th><th>@Loc["QueueAttempts"]</th><th>@Loc["QueueRequested"]</th></tr></thead>
+        <tbody>
+        @foreach (var request in Model)
+        {
+            <tr><td>#@request.Id</td><td>@request.Kind</td><td><span class="badge">@Loc["Queue_" + request.Status]</span></td><td>@request.Attempts / 3</td><td><time datetime="@request.RequestedAt.ToString("O")">@request.RequestedAt.ToString("g") UTC</time></td></tr>
+        }
+        @if (Model.Count == 0) { <tr><td colspan="5">@Loc["QueueEmpty"]</td></tr> }
+        </tbody></table>
+    </div>
+</section>

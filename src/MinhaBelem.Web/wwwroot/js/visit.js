@@ -1,0 +1,1 @@
+(() => {const button=document.querySelector('#route-location');button?.addEventListener('click',()=>{if(!navigator.geolocation)return;navigator.geolocation.getCurrentPosition(p=>{document.querySelector('#route-origin').value=`${p.coords.latitude},${p.coords.longitude}`;button.disabled=true;},()=>button.focus(),{enableHighAccuracy:false,timeout:10000,maximumAge:60000});});})();

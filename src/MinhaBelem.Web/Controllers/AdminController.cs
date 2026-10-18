@@ -18,9 +18,9 @@ namespace MinhaBelem.Web.Controllers;
 [Route("admin"), Authorize]
 public sealed class AdminController(IAdministrationRepository admin, IDashboardRepository dashboard, IIngestionRepository ingestion, IAuditRepository audit,
     IAiRunRepository aiRuns, UserManager<ApplicationUser> users, ICommunityRepository community, IPlaceRepository places, IPlacesClient google, IOptions<AiOptions> aiOptions,
-    IDiscoveryRepository discovery, ISourceCollection collector, ITranslationRepository translation, IContentTranslationService translationService, IContentRepository content,
+    IDiscoveryRepository discovery, ICollectionQueue collectionQueue, ITranslationRepository translation, IContentTranslationService translationService, IContentRepository content,
     ITransitRepository transit, IAdvertiserRepository advertisers, INeighborhoodRepository neighborhoods,
-    IRadarRepository radar, IPublicWebCrawler crawler, IRadarWorker radarWorker) : Controller
+    IRadarRepository radar) : Controller
 {
     private long Actor => long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
     private Task Audit(string action, string type, long? id, CancellationToken ct) => audit.WriteAsync(new AuditEntry { ActorId = Actor, Action = action, EntityType = type, EntityId = id }, ct);
@@ -100,7 +100,8 @@ public sealed class AdminController(IAdministrationRepository admin, IDashboardR
     public async Task<IActionResult> ExecutarColeta(CancellationToken ct)
     {
         await Audit("collector.manual_requested", "collector", null, ct);
-        await collector.CollectOnceAsync(ct);
+        await collectionQueue.EnqueueAsync("feeds", null, Actor, ct);
+        TempData["Notice"] = "Solicitação registrada. O Serviço do Windows processará a coleta pela fila.";
         return RedirectToAction(nameof(Fontes));
     }
     [HttpPost("fontes/{id:long}/suspender"), Authorize(Policy = Permissions.SourceManage)]
@@ -372,6 +373,7 @@ public sealed class AdminController(IAdministrationRepository admin, IDashboardR
         line.Origin = HtmlText.Clean(line.Origin, 150);
         line.Destination = HtmlText.Clean(line.Destination, 150);
 
+        if (line.Fare < 0 || line.SourceUrl is { Length: > 0 } && (!SafeUrl.Validate(line.SourceUrl).IsValid || line.VerifiedAt is null || line.VerifiedAt > DateTime.UtcNow || line.ValidUntil <= DateTime.UtcNow || line.ValidUntil is null || line.FareValidUntil > line.ValidUntil)) return BadRequest("Confira fonte e vigência da verificação.");
         await transit.UpsertLineAsync(line, ct);
         await Audit("transit.line_saved", "transit_line", null, ct);
         TempData["Notice"] = $"Linha {line.Code} salva com sucesso!";
@@ -436,6 +438,7 @@ public sealed class AdminController(IAdministrationRepository admin, IDashboardR
     [HttpGet("radar"), Authorize(Policy = Permissions.SourceManage)]
     public async Task<IActionResult> Radar([FromQuery] DiscoveredSourceQuery query, CancellationToken ct)
     {
+        ViewData["CollectionQueue"] = await collectionQueue.RecentAsync(ct);
         var model = new RadarDashboardViewModel
         {
             Stats = await radar.GetDashboardStatsAsync(ct),
@@ -493,17 +496,17 @@ public sealed class AdminController(IAdministrationRepository admin, IDashboardR
                 return RedirectToAction(nameof(Radar));
             }
 
-            var result = await crawler.CrawlTargetUrlAsync(url, new CrawlerOptions { MaxDepth = 1, MaxPagesPerHost = 5 }, ct);
-            await Audit("radar.crawl_target", "radar", null, ct);
-            TempData["Notice"] = $"Varredura manual concluída: {result.UrlsCrawled} páginas, {result.ItemsDiscovered} matérias, {result.EventsIdentified} eventos em {result.Duration.TotalSeconds:F1}s.";
+            try { await collectionQueue.EnqueueAsync("target", url, Actor, ct); }
+            catch (ArgumentException) { return BadRequest("URL inválida ou contém credenciais."); }
+            await Audit("radar.crawl_target_requested", "radar", null, ct);
         }
         else
         {
-            await radarWorker.TriggerOnceAsync(ct);
-            await Audit("radar.crawl_all", "radar", null, ct);
-            TempData["Notice"] = "Ciclo autônomo de varredura do Radar executado para todas as fontes ativas.";
+            await collectionQueue.EnqueueAsync("radar", null, Actor, ct);
+            await Audit("radar.crawl_all_requested", "radar", null, ct);
         }
 
+        TempData["Notice"] = "Varredura adicionada à fila. Aguarde o processamento pelo Serviço do Windows.";
         return RedirectToAction(nameof(Radar));
     }
 
@@ -563,54 +566,14 @@ public sealed class AdminController(IAdministrationRepository admin, IDashboardR
 
         var model = new ProjectEvolutionViewModel
         {
-            SprintNumber = 12,
-            SprintTitle = "Go-Live, Radar Autônomo, Operação Real e Lançamento Controlado",
-            Domain = "minhabelem.com.br",
-            Environment = "VPS Windows / IIS / MySQL 8 / MinhaBelem.Worker",
-            TotalRequirements = 60,
-            MetRequirements = 60,
-            TotalTests = 96,
-            PassedTests = 96,
-            FailedTests = 0,
-            LastActionsRunUrl = "https://github.com/devmnsoft/minhabelem/actions",
-            ActionsStatusText = "Aprovado integralmente (96 testes automatizados, 0 falhas, build Release 0 erros / 0 avisos)",
-            WorkerStatus = stats.Heartbeat?.StatusText ?? "Operacional em produção (Ciclos autônomos de 10 min)",
-            OperationalSourcesCount = opSources.Count,
+            SprintNumber = 14,
+            SprintTitle = "Identidade amazônica, estabilidade e execução pelo serviço",
+            Environment = "Ambiente atual; implantação na VPS ainda não verificada",
+            ActionsStatusText = "Consulte o GitHub Actions para o resultado da execução correspondente ao commit.",
+            WorkerStatus = stats.Heartbeat?.StatusText ?? "Sem evidência de execução do serviço",
+            OperationalSourcesCount = opSources.Count(x => x.Source.IsOperational),
             DiscoveredEventsCount = stats.UpcomingEventsCount,
-            SocialPostsCount = socialPosts.Count,
-            Modules = new List<ModuleEvolutionStatus>
-            {
-                new() { ModuleName = "Build Release", Category = "Build", Description = "Compilação da Solution completa (Core, Infrastructure, Web, Worker, Tests)", Status = "Operacional em produção", ProgressPercent = 100, Evidence = "0 erros, 0 avisos em .NET 8 / C# 12" },
-                new() { ModuleName = "Suíte de Testes Automatizados", Category = "Testes", Description = "Testes unitários, HTTP, de segurança e integração com MySQL", Status = "Operacional em produção", ProgressPercent = 100, Evidence = "96 testes (74 unitários/HTTP locais + 22 testes MySQL descartáveis no CI), 0 falhas" },
-                new() { ModuleName = "Persistência MySQL 8", Category = "Banco", Description = "Conexões seguras, pooling de 20 conexões, timeouts e 62 tabelas idempotentes em MINHABELEM.SQL", Status = "Operacional em produção", ProgressPercent = 100, Evidence = "SchemaMigrator com checagem de SHA-256 e Dapper otimizado" },
-                new() { ModuleName = "Autenticação e Identidade", Category = "Autenticação", Description = "ASP.NET Identity, MFA TOTP obrigatório para editores, códigos de recuperação criptografados", Status = "Operacional em produção", ProgressPercent = 100, Evidence = "Políticas de bloqueio por tentativas e senhas de 12+ caracteres" },
-                new() { ModuleName = "Segurança e Proteção de Dados", Category = "Segurança", Description = "RBAC estrito, SafeUrl contra SSRF e metadados de nuvem, cookies __Host-, Anti-CSRF e DPAPI", Status = "Operacional em produção", ProgressPercent = 100, Evidence = "SecurityTests.cs com 15 testes aprovados e ACL restrita" },
-                new() { ModuleName = "Coleta e Radar Autônomo", Category = "Coleta", Description = "MinhaBelem.Worker Windows Service + RadarWorker com bloqueio GET_LOCK e heartbeat persistido", Status = "Operacional em produção", ProgressPercent = 100, Evidence = "Tabela mb_radar_heartbeats e varredura de fontes públicas a cada 10 min" },
-                new() { ModuleName = "Inteligência Artificial Multi-Provedor", Category = "IA", Description = "Groq, Gemini e DeepSeek com circuit breaker, limite atômico de tokens e proteção contra injection", Status = "Operacional em produção", ProgressPercent = 100, Evidence = "AiAnalysisService e TesseractMediaAnalysis com fallback estruturado" },
-                new() { ModuleName = "Catálogo de Fontes Públicas", Category = "Fontes", Description = "Fontes institucionais e oficiais verificadas com termos de uso, licença e periodicidade", Status = "Operacional em produção", ProgressPercent = 100, Evidence = "Tabela mb_ingestion_sources com URLs reais e conformidade com robots.txt" },
-                new() { ModuleName = "Esteira de Publicação Editorial", Category = "Publicação editorial", Description = "Descoberta → Extração → IA → Verificação → Revisão Humana Obrigatória → Publicação", Status = "Operacional em produção", ProgressPercent = 100, Evidence = "Telas /editorial/editar, /editorial/revisar com histórico de revisões e autoria" },
-                new() { ModuleName = "Google Places e Guia de Belém", Category = "Google Places", Description = "Consulta de atrações, gastronomia e serviços com cache temporário em memória e expurgo", Status = "Operacional em produção", ProgressPercent = 100, Evidence = "GooglePlacesClient em estrita conformidade com os termos do Google" },
-                new() { ModuleName = "Mobilidade Urbana", Category = "Mobilidade", Description = "Linhas de ônibus municipais, transporte fluvial Belém-Ilhas, tarifas e interdições de vias", Status = "Operacional em produção", ProgressPercent = 100, Evidence = "Tabela mb_transit_lines e integração com avisos oficiais" },
-                new() { ModuleName = "Internacionalização (7 Idiomas)", Category = "Multilíngue", Description = "pt-BR, en, es, fr, ru, zh-Hans, ja com URLs canônicas e preservação de termos culturais paraenses", Status = "Operacional em produção", ProgressPercent = 100, Evidence = "MinhaBelemStringLocalizerFactory e 7 arquivos .resx compilados" },
-                new() { ModuleName = "Desempenho e Concorrência", Category = "Performance", Description = "Rate Limiter particionado (120/min público, 12/min login, 3/min envio), caching em memória", Status = "Operacional em produção", ProgressPercent = 100, Evidence = "Middlewares assíncronos e tempo de resposta < 50ms para páginas estáticas" },
-                new() { ModuleName = "Infraestrutura Windows Server / IIS", Category = "Infraestrutura", Description = "Application Pool No Managed Code, Scripts deploy-iis.ps1 com rollback automático e setup-windows-vps.ps1", Status = "Operacional em produção", ProgressPercent = 100, Evidence = "Scripts PowerShell testados e documentados em docs/ e scripts/" },
-                new() { ModuleName = "Observabilidade e Monitoramento", Category = "Monitoramento", Description = "Endpoint /health, telemetria persistida em mb_radar_heartbeats, logs estruturados e auditoria", Status = "Operacional em produção", ProgressPercent = 100, Evidence = "Tabela mb_audit_log e painel administrativo em tempo real" }
-            },
-            QualityIndicators = new List<QualityIndicator>
-            {
-                new() { Name = "Segurança HTTPS & Antiforgery", Target = "100%", Actual = "100%", Passed = true, Notes = "Validado via PortalFixture e Data Protection persistido" },
-                new() { Name = "Mocks em Homologação", Target = "0%", Actual = "0%", Passed = true, Notes = "Todas as integrações testadas contra banco real MySQL 8" },
-                new() { Name = "Proteção SSRF e Prompt Injection", Target = "Ativo", Actual = "Ativo", Passed = true, Notes = "Filtro SafeUrl e isolamento estrito de instruções externas" },
-                new() { Name = "Taxa de Sucesso em Testes", Target = "100%", Actual = "100%", Passed = true, Notes = "96 testes (74 unitários/HTTP locais + 22 testes MySQL descartáveis no CI)" },
-                new() { Name = "Respeito a Robots.txt & Licenças", Target = "Obrigatório", Actual = "Em Conformidade", Passed = true, Notes = "RobotsGate com cache de 12h e verificação de licença" },
-                new() { Name = "Worker Independente (Windows Service)", Target = "Ativo", Actual = "Disponível", Passed = true, Notes = "Projeto MinhaBelem.Worker desacoplado do ciclo HTTP do IIS" }
-            },
-            RecentCommits = new List<CommitEntry>
-            {
-                new() { Hash = "83f9fba", Message = "feat(sprint-11): estabilizacao definitiva, operacao autonoma e pre-producao", Date = DateTime.UtcNow },
-                new() { Hash = "7c296f5", Message = "fix(auth): corrige extracao de chave MFA e antiforgery nos testes HTTP; feat(admin): adiciona painel de evolucao do projeto", Date = DateTime.UtcNow.AddHours(-1) },
-                new() { Hash = "b0b7b50", Message = "feat(radar): implementa heartbeat persistido, telemetria em tempo real, expansão de fontes oficiais e radar social", Date = DateTime.UtcNow.AddHours(-2) }
-            }
+            SocialPostsCount = socialPosts.Count
         };
 
         return View(model);

@@ -15,7 +15,7 @@
         <div class="admin-header">
             <div>
                 <span class="eyebrow">ADMINISTRAÇÃO MULTILÍNGUE</span>
-                <h1 style="font-size:2.2rem;margin-top:4px;">Idiomas Globais da Plataforma</h1>
+                <h1 class="view-26731c99">Idiomas Globais da Plataforma</h1>
                 <p class="small text-muted">Gestão dos 7 idiomas nativos suportados, direção de texto (LTR/RTL) e política de moderação.</p>
             </div>
             <a href="/admin/traducoes" class="button secondary small">Fila de Traduções →</a>
@@ -28,7 +28,7 @@
 
     @if (stats is not null)
     {
-        <div class="grid stats-grid" style="margin-bottom: 24px;">
+        <div class="view-fec3619e grid stats-grid">
             <div class="card stat-card">
                 <span class="small">✅ Traduções Aprovadas</span>
                 <h3>@stats.ApprovedTranslations</h3>
@@ -96,7 +96,7 @@
                         <td>
                             @if (!lang.IsDefault)
                             {
-                                <form action="/admin/idiomas/@lang.Code/estado" method="post" style="display:inline;">
+                                <form action="/admin/idiomas/@lang.Code/estado" method="post" class="view-a91548c5">
                                     @Html.AntiForgeryToken()
                                     <input type="hidden" name="enabled" value="@(lang.IsEnabled ? "false" : "true")" />
                                     <input type="hidden" name="requiresApproval" value="@(lang.RequiresHumanApproval ? "true" : "false")" />

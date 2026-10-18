@@ -1434,3 +1434,108 @@ VALUES ('RadarWorker', UTC_TIMESTAMP(6), 'idle', 'Worker inicializado e aguardan
 
 
 
+
+-- @migration SPRINT14_COLLECTION_QUEUE
+CREATE TABLE IF NOT EXISTS collection_requests (
+    id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    kind VARCHAR(16) NOT NULL,
+    target_url VARCHAR(1000) NULL,
+    requested_by_id BIGINT NOT NULL,
+    status VARCHAR(16) NOT NULL DEFAULT 'pending',
+    attempts INT NOT NULL DEFAULT 0,
+    requested_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+    available_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+    started_at DATETIME(6) NULL,
+    finished_at DATETIME(6) NULL,
+    error VARCHAR(500) NULL,
+    INDEX ix_collection_queue (status, available_at, id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- @migration sprint15_editorial_identity
+SET @minhabelem_ddl = IF(EXISTS(SELECT 1 FROM information_schema.columns WHERE table_schema=DATABASE() AND table_name='mb_users' AND column_name='must_change_password'),'SELECT 1','ALTER TABLE mb_users ADD COLUMN must_change_password TINYINT(1) NOT NULL DEFAULT 0');
+PREPARE minhabelem_stmt FROM @minhabelem_ddl; EXECUTE minhabelem_stmt; DEALLOCATE PREPARE minhabelem_stmt;
+CREATE TABLE IF NOT EXISTS mb_editorial_batches (
+ id CHAR(32) PRIMARY KEY, actor_id BIGINT UNSIGNED NOT NULL, action VARCHAR(40) NOT NULL,
+ request_hash CHAR(64) NOT NULL, reason VARCHAR(500) NOT NULL, status VARCHAR(24) NOT NULL DEFAULT 'preview',
+ created_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6), finished_at DATETIME(6) NULL,
+ FOREIGN KEY(actor_id) REFERENCES mb_users(id), KEY idx_editorial_batch_status(status,created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+CREATE TABLE IF NOT EXISTS mb_editorial_batch_items (
+ batch_id CHAR(32) NOT NULL, target_id BIGINT UNSIGNED NOT NULL, target_kind VARCHAR(16) NOT NULL,
+ revision BIGINT NOT NULL, payload JSON NOT NULL, status VARCHAR(24) NOT NULL DEFAULT 'pending',
+ result VARCHAR(500) NULL, PRIMARY KEY(batch_id,target_kind,target_id),
+ FOREIGN KEY(batch_id) REFERENCES mb_editorial_batches(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- @migration sprint15_media_library
+CREATE TABLE IF NOT EXISTS mb_media_assets (
+ id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,storage_key CHAR(32) NULL,mime_type VARCHAR(40) NULL,
+ description VARCHAR(500) NOT NULL,credit VARCHAR(300) NOT NULL,license VARCHAR(500) NOT NULL,
+ content_id BIGINT UNSIGNED NULL,youtube_id CHAR(11) NULL,authorized_by BIGINT UNSIGNED NOT NULL,
+ created_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+ FOREIGN KEY(content_id) REFERENCES mb_content_items(id) ON DELETE SET NULL,
+ FOREIGN KEY(authorized_by) REFERENCES mb_users(id),KEY idx_media_content(content_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+
+-- @migration sprint15b_mobility_provenance
+SET @minhabelem_ddl = IF(EXISTS(SELECT 1 FROM information_schema.columns WHERE table_schema=DATABASE() AND table_name='mb_transit_lines' AND column_name='source_url'),'SELECT 1','ALTER TABLE mb_transit_lines ADD COLUMN source_url VARCHAR(2000) NULL');
+PREPARE minhabelem_stmt FROM @minhabelem_ddl; EXECUTE minhabelem_stmt; DEALLOCATE PREPARE minhabelem_stmt;
+SET @minhabelem_ddl = IF(EXISTS(SELECT 1 FROM information_schema.columns WHERE table_schema=DATABASE() AND table_name='mb_transit_lines' AND column_name='verified_at'),'SELECT 1','ALTER TABLE mb_transit_lines ADD COLUMN verified_at DATETIME(6) NULL');
+PREPARE minhabelem_stmt FROM @minhabelem_ddl; EXECUTE minhabelem_stmt; DEALLOCATE PREPARE minhabelem_stmt;
+SET @minhabelem_ddl = IF(EXISTS(SELECT 1 FROM information_schema.columns WHERE table_schema=DATABASE() AND table_name='mb_transit_lines' AND column_name='valid_until'),'SELECT 1','ALTER TABLE mb_transit_lines ADD COLUMN valid_until DATETIME(6) NULL');
+PREPARE minhabelem_stmt FROM @minhabelem_ddl; EXECUTE minhabelem_stmt; DEALLOCATE PREPARE minhabelem_stmt;
+SET @minhabelem_ddl = IF(EXISTS(SELECT 1 FROM information_schema.columns WHERE table_schema=DATABASE() AND table_name='mb_transit_lines' AND column_name='fare_valid_until'),'SELECT 1','ALTER TABLE mb_transit_lines ADD COLUMN fare_valid_until DATETIME(6) NULL');
+PREPARE minhabelem_stmt FROM @minhabelem_ddl; EXECUTE minhabelem_stmt; DEALLOCATE PREPARE minhabelem_stmt;
+SET @minhabelem_ddl = IF(EXISTS(SELECT 1 FROM information_schema.columns WHERE table_schema=DATABASE() AND table_name='mb_transit_stops' AND column_name='source_url'),'SELECT 1','ALTER TABLE mb_transit_stops ADD COLUMN source_url VARCHAR(2000) NULL');
+PREPARE minhabelem_stmt FROM @minhabelem_ddl; EXECUTE minhabelem_stmt; DEALLOCATE PREPARE minhabelem_stmt;
+SET @minhabelem_ddl = IF(EXISTS(SELECT 1 FROM information_schema.columns WHERE table_schema=DATABASE() AND table_name='mb_transit_stops' AND column_name='verified_at'),'SELECT 1','ALTER TABLE mb_transit_stops ADD COLUMN verified_at DATETIME(6) NULL');
+PREPARE minhabelem_stmt FROM @minhabelem_ddl; EXECUTE minhabelem_stmt; DEALLOCATE PREPARE minhabelem_stmt;
+SET @minhabelem_ddl = IF(EXISTS(SELECT 1 FROM information_schema.columns WHERE table_schema=DATABASE() AND table_name='mb_transit_stops' AND column_name='valid_until'),'SELECT 1','ALTER TABLE mb_transit_stops ADD COLUMN valid_until DATETIME(6) NULL');
+PREPARE minhabelem_stmt FROM @minhabelem_ddl; EXECUTE minhabelem_stmt; DEALLOCATE PREPARE minhabelem_stmt;
+SET @minhabelem_ddl = IF(EXISTS(SELECT 1 FROM information_schema.columns WHERE table_schema=DATABASE() AND table_name='mb_river_routes' AND column_name='source_url'),'SELECT 1','ALTER TABLE mb_river_routes ADD COLUMN source_url VARCHAR(2000) NULL');
+PREPARE minhabelem_stmt FROM @minhabelem_ddl; EXECUTE minhabelem_stmt; DEALLOCATE PREPARE minhabelem_stmt;
+SET @minhabelem_ddl = IF(EXISTS(SELECT 1 FROM information_schema.columns WHERE table_schema=DATABASE() AND table_name='mb_river_routes' AND column_name='verified_at'),'SELECT 1','ALTER TABLE mb_river_routes ADD COLUMN verified_at DATETIME(6) NULL');
+PREPARE minhabelem_stmt FROM @minhabelem_ddl; EXECUTE minhabelem_stmt; DEALLOCATE PREPARE minhabelem_stmt;
+SET @minhabelem_ddl = IF(EXISTS(SELECT 1 FROM information_schema.columns WHERE table_schema=DATABASE() AND table_name='mb_river_routes' AND column_name='valid_until'),'SELECT 1','ALTER TABLE mb_river_routes ADD COLUMN valid_until DATETIME(6) NULL');
+PREPARE minhabelem_stmt FROM @minhabelem_ddl; EXECUTE minhabelem_stmt; DEALLOCATE PREPARE minhabelem_stmt;
+SET @minhabelem_ddl = IF(EXISTS(SELECT 1 FROM information_schema.columns WHERE table_schema=DATABASE() AND table_name='mb_river_routes' AND column_name='fare_valid_until'),'SELECT 1','ALTER TABLE mb_river_routes ADD COLUMN fare_valid_until DATETIME(6) NULL');
+PREPARE minhabelem_stmt FROM @minhabelem_ddl; EXECUTE minhabelem_stmt; DEALLOCATE PREPARE minhabelem_stmt;
+SET @minhabelem_ddl = IF(EXISTS(SELECT 1 FROM information_schema.columns WHERE table_schema=DATABASE() AND table_name='mb_transit_alerts' AND column_name='source_url'),'SELECT 1','ALTER TABLE mb_transit_alerts ADD COLUMN source_url VARCHAR(2000) NULL');
+PREPARE minhabelem_stmt FROM @minhabelem_ddl; EXECUTE minhabelem_stmt; DEALLOCATE PREPARE minhabelem_stmt;
+SET @minhabelem_ddl = IF(EXISTS(SELECT 1 FROM information_schema.columns WHERE table_schema=DATABASE() AND table_name='mb_transit_alerts' AND column_name='verified_at'),'SELECT 1','ALTER TABLE mb_transit_alerts ADD COLUMN verified_at DATETIME(6) NULL');
+PREPARE minhabelem_stmt FROM @minhabelem_ddl; EXECUTE minhabelem_stmt; DEALLOCATE PREPARE minhabelem_stmt;
+SET @minhabelem_ddl = IF(EXISTS(SELECT 1 FROM information_schema.columns WHERE table_schema=DATABASE() AND table_name='mb_transit_alerts' AND column_name='valid_until'),'SELECT 1','ALTER TABLE mb_transit_alerts ADD COLUMN valid_until DATETIME(6) NULL');
+PREPARE minhabelem_stmt FROM @minhabelem_ddl; EXECUTE minhabelem_stmt; DEALLOCATE PREPARE minhabelem_stmt;
+CREATE TABLE IF NOT EXISTS mb_route_api_usage(day DATE PRIMARY KEY,requests INT NOT NULL DEFAULT 0,failures INT NOT NULL DEFAULT 0,last_error VARCHAR(100) NULL) ENGINE=InnoDB;
+CREATE TABLE IF NOT EXISTS mb_place_visit_info(
+ place_id BIGINT UNSIGNED PRIMARY KEY,revision INT NOT NULL DEFAULT 1,source_url VARCHAR(2000) NOT NULL,
+ confirmed_at DATETIME(6) NOT NULL,valid_until DATETIME(6) NOT NULL,closed_until DATE NULL,
+ reservation_only TINYINT(1) NOT NULL DEFAULT 0,last_entry_minutes INT NULL,
+ entry_price DECIMAL(12,2) NULL,half_price DECIMAL(12,2) NULL,price_conditions VARCHAR(500) NULL,
+ FOREIGN KEY(place_id) REFERENCES mb_places(id) ON DELETE CASCADE,
+ CHECK(entry_price IS NULL OR entry_price>=0),CHECK(half_price IS NULL OR half_price>=0)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+CREATE TABLE IF NOT EXISTS mb_place_visit_hours(
+ id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,place_id BIGINT UNSIGNED NOT NULL,
+ weekday TINYINT NOT NULL,special_date DATE NULL,sector VARCHAR(120) NOT NULL DEFAULT 'principal',
+ open_minute INT NULL,close_minute INT NULL,is_closed TINYINT(1) NOT NULL DEFAULT 0,
+ is_24h TINYINT(1) NOT NULL DEFAULT 0,
+ FOREIGN KEY(place_id) REFERENCES mb_place_visit_info(place_id) ON DELETE CASCADE,
+ KEY idx_visit_hours(place_id,special_date,weekday),CHECK(weekday BETWEEN 0 AND 6),
+ CHECK(open_minute IS NULL OR open_minute BETWEEN 0 AND 1439),CHECK(close_minute IS NULL OR close_minute BETWEEN 0 AND 1439)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+CREATE TABLE IF NOT EXISTS mb_place_visit_history(
+ id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,place_id BIGINT UNSIGNED NOT NULL,actor_id BIGINT UNSIGNED NULL,
+ snapshot JSON NOT NULL,created_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+ FOREIGN KEY(place_id) REFERENCES mb_places(id) ON DELETE CASCADE,FOREIGN KEY(actor_id) REFERENCES mb_users(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+
+-- @migration sprint15_place_media
+CREATE TABLE IF NOT EXISTS mb_place_media_assets(
+ media_id BIGINT UNSIGNED NOT NULL,place_id BIGINT UNSIGNED NOT NULL,
+ PRIMARY KEY(media_id,place_id),KEY idx_place_media(place_id),
+ FOREIGN KEY(media_id) REFERENCES mb_media_assets(id) ON DELETE CASCADE,
+ FOREIGN KEY(place_id) REFERENCES mb_places(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

@@ -128,6 +128,7 @@ public sealed class AdvancedOperationalTests(PortalFixture fixture)
     {
         await using var db = await fixture.OpenAsync();
         var id = await db.ExecuteScalarAsync<long>("INSERT INTO mb_community_submissions (display_name,message) VALUES ('Teste SQL','Preservar registro'); SELECT LAST_INSERT_ID();");
+        var tablesBefore = await db.ExecuteScalarAsync<int>("SELECT COUNT(*) FROM information_schema.tables WHERE table_schema=DATABASE()");
         using var stream = typeof(SchemaMigrator).Assembly.GetManifestResourceStream("MinhaBelem.Infrastructure.MINHABELEM.SQL")!;
         using var reader = new StreamReader(stream); var sql = await reader.ReadToEndAsync();
         await db.ExecuteAsync(sql); await db.ExecuteAsync(sql);
@@ -135,7 +136,7 @@ public sealed class AdvancedOperationalTests(PortalFixture fixture)
         Assert.Equal(4, await db.ExecuteScalarAsync<int>("SELECT COUNT(*) FROM mb_roles"));
         Assert.Equal(17, await db.ExecuteScalarAsync<int>("SELECT COUNT(*) FROM mb_permissions"));
         Assert.Equal(38, await db.ExecuteScalarAsync<int>("SELECT COUNT(*) FROM mb_role_permissions"));
-        Assert.Equal(62, await db.ExecuteScalarAsync<int>("SELECT COUNT(*) FROM information_schema.tables WHERE table_schema=DATABASE()"));
+        Assert.Equal(tablesBefore, await db.ExecuteScalarAsync<int>("SELECT COUNT(*) FROM information_schema.tables WHERE table_schema=DATABASE()"));
     }
     [MySqlFact]
     public async Task LegacyImportIsExplicitAdditiveAndKeepsPublicIds()

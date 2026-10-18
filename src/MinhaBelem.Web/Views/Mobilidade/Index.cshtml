@@ -11,7 +11,7 @@
         <div class="eyebrow">TRANSPORTE & TRÂNSITO EM BELÉM 🚌 🚤</div>
         <h1>Mobilidade Urbana</h1>
         <p>Linhas de ônibus, estações BRT, travessias fluviais amazônicas e alertas oficiais de trânsito em tempo real.</p>
-        
+
         <form method="get" action="/mobilidade" class="search" role="search">
             <label for="busca-linha" class="sr-only">Buscar linha, bairro ou trajeto</label>
             <input id="busca-linha" name="busca" maxlength="120" placeholder="Digite número da linha, rua ou destino (ex: 758, Ver-o-Peso, BRT)..." value="@Model.SearchQuery" />
@@ -54,7 +54,7 @@
                 <span class="eyebrow">TRANSPORTE COLETIVO</span>
                 <h2>Linhas de Ônibus & BRT</h2>
             </div>
-            <div class="filter-pills" style="display:flex;gap:8px;flex-wrap:wrap;">
+            <div class="view-31e4e2a2 filter-pills">
                 <a href="/mobilidade" class="button @(string.IsNullOrEmpty(Model.SelectedType) ? "" : "secondary") small">Todas</a>
                 <a href="/mobilidade?tipo=BRT" class="button @(Model.SelectedType == "BRT" ? "" : "secondary") small">BRT Metropolitano</a>
                 <a href="/mobilidade?tipo=Urbano" class="button @(Model.SelectedType == "Urbano" ? "" : "secondary") small">Urbanas</a>
@@ -91,12 +91,12 @@
                         }
 
                         <div class="line-features" style="display:flex;gap:12px;margin:12px 0;font-size:0.85rem;">
-                            <span>💰 R$ @line.Fare.ToString("F2")</span>
-                            @if (line.HasAirConditioning)
+                            <span>💰 @(line.ConfirmedFare is {} fare ? "R$ " + fare.ToString("F2") : "Tarifa não confirmada")</span>
+                            @if (line.IsVerified && line.HasAirConditioning)
                             {
                                 <span>❄️ Ar-condicionado</span>
                             }
-                            @if (line.HasWheelchairLift)
+                            @if (line.IsVerified && line.HasWheelchairLift)
                             {
                                 <span>♿ Elevador acessível</span>
                             }
@@ -130,10 +130,10 @@
                     <p><strong>Embarque:</strong> @route.DeparturePort</p>
                     <p><strong>Desembarque:</strong> @route.DestinationPort</p>
                     <div class="river-meta" style="margin:12px 0;font-size:0.9rem;">
-                        <p>⏱️ <strong>Duração estimada:</strong> ~@route.EstimatedDurationMinutes minutos</p>
-                        <p>💰 <strong>Tarifa:</strong> R$ @route.Fare.ToString("F2")</p>
+                        <p>⏱️ <strong>Duração estimada:</strong> @(route.IsVerified && route.EstimatedDurationMinutes>0 ? route.EstimatedDurationMinutes + " min" : "Não confirmada")</p>
+                        <p>💰 <strong>Tarifa:</strong> @(route.ConfirmedFare is {} riverFare ? "R$ " + riverFare.ToString("F2") : "Não confirmada")</p>
                         <p>🚢 <strong>Embarcação:</strong> @route.VesselType</p>
-                        <p>🕒 <strong>Horários:</strong> @route.OperatingHours</p>
+                        <p>🕒 <strong>Horários:</strong> @(route.IsVerified ? route.OperatingHours : "Confirme a operação com o responsável")</p>
                     </div>
                     @if (!string.IsNullOrWhiteSpace(route.OperatorNotes))
                     {

@@ -5,33 +5,32 @@
 }
 
 <aside class="admin-sidebar" aria-label="Navegação Administrativa">
-    <div style="padding: 0 12px 10px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 8px;">
-        <span style="font-size:0.75rem; letter-spacing:0.1em; color:var(--gold); font-weight:800; text-transform:uppercase;">Painel de Controle</span>
-        <div style="font-size:1.15rem; font-weight:800; color:white; font-family:var(--font-heading);">MinhaBelém 360</div>
-    </div>
+    <div class="admin-brand"><span>@Loc["Admin_Dashboard"]</span><strong>MinhaBelém 360</strong></div>
 
     <!-- GRUPO: EDITORIAL -->
     <div class="admin-sidebar-group">
-        <span class="admin-sidebar-heading">Editorial & Conteúdo</span>
+        <span class="admin-sidebar-heading">@Loc["AdminContent"]</span>
         <a href="/admin" class="@(currentPath == "/admin" ? "active" : "")">
-            <span>📊</span> Dashboard Executivo
+            <span>📊</span> @Loc["Admin_Dashboard"]
         </a>
         <a href="/admin/evolucao" class="@(currentPath.StartsWith("/admin/evolucao") ? "active" : "")">
-            <span>🚀</span> Evolução & Homologação
+            <span>🚀</span> @Loc["AdminProgress"]
         </a>
         @if (User.HasClaim("mb:permission", Permissions.ContentRead))
         {
             <a href="/admin/conteudo" class="@(currentPath.StartsWith("/admin/conteudo") ? "active" : "")">
-                <span>📰</span> Gestão de Matérias
+                <span>📰</span> @Loc["AdminContent"]
             </a>
             <a href="/editorial" class="@(currentPath.StartsWith("/editorial") ? "active" : "")">
-                <span>✍️</span> Fila Editorial
+                <span>✍️</span> @Loc["AdminEditorial"]
             </a>
+            <a href="/editorial/lotes">@Loc["BatchTitle"]</a>
+            @if(User.HasClaim("mb:permission",Permissions.ContentWrite)){<a href="/admin/midias">@Loc["PhotoGallery"]</a>}
         }
         @if (User.HasClaim("mb:permission", Permissions.PlaceManage))
         {
             <a href="/admin/lugares" class="@(currentPath.StartsWith("/admin/lugares") ? "active" : "")">
-                <span>📍</span> Guia de Lugares
+                <span>📍</span> @Loc["AdminPlaces"]
             </a>
         }
         @if (User.HasClaim("mb:permission", Permissions.SubmissionModerate))
@@ -48,13 +47,13 @@
         @if (User.HasClaim("mb:permission", Permissions.SettingsManage))
         {
             <a href="/admin/mobilidade" class="@(currentPath.StartsWith("/admin/mobilidade") ? "active" : "")">
-                <span>🚌</span> Mobilidade Urbana
+                <span>🚌</span> @Loc["NavMobility"]
             </a>
         }
         @if (User.HasClaim("mb:permission", Permissions.PlaceManage))
         {
             <a href="/admin/bairros" class="@(currentPath.StartsWith("/admin/bairros") ? "active" : "")">
-                <span>🏘️</span> Guias de Bairro
+                <span>🏘️</span> @Loc["NavNeighborhood"]
             </a>
         }
     </div>
@@ -68,7 +67,7 @@
                 <span>🧭</span> MinhaBelém Radar
             </a>
             <a href="/admin/fontes" class="@(currentPath.StartsWith("/admin/fontes") ? "active" : "")">
-                <span>📡</span> Fontes de Ingestão
+                <span>📡</span> @Loc["AdminSources"]
             </a>
         }
         @if (User.HasClaim("mb:permission", Permissions.TranslationRead))
@@ -77,13 +76,13 @@
                 <span>🌐</span> Moderação de IA
             </a>
             <a href="/admin/idiomas" class="@(currentPath.StartsWith("/admin/idiomas") ? "active" : "")">
-                <span>🗣️</span> Gestão de Idiomas
+                <span>🗣️</span> @Loc["Admin_Languages"]
             </a>
         }
         @if (User.HasClaim("mb:permission", Permissions.DashboardRead))
         {
             <a href="/admin/relatorios" class="@(currentPath.StartsWith("/admin/relatorios") ? "active" : "")">
-                <span>📈</span> Métricas & IA Tokens
+                <span>📈</span> @Loc["AdminReports"]
             </a>
         }
     </div>
@@ -94,7 +93,7 @@
         <div class="admin-sidebar-group">
             <span class="admin-sidebar-heading">Negócios & Parceiros</span>
             <a href="/admin/anunciantes" class="@(currentPath.StartsWith("/admin/anunciantes") ? "active" : "")">
-                <span>💼</span> Anunciantes & Campanhas
+                <span>💼</span> @Loc["NavPartners"]
             </a>
         </div>
     }
@@ -105,25 +104,25 @@
         @if (User.HasClaim("mb:permission", Permissions.UserManage))
         {
             <a href="/admin/usuarios" class="@(currentPath.StartsWith("/admin/usuarios") ? "active" : "")">
-                <span>👥</span> Usuários & Acessos
+                <span>👥</span> @Loc["AdminUsers"]
             </a>
             <a href="/admin/perfis" class="@(currentPath.StartsWith("/admin/perfis") ? "active" : "")">
-                <span>🛡️</span> Perfis & Permissões
+                <span>🛡️</span> @Loc["AdminRoles"]
             </a>
         }
         @if (User.HasClaim("mb:permission", Permissions.AuditRead))
         {
             <a href="/admin/auditoria" class="@(currentPath.StartsWith("/admin/auditoria") ? "active" : "")">
-                <span>📜</span> Trilha de Auditoria
+                <span>📜</span> @Loc["AdminAudit"]
             </a>
         }
         @if (User.HasClaim("mb:permission", Permissions.SettingsManage))
         {
             <a href="/admin/integracoes" class="@(currentPath.StartsWith("/admin/integracoes") ? "active" : "")">
-                <span>🔌</span> Integrações Externas
+                <span>🔌</span> @Loc["AdminIntegrations"]
             </a>
             <a href="/admin/configuracoes" class="@(currentPath.StartsWith("/admin/configuracoes") ? "active" : "")">
-                <span>⚙️</span> Configurações Gerais
+                <span>⚙️</span> @Loc["AdminSettings"]
             </a>
         }
     </div>
