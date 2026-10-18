@@ -67,6 +67,9 @@ public sealed class TransitAlert
 
 public sealed class RiverRoute
 {
+    public string? OperatorName {get;set;}
+    public bool? IsAccessible {get;set;}
+    public int Revision {get;set;}=1;
     public string? SourceUrl { get; set; }
     public DateTime? VerifiedAt { get; set; }
     public DateTime? ValidUntil { get; set; }

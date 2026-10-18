@@ -11,7 +11,10 @@ namespace MinhaBelem.Infrastructure.MySql;
 
 public sealed record CuratedAgenda(DateOnly FromDate, DateOnly ThroughDate, DateTimeOffset VerifiedAtUtc, IReadOnlyList<CuratedEvent> Events);
 public sealed record CuratedEvent(string Title, DateOnly Date, string? Time, DateTimeOffset? End, string Subject, ContentCategory Category,
-    string Venue, string Address, string? Neighborhood, string SourceName, string SourceUrl, string Summary, string? Price, string? Age, DateOnly? LastDate);
+    string Venue, string Address, string? Neighborhood, string SourceName, string SourceUrl, string Summary, string? Price, string? Age, DateOnly? LastDate)
+{
+    public bool IsFree {get;init;}
+}
 public sealed record AgendaImportResult(int Inserted, int Existing, IReadOnlyList<long> ContentIds);
 
 /// <summary>Explicit, reviewed factual import. No crawler activation or updates to existing editorial work.</summary>
@@ -22,7 +25,7 @@ public sealed class CuratedAgendaImporter(IContentRepository content)
         var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
         options.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
         var data = JsonSerializer.Deserialize<CuratedAgenda>(json, options) ?? throw new ArgumentException("Agenda inválida.");
-        if (data.Events is not { Count: > 0 and <= 1000 } || data.ThroughDate < data.FromDate || data.ThroughDate > data.FromDate.AddMonths(3)
+        if (data.Events is not { Count: > 0 and <= 1000 } || data.ThroughDate < data.FromDate || data.ThroughDate > data.FromDate.AddDays(365)
             || data.VerifiedAtUtc > DateTimeOffset.UtcNow.AddMinutes(5) || data.VerifiedAtUtc < DateTimeOffset.UtcNow.AddDays(-7)) throw new ArgumentException("Período ou verificação inválidos.");
         foreach (var e in data.Events)
         {
@@ -62,10 +65,10 @@ public sealed class CuratedAgendaImporter(IContentRepository content)
                 Summary = e.Summary, Body = e.Summary, Address = e.Address, Neighborhood = e.Neighborhood, Municipality = "Belém",
                 SourceName = e.SourceName, SourceUrl = e.SourceUrl, SourceUrlHash = Hashing.Sha256("curated-session|" + occurrence),
                 AuthorName = "Curadoria MinhaBelém", EventStartAt = start, EventEndAt = end,
-                TicketPriceText = e.Price, IsFree = false, Status = ContentStatus.Published, VerificationStatus = VerificationStatus.Verified,
+                TicketPriceText = e.Price, TicketPrice=e.IsFree?0:null, IsFree = e.IsFree, Status = ContentStatus.Published, VerificationStatus = VerificationStatus.Verified,
                 RequiresHumanApproval = false, LastVerifiedAt = data.VerifiedAtUtc.UtcDateTime, ExpiresAt = expires,
                 ImageUrl = "/images/agenda/" + illustration + ".svg", ImageCredit = "Ilustração autoral MinhaBelém; não é foto do evento", ImageLicense = "Arte vetorial autoral do projeto",
-                EventDetails = new(start, end, e.Venue, e.SourceName, e.Time is null ? "DateOnly" : "Scheduled", e.Price, false, e.Age, null, e.SourceUrl),
+                EventDetails = new(start, end, e.Venue, e.SourceName, e.Time is null ? "DateOnly" : "Scheduled", e.Price, e.IsFree, e.Age, null, e.SourceUrl){DateOnly=e.Time is null},
                 Audiences = e.Subject == "infantil" ? [Audience.Infantil] : []
             };
             ids.Add(await content.InsertAsync(item, null, "Cadastro factual pontual solicitado pelo usuário em 18/10/2026; evidência na fonte indicada; sem autorização de coleta contínua.", ct));

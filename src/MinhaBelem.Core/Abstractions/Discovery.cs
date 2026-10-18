@@ -22,6 +22,7 @@ public sealed record EventEvidence(DateTime? StartUtc, DateTime? EndUtc, string?
 {
     public string? PublicUpdateNote { get; init; }
     public string? Availability { get; init; }
+    public bool DateOnly { get; init; }
 }
 public sealed record DiscoveredItem(string Title, string Summary, string Url, string? Author, DateTime? PostedAt, EventEvidence? Event = null, string? ExternalId = null)
 {

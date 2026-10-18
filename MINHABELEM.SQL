@@ -1539,3 +1539,23 @@ CREATE TABLE IF NOT EXISTS mb_place_media_assets(
  FOREIGN KEY(media_id) REFERENCES mb_media_assets(id) ON DELETE CASCADE,
  FOREIGN KEY(place_id) REFERENCES mb_places(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- @migration sprint16_editorial_and_discovery_history
+SET @s16_sql=IF(EXISTS(SELECT 1 FROM information_schema.columns WHERE table_schema=DATABASE() AND table_name='mb_content_items' AND column_name='editorial_priority'),'SELECT 1','ALTER TABLE mb_content_items ADD COLUMN editorial_priority TINYINT UNSIGNED NOT NULL DEFAULT 0');
+PREPARE s16_stmt FROM @s16_sql; EXECUTE s16_stmt; DEALLOCATE PREPARE s16_stmt;
+SET @s16_sql=IF(EXISTS(SELECT 1 FROM information_schema.columns WHERE table_schema=DATABASE() AND table_name='mb_content_items' AND column_name='review_queue'),'SELECT 1','ALTER TABLE mb_content_items ADD COLUMN review_queue VARCHAR(32) NULL');
+PREPARE s16_stmt FROM @s16_sql; EXECUTE s16_stmt; DEALLOCATE PREPARE s16_stmt;
+SET @s16_sql=IF(EXISTS(SELECT 1 FROM information_schema.columns WHERE table_schema=DATABASE() AND table_name='mb_ingestion_candidates' AND column_name='editorial_priority'),'SELECT 1','ALTER TABLE mb_ingestion_candidates ADD COLUMN editorial_priority TINYINT UNSIGNED NOT NULL DEFAULT 0');
+PREPARE s16_stmt FROM @s16_sql; EXECUTE s16_stmt; DEALLOCATE PREPARE s16_stmt;
+SET @s16_sql=IF(EXISTS(SELECT 1 FROM information_schema.columns WHERE table_schema=DATABASE() AND table_name='mb_ingestion_candidates' AND column_name='review_queue'),'SELECT 1','ALTER TABLE mb_ingestion_candidates ADD COLUMN review_queue VARCHAR(32) NULL');
+PREPARE s16_stmt FROM @s16_sql; EXECUTE s16_stmt; DEALLOCATE PREPARE s16_stmt;
+SET @s16_sql=IF(EXISTS(SELECT 1 FROM information_schema.statistics WHERE table_schema=DATABASE() AND table_name='mb_discovery_versions' AND index_name='uq_discovery_version'),'ALTER TABLE mb_discovery_versions DROP INDEX uq_discovery_version, ADD KEY idx_discovery_version(candidate_id,id)','SELECT 1');
+PREPARE s16_stmt FROM @s16_sql; EXECUTE s16_stmt; DEALLOCATE PREPARE s16_stmt;
+
+-- @migration sprint16_river_editor
+SET @s16_sql=IF(EXISTS(SELECT 1 FROM information_schema.columns WHERE table_schema=DATABASE() AND table_name='mb_river_routes' AND column_name='operator_name'),'SELECT 1','ALTER TABLE mb_river_routes ADD COLUMN operator_name VARCHAR(150) NULL');
+PREPARE s16_stmt FROM @s16_sql; EXECUTE s16_stmt; DEALLOCATE PREPARE s16_stmt;
+SET @s16_sql=IF(EXISTS(SELECT 1 FROM information_schema.columns WHERE table_schema=DATABASE() AND table_name='mb_river_routes' AND column_name='is_accessible'),'SELECT 1','ALTER TABLE mb_river_routes ADD COLUMN is_accessible TINYINT(1) NULL');
+PREPARE s16_stmt FROM @s16_sql; EXECUTE s16_stmt; DEALLOCATE PREPARE s16_stmt;
+SET @s16_sql=IF(EXISTS(SELECT 1 FROM information_schema.columns WHERE table_schema=DATABASE() AND table_name='mb_river_routes' AND column_name='revision'),'SELECT 1','ALTER TABLE mb_river_routes ADD COLUMN revision INT NOT NULL DEFAULT 1');
+PREPARE s16_stmt FROM @s16_sql; EXECUTE s16_stmt; DEALLOCATE PREPARE s16_stmt;

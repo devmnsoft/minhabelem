@@ -60,8 +60,8 @@ public sealed partial class EventStructuredDataExtractor : IEventStructuredDataE
                     AgeRating: null,
                     Participants: null,
                     EvidenceUrl: url,
-                    Uncertain: dtStart is null
-                );
+                    Uncertain: dtStart is null || string.IsNullOrWhiteSpace(location)
+                ) { DateOnly = ExtractIcalProperty(icalText, "DTSTART") is { Length: 8 } };
 
                 results.Add(new DiscoveredItem(
                     Title: HtmlText.Clean(summary, 300),
@@ -69,7 +69,8 @@ public sealed partial class EventStructuredDataExtractor : IEventStructuredDataE
                     Url: url,
                     Author: null,
                     PostedAt: null,
-                    Event: evidence
+                    Event: evidence,
+                    ExternalId: ExtractIcalProperty(icalText, "UID") ?? "ical:" + summary + ":" + dtStart?.ToString("O")
                 ));
             }
         }
@@ -101,6 +102,7 @@ public sealed partial class EventStructuredDataExtractor : IEventStructuredDataE
         if (string.IsNullOrWhiteSpace(text)) return null;
 
         DateTime? startUtc = null;
+        var dateOnly = false;
 
         var portMatch = PortugueseDateRegex().Match(text);
         if (portMatch.Success)
@@ -109,7 +111,8 @@ public sealed partial class EventStructuredDataExtractor : IEventStructuredDataE
             var monthName = portMatch.Groups[2].Value.ToLowerInvariant();
             var month = MonthNameToNumber(monthName);
             var year = int.Parse(portMatch.Groups[3].Value);
-            var hour = portMatch.Groups[4].Success ? int.Parse(portMatch.Groups[4].Value) : 19;
+            var hour = portMatch.Groups[4].Success ? int.Parse(portMatch.Groups[4].Value) : 0;
+            dateOnly = !portMatch.Groups[4].Success;
             var minute = portMatch.Groups[5].Success && !string.IsNullOrWhiteSpace(portMatch.Groups[5].Value) ? int.Parse(portMatch.Groups[5].Value) : 0;
 
             if (month > 0)
@@ -131,7 +134,8 @@ public sealed partial class EventStructuredDataExtractor : IEventStructuredDataE
                 var day = int.Parse(numMatch.Groups[1].Value);
                 var month = int.Parse(numMatch.Groups[2].Value);
                 var year = int.Parse(numMatch.Groups[3].Value);
-                var hour = numMatch.Groups[4].Success ? int.Parse(numMatch.Groups[4].Value) : 19;
+                var hour = numMatch.Groups[4].Success ? int.Parse(numMatch.Groups[4].Value) : 0;
+                dateOnly = !numMatch.Groups[4].Success;
                 var minute = numMatch.Groups[5].Success && !string.IsNullOrWhiteSpace(numMatch.Groups[5].Value) ? int.Parse(numMatch.Groups[5].Value) : 0;
 
                 try
@@ -168,14 +172,14 @@ public sealed partial class EventStructuredDataExtractor : IEventStructuredDataE
             EndUtc: null,
             Location: location,
             Organizer: null,
-            Status: "Confirmed",
+            Status: "NeedsReview",
             Price: priceRaw,
             IsFree: isFree,
             AgeRating: ageRating,
             Participants: null,
             EvidenceUrl: url,
-            Uncertain: startUtc is null
-        );
+            Uncertain: true
+        ) { DateOnly = dateOnly };
     }
 
     private static int MonthNameToNumber(string name) => name switch

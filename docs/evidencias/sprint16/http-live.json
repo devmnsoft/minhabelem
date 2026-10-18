@@ -1,0 +1,699 @@
+{
+  "database": "local_application_database",
+  "sessions": 34,
+  "events": [
+    {
+      "Id": 1,
+      "Title": "Sonho Encantado de Cordel, O Musical",
+      "SourceName": "Theatro da Paz",
+      "SourceUrl": "https://www.theatrodapaz.com.br/informa-es-do-evento-e-registro/sonho-encantado-de-cordel-o-musical-2026-10-18-16-00",
+      "EventStartAt": "2026-10-18T19:00:00Z",
+      "EventEndAt": "2026-10-18T20:10:00Z",
+      "precision": "Scheduled"
+    },
+    {
+      "Id": 2,
+      "Title": "Sonho Encantado de Cordel, O Musical",
+      "SourceName": "Theatro da Paz",
+      "SourceUrl": "https://www.theatrodapaz.com.br/informa-es-do-evento-e-registro/sonho-encantado-de-cordel-o-musical-2026-10-18-16-00",
+      "EventStartAt": "2026-10-18T22:00:00Z",
+      "EventEndAt": null,
+      "precision": "Scheduled"
+    },
+    {
+      "Id": 3,
+      "Title": "Bruna Louise em Bel\u00E9m",
+      "SourceName": "NonStop \u2014 agenda oficial",
+      "SourceUrl": "https://bruna-louise.nonstop.com.br/",
+      "EventStartAt": "2026-10-18T22:00:00Z",
+      "EventEndAt": null,
+      "precision": "Scheduled"
+    },
+    {
+      "Id": 4,
+      "Title": "FIDA \u2013 Festival Internacional De Dan\u00E7a Da Amaz\u00F4nia",
+      "SourceName": "Theatro da Paz",
+      "SourceUrl": "https://www.theatrodapaz.com.br/informa-es-do-evento-e-registro/fida-festival-internacional-de-danca-da-amazonia-2026-10-21-09-00",
+      "EventStartAt": "2026-10-21T12:00:00Z",
+      "EventEndAt": "2026-10-21T16:00:00Z",
+      "precision": "Scheduled"
+    },
+    {
+      "Id": 5,
+      "Title": "FIDA \u2013 Festival Internacional De Dan\u00E7a Da Amaz\u00F4nia",
+      "SourceName": "Theatro da Paz",
+      "SourceUrl": "https://www.theatrodapaz.com.br/informa-es-do-evento-e-registro/fida-festival-internacional-de-danca-da-amazonia-2026-10-21-09-00",
+      "EventStartAt": "2026-10-21T17:00:00Z",
+      "EventEndAt": "2026-10-21T22:00:00Z",
+      "precision": "Scheduled"
+    },
+    {
+      "Id": 6,
+      "Title": "FIDA \u2013 Festival Internacional De Dan\u00E7a Da Amaz\u00F4nia",
+      "SourceName": "Theatro da Paz",
+      "SourceUrl": "https://www.theatrodapaz.com.br/informa-es-do-evento-e-registro/fida-festival-internacional-de-danca-da-amazonia-2026-10-21-09-00",
+      "EventStartAt": "2026-10-22T12:00:00Z",
+      "EventEndAt": "2026-10-22T16:00:00Z",
+      "precision": "Scheduled"
+    },
+    {
+      "Id": 7,
+      "Title": "FIDA \u2013 Festival Internacional De Dan\u00E7a Da Amaz\u00F4nia",
+      "SourceName": "Theatro da Paz",
+      "SourceUrl": "https://www.theatrodapaz.com.br/informa-es-do-evento-e-registro/fida-festival-internacional-de-danca-da-amazonia-2026-10-21-09-00",
+      "EventStartAt": "2026-10-22T17:00:00Z",
+      "EventEndAt": "2026-10-22T21:00:00Z",
+      "precision": "Scheduled"
+    },
+    {
+      "Id": 8,
+      "Title": "FIDA \u2013 Festival Internacional De Dan\u00E7a Da Amaz\u00F4nia",
+      "SourceName": "Theatro da Paz",
+      "SourceUrl": "https://www.theatrodapaz.com.br/informa-es-do-evento-e-registro/fida-festival-internacional-de-danca-da-amazonia-2026-10-21-09-00",
+      "EventStartAt": "2026-10-22T22:30:00Z",
+      "EventEndAt": null,
+      "precision": "Scheduled"
+    },
+    {
+      "Id": 9,
+      "Title": "FIDA \u2013 Festival Internacional De Dan\u00E7a Da Amaz\u00F4nia",
+      "SourceName": "Theatro da Paz",
+      "SourceUrl": "https://www.theatrodapaz.com.br/informa-es-do-evento-e-registro/fida-festival-internacional-de-danca-da-amazonia-2026-10-21-09-00",
+      "EventStartAt": "2026-10-23T22:30:00Z",
+      "EventEndAt": null,
+      "precision": "Scheduled"
+    },
+    {
+      "Id": 10,
+      "Title": "FIDA \u2013 Festival Internacional De Dan\u00E7a Da Amaz\u00F4nia",
+      "SourceName": "Theatro da Paz",
+      "SourceUrl": "https://www.theatrodapaz.com.br/informa-es-do-evento-e-registro/fida-festival-internacional-de-danca-da-amazonia-2026-10-21-09-00",
+      "EventStartAt": "2026-10-24T22:30:00Z",
+      "EventEndAt": null,
+      "precision": "Scheduled"
+    },
+    {
+      "Id": 11,
+      "Title": "Djavan \u2014 Djavanear 50 anos",
+      "SourceName": "Ticketmaster \u2014 bilheteria oficial",
+      "SourceUrl": "https://www.ticketmaster.com.br/event/djavan-venda-geral-belem",
+      "EventStartAt": "2026-10-25T00:00:00Z",
+      "EventEndAt": null,
+      "precision": "Scheduled"
+    },
+    {
+      "Id": 12,
+      "Title": "FIDA \u2013 Festival Internacional De Dan\u00E7a Da Amaz\u00F4nia",
+      "SourceName": "Theatro da Paz",
+      "SourceUrl": "https://www.theatrodapaz.com.br/informa-es-do-evento-e-registro/fida-festival-internacional-de-danca-da-amazonia-2026-10-21-09-00",
+      "EventStartAt": "2026-10-25T21:00:00Z",
+      "EventEndAt": null,
+      "precision": "Scheduled"
+    },
+    {
+      "Id": 13,
+      "Title": "O C\u00C9U DA L\u00CDNGUA",
+      "SourceName": "Theatro da Paz",
+      "SourceUrl": "https://www.theatrodapaz.com.br/informa-es-do-evento-e-registro/o-ceu-da-lingua-2026-10-28-21-00",
+      "EventStartAt": "2026-10-29T00:00:00Z",
+      "EventEndAt": "2026-10-29T01:30:00Z",
+      "precision": "Scheduled"
+    },
+    {
+      "Id": 14,
+      "Title": "O C\u00C9U DA L\u00CDNGUA",
+      "SourceName": "Theatro da Paz",
+      "SourceUrl": "https://www.theatrodapaz.com.br/informa-es-do-evento-e-registro/o-ceu-da-lingua-2026-10-28-21-00",
+      "EventStartAt": "2026-10-30T00:00:00Z",
+      "EventEndAt": null,
+      "precision": "Scheduled"
+    },
+    {
+      "Id": 33,
+      "Title": "MAZ ao P\u00F4r do Sol \u2014 Kamishibai Encantado",
+      "SourceName": "SECULT Par\u00E1 \u2014 programa\u00E7\u00E3o do MAZ",
+      "SourceUrl": "https://www.secult.pa.gov.br/noticia/2137/museu-das-amazonias-tem-programacao-gratuita-sobre-saberes-e-sabores-da-regiao-em-outubro",
+      "EventStartAt": "2026-10-30T20:30:00Z",
+      "EventEndAt": null,
+      "precision": "Scheduled"
+    },
+    {
+      "Id": 15,
+      "Title": "O C\u00C9U DA L\u00CDNGUA",
+      "SourceName": "Theatro da Paz",
+      "SourceUrl": "https://www.theatrodapaz.com.br/informa-es-do-evento-e-registro/o-ceu-da-lingua-2026-10-28-21-00",
+      "EventStartAt": "2026-10-31T00:00:00Z",
+      "EventEndAt": null,
+      "precision": "Scheduled"
+    },
+    {
+      "Id": 16,
+      "Title": "BAIXA SOCIEDADE",
+      "SourceName": "Theatro da Paz",
+      "SourceUrl": "https://www.theatrodapaz.com.br/informa-es-do-evento-e-registro/baixa-sociedade-2026-10-31-20-00",
+      "EventStartAt": "2026-10-31T23:00:00Z",
+      "EventEndAt": "2026-11-01T00:00:00Z",
+      "precision": "Scheduled"
+    },
+    {
+      "Id": 17,
+      "Title": "Corrida Unimed Bel\u00E9m 2026",
+      "SourceName": "Central da Corrida",
+      "SourceUrl": "https://centraldacorrida.com.br/evento/corrida-unimed-bel%C3%A9m-2026",
+      "EventStartAt": "2026-11-01T03:00:00Z",
+      "EventEndAt": "2026-11-02T02:59:59.999999Z",
+      "precision": "DateOnly"
+    },
+    {
+      "Id": 18,
+      "Title": "BAIXA SOCIEDADE",
+      "SourceName": "Theatro da Paz",
+      "SourceUrl": "https://www.theatrodapaz.com.br/informa-es-do-evento-e-registro/baixa-sociedade-2026-10-31-20-00",
+      "EventStartAt": "2026-11-01T21:00:00Z",
+      "EventEndAt": null,
+      "precision": "Scheduled"
+    },
+    {
+      "Id": 19,
+      "Title": "O FIGURANTE",
+      "SourceName": "Theatro da Paz",
+      "SourceUrl": "https://www.theatrodapaz.com.br/informa-es-do-evento-e-registro/o-figurante-2026-11-14-20-00",
+      "EventStartAt": "2026-11-14T23:00:00Z",
+      "EventEndAt": "2026-11-15T00:10:00Z",
+      "precision": "Scheduled"
+    },
+    {
+      "Id": 20,
+      "Title": "Corrida e Caminhada Amor em Foco \u2014 10 anos",
+      "SourceName": "Central da Corrida",
+      "SourceUrl": "https://centraldacorrida.com.br/evento/corrida-e-caminhada-amor-em-foco---10-anos",
+      "EventStartAt": "2026-11-15T03:00:00Z",
+      "EventEndAt": "2026-11-16T02:59:59.999999Z",
+      "precision": "DateOnly"
+    },
+    {
+      "Id": 21,
+      "Title": "O FIGURANTE",
+      "SourceName": "Theatro da Paz",
+      "SourceUrl": "https://www.theatrodapaz.com.br/informa-es-do-evento-e-registro/o-figurante-2026-11-14-20-00",
+      "EventStartAt": "2026-11-15T20:00:00Z",
+      "EventEndAt": null,
+      "precision": "Scheduled"
+    },
+    {
+      "Id": 22,
+      "Title": "TRILOGIA 23 ANOS",
+      "SourceName": "Theatro da Paz",
+      "SourceUrl": "https://www.theatrodapaz.com.br/informa-es-do-evento-e-registro/trilogia-23-anos",
+      "EventStartAt": "2026-11-20T23:00:00Z",
+      "EventEndAt": null,
+      "precision": "Scheduled"
+    },
+    {
+      "Id": 23,
+      "Title": "Rio, voando pela alegria",
+      "SourceName": "Theatro da Paz",
+      "SourceUrl": "https://www.theatrodapaz.com.br/informa-es-do-evento-e-registro/rio-voando-pela-alegria",
+      "EventStartAt": "2026-11-25T22:00:00Z",
+      "EventEndAt": null,
+      "precision": "Scheduled"
+    },
+    {
+      "Id": 24,
+      "Title": "ESPETACULO FUN FIT: JARDIM ENCANTADO",
+      "SourceName": "Theatro da Paz",
+      "SourceUrl": "https://www.theatrodapaz.com.br/informa-es-do-evento-e-registro/espetaculo-fun-fit-jardim-encantado",
+      "EventStartAt": "2026-11-30T22:00:00Z",
+      "EventEndAt": null,
+      "precision": "Scheduled"
+    },
+    {
+      "Id": 25,
+      "Title": "Congresso de Gente e Gest\u00E3o 2026",
+      "SourceName": "ABRH-PA \u2014 organiza\u00E7\u00E3o",
+      "SourceUrl": "https://abrhpa.org.br/congresso/",
+      "EventStartAt": "2026-12-04T03:00:00Z",
+      "EventEndAt": "2026-12-06T02:59:59.999999Z",
+      "precision": "DateOnly"
+    },
+    {
+      "Id": 26,
+      "Title": "19\u00AA Corrida do Marinheiro",
+      "SourceName": "Central da Corrida",
+      "SourceUrl": "https://centraldacorrida.com.br/version-live/evento/19%C2%AA-corrida-do-marinheiro",
+      "EventStartAt": "2026-12-05T03:00:00Z",
+      "EventEndAt": "2026-12-06T02:59:59.999999Z",
+      "precision": "DateOnly"
+    },
+    {
+      "Id": 27,
+      "Title": "LUZ",
+      "SourceName": "Theatro da Paz",
+      "SourceUrl": "https://www.theatrodapaz.com.br/informa-es-do-evento-e-registro/luz-2026-12-05-19-00",
+      "EventStartAt": "2026-12-05T22:00:00Z",
+      "EventEndAt": "2026-12-05T23:30:00Z",
+      "precision": "Scheduled"
+    },
+    {
+      "Id": 28,
+      "Title": "GP Grand Premium Brasil \u2014 Etapa Par\u00E1",
+      "SourceName": "Minhas Inscri\u00E7\u00F5es \u2014 p\u00E1gina da prova",
+      "SourceUrl": "https://minhasinscricoes.com.br/Evento/CorridaGPBrasil2026-Para",
+      "EventStartAt": "2026-12-06T10:00:00Z",
+      "EventEndAt": null,
+      "precision": "Scheduled"
+    },
+    {
+      "Id": 29,
+      "Title": "LUZ",
+      "SourceName": "Theatro da Paz",
+      "SourceUrl": "https://www.theatrodapaz.com.br/informa-es-do-evento-e-registro/luz-2026-12-05-19-00",
+      "EventStartAt": "2026-12-06T19:00:00Z",
+      "EventEndAt": null,
+      "precision": "Scheduled"
+    },
+    {
+      "Id": 30,
+      "Title": "LUZ",
+      "SourceName": "Theatro da Paz",
+      "SourceUrl": "https://www.theatrodapaz.com.br/informa-es-do-evento-e-registro/luz-2026-12-05-19-00",
+      "EventStartAt": "2026-12-06T22:00:00Z",
+      "EventEndAt": null,
+      "precision": "Scheduled"
+    },
+    {
+      "Id": 31,
+      "Title": "Corrida de Entretenimento Papai Noel",
+      "SourceName": "Corrente Running",
+      "SourceUrl": "https://eventos.correnterunning.com.br/evento/corrida-de-entretenimento-papai-noel-4859",
+      "EventStartAt": "2026-12-20T11:00:00Z",
+      "EventEndAt": null,
+      "precision": "Scheduled"
+    },
+    {
+      "Id": 32,
+      "Title": "Ensaios da Anitta \u2014 Bel\u00E9m 2027",
+      "SourceName": "Carnaval da Anitta \u2014 agenda oficial",
+      "SourceUrl": "https://carnavaldaanitta.com.br/",
+      "EventStartAt": "2027-01-09T03:00:00Z",
+      "EventEndAt": "2027-01-10T02:59:59.999999Z",
+      "precision": "DateOnly"
+    },
+    {
+      "Id": 34,
+      "Title": "Dominguinho \u2014 Bel\u00E9m",
+      "SourceName": "Dominguinho \u2014 agenda oficial",
+      "SourceUrl": "https://turnedominguinho.com.br/",
+      "EventStartAt": "2027-01-22T03:00:00Z",
+      "EventEndAt": "2027-01-23T02:59:59.999999Z",
+      "precision": "DateOnly"
+    }
+  ],
+  "checks": [
+    {
+      "culture": "pt-BR",
+      "page": "home",
+      "status": 200
+    },
+    {
+      "culture": "pt-BR",
+      "page": "creditos",
+      "status": 200
+    },
+    {
+      "culture": "pt-BR",
+      "page": "meu-dia-em-belem",
+      "status": 200
+    },
+    {
+      "culture": "pt-BR",
+      "page": "agenda",
+      "status": 200
+    },
+    {
+      "culture": "pt-BR",
+      "page": "agenda-today",
+      "status": 200
+    },
+    {
+      "culture": "pt-BR",
+      "page": "agenda-november",
+      "status": 200
+    },
+    {
+      "culture": "pt-BR",
+      "page": "agenda-january",
+      "status": 200
+    },
+    {
+      "culture": "pt-BR",
+      "page": "agenda-theatre",
+      "status": 200
+    },
+    {
+      "culture": "pt-BR",
+      "page": "agenda-sport",
+      "status": 200
+    },
+    {
+      "culture": "pt-BR",
+      "page": "agenda-detail",
+      "status": 200
+    },
+    {
+      "culture": "pt-BR",
+      "page": "agenda-date-only",
+      "status": 200
+    },
+    {
+      "culture": "en",
+      "page": "home",
+      "status": 200
+    },
+    {
+      "culture": "en",
+      "page": "creditos",
+      "status": 200
+    },
+    {
+      "culture": "en",
+      "page": "meu-dia-em-belem",
+      "status": 200
+    },
+    {
+      "culture": "en",
+      "page": "agenda",
+      "status": 200
+    },
+    {
+      "culture": "en",
+      "page": "agenda-today",
+      "status": 200
+    },
+    {
+      "culture": "en",
+      "page": "agenda-november",
+      "status": 200
+    },
+    {
+      "culture": "en",
+      "page": "agenda-january",
+      "status": 200
+    },
+    {
+      "culture": "en",
+      "page": "agenda-theatre",
+      "status": 200
+    },
+    {
+      "culture": "en",
+      "page": "agenda-sport",
+      "status": 200
+    },
+    {
+      "culture": "en",
+      "page": "agenda-detail",
+      "status": 200
+    },
+    {
+      "culture": "en",
+      "page": "agenda-date-only",
+      "status": 200
+    },
+    {
+      "culture": "fr",
+      "page": "home",
+      "status": 200
+    },
+    {
+      "culture": "fr",
+      "page": "creditos",
+      "status": 200
+    },
+    {
+      "culture": "fr",
+      "page": "meu-dia-em-belem",
+      "status": 200
+    },
+    {
+      "culture": "fr",
+      "page": "agenda",
+      "status": 200
+    },
+    {
+      "culture": "fr",
+      "page": "agenda-today",
+      "status": 200
+    },
+    {
+      "culture": "fr",
+      "page": "agenda-november",
+      "status": 200
+    },
+    {
+      "culture": "fr",
+      "page": "agenda-january",
+      "status": 200
+    },
+    {
+      "culture": "fr",
+      "page": "agenda-theatre",
+      "status": 200
+    },
+    {
+      "culture": "fr",
+      "page": "agenda-sport",
+      "status": 200
+    },
+    {
+      "culture": "fr",
+      "page": "agenda-detail",
+      "status": 200
+    },
+    {
+      "culture": "fr",
+      "page": "agenda-date-only",
+      "status": 200
+    },
+    {
+      "culture": "es",
+      "page": "home",
+      "status": 200
+    },
+    {
+      "culture": "es",
+      "page": "creditos",
+      "status": 200
+    },
+    {
+      "culture": "es",
+      "page": "meu-dia-em-belem",
+      "status": 200
+    },
+    {
+      "culture": "es",
+      "page": "agenda",
+      "status": 200
+    },
+    {
+      "culture": "es",
+      "page": "agenda-today",
+      "status": 200
+    },
+    {
+      "culture": "es",
+      "page": "agenda-november",
+      "status": 200
+    },
+    {
+      "culture": "es",
+      "page": "agenda-january",
+      "status": 200
+    },
+    {
+      "culture": "es",
+      "page": "agenda-theatre",
+      "status": 200
+    },
+    {
+      "culture": "es",
+      "page": "agenda-sport",
+      "status": 200
+    },
+    {
+      "culture": "es",
+      "page": "agenda-detail",
+      "status": 200
+    },
+    {
+      "culture": "es",
+      "page": "agenda-date-only",
+      "status": 200
+    },
+    {
+      "culture": "ru",
+      "page": "home",
+      "status": 200
+    },
+    {
+      "culture": "ru",
+      "page": "creditos",
+      "status": 200
+    },
+    {
+      "culture": "ru",
+      "page": "meu-dia-em-belem",
+      "status": 200
+    },
+    {
+      "culture": "ru",
+      "page": "agenda",
+      "status": 200
+    },
+    {
+      "culture": "ru",
+      "page": "agenda-today",
+      "status": 200
+    },
+    {
+      "culture": "ru",
+      "page": "agenda-november",
+      "status": 200
+    },
+    {
+      "culture": "ru",
+      "page": "agenda-january",
+      "status": 200
+    },
+    {
+      "culture": "ru",
+      "page": "agenda-theatre",
+      "status": 200
+    },
+    {
+      "culture": "ru",
+      "page": "agenda-sport",
+      "status": 200
+    },
+    {
+      "culture": "ru",
+      "page": "agenda-detail",
+      "status": 200
+    },
+    {
+      "culture": "ru",
+      "page": "agenda-date-only",
+      "status": 200
+    },
+    {
+      "culture": "zh-Hans",
+      "page": "home",
+      "status": 200
+    },
+    {
+      "culture": "zh-Hans",
+      "page": "creditos",
+      "status": 200
+    },
+    {
+      "culture": "zh-Hans",
+      "page": "meu-dia-em-belem",
+      "status": 200
+    },
+    {
+      "culture": "zh-Hans",
+      "page": "agenda",
+      "status": 200
+    },
+    {
+      "culture": "zh-Hans",
+      "page": "agenda-today",
+      "status": 200
+    },
+    {
+      "culture": "zh-Hans",
+      "page": "agenda-november",
+      "status": 200
+    },
+    {
+      "culture": "zh-Hans",
+      "page": "agenda-january",
+      "status": 200
+    },
+    {
+      "culture": "zh-Hans",
+      "page": "agenda-theatre",
+      "status": 200
+    },
+    {
+      "culture": "zh-Hans",
+      "page": "agenda-sport",
+      "status": 200
+    },
+    {
+      "culture": "zh-Hans",
+      "page": "agenda-detail",
+      "status": 200
+    },
+    {
+      "culture": "zh-Hans",
+      "page": "agenda-date-only",
+      "status": 200
+    },
+    {
+      "culture": "ja",
+      "page": "home",
+      "status": 200
+    },
+    {
+      "culture": "ja",
+      "page": "creditos",
+      "status": 200
+    },
+    {
+      "culture": "ja",
+      "page": "meu-dia-em-belem",
+      "status": 200
+    },
+    {
+      "culture": "ja",
+      "page": "agenda",
+      "status": 200
+    },
+    {
+      "culture": "ja",
+      "page": "agenda-today",
+      "status": 200
+    },
+    {
+      "culture": "ja",
+      "page": "agenda-november",
+      "status": 200
+    },
+    {
+      "culture": "ja",
+      "page": "agenda-january",
+      "status": 200
+    },
+    {
+      "culture": "ja",
+      "page": "agenda-theatre",
+      "status": 200
+    },
+    {
+      "culture": "ja",
+      "page": "agenda-sport",
+      "status": 200
+    },
+    {
+      "culture": "ja",
+      "page": "agenda-detail",
+      "status": 200
+    },
+    {
+      "culture": "ja",
+      "page": "agenda-date-only",
+      "status": 200
+    }
+  ]
+}

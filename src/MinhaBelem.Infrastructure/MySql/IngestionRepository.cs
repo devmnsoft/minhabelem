@@ -166,7 +166,7 @@ public sealed class IngestionRepository(MySqlDataSource dataSource) : IIngestion
         parameters.Add("offset", (Math.Max(1, query.Page) - 1) * query.PageSize);
         await using var connection = await dataSource.OpenConnectionAsync(ct);
         return (await connection.QueryAsync<IngestionCandidate>(new CommandDefinition(
-            $"{CandidateSelect} {where} ORDER BY published_at DESC, id DESC LIMIT @limit OFFSET @offset",
+            $"{CandidateSelect} {where} ORDER BY editorial_priority DESC,published_at DESC, id DESC LIMIT @limit OFFSET @offset",
             parameters, cancellationToken: ct))).AsList();
     }
 

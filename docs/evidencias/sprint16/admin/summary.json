@@ -1,0 +1,24 @@
+{
+  "mode": "HTML MVC via HTTP autenticado MFA em MySQL descartavel; sete idiomas e quatro larguras",
+  "checked": 1548,
+  "pages": 56,
+  "cultures": [
+    "en",
+    "es",
+    "fr",
+    "ja",
+    "pt-BR",
+    "ru",
+    "zh-Hans"
+  ],
+  "widths": [
+    390,
+    768,
+    1280,
+    1440
+  ],
+  "failures": [],
+  "accessibilityIssues": 0,
+  "fullResultsSha256": "1e68568abcc09ab3e8f0292879d348198ed33c6ec6230bedc5af0a3901d1ae8b",
+  "note": "55 pages covered in every culture/width; batch detail snapshot became available during run and is also fully covered by the dedicated editorial matrix."
+}

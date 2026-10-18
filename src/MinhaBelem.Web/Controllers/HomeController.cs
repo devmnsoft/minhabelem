@@ -69,6 +69,7 @@ public sealed class HomeController(
                     PageSize = 4,
                     Culture = currentCulture
                 }, ct);
+                ViewData["WeeklyEvents"] = await content.SearchAsync(new ContentQuery {OnlyUpcomingEvents=true,Sort=ContentSort.Upcoming,StartsBeforeUtc=MinhaBelem.Web.Models.PortalTime.Utc(MinhaBelem.Web.Models.PortalTime.Local(DateTime.UtcNow).Date.AddDays(7)),PageSize=6,Culture=currentCulture},ct);
 
                 ViewData["GastronomyPlaces"] = await places.SearchAsync(new PlaceQuery
                 {
@@ -106,6 +107,7 @@ public sealed class HomeController(
 
         return View(await content.SearchAsync(new ContentQuery
         {
+            Kind=string.IsNullOrWhiteSpace(categoria)&&string.IsNullOrWhiteSpace(busca)?ContentKind.News:null,
             Category = category,
             Search = busca,
             Subject = assunto,
@@ -119,6 +121,9 @@ public sealed class HomeController(
             Culture = currentCulture
         }, ct));
     }
+
+    [HttpGet("creditos")]
+    public IActionResult Credits()=>View();
 
     public async Task<IActionResult> Detalhe(long id, CancellationToken ct)
     {

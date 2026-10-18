@@ -28,6 +28,7 @@ public sealed class VisitController(IRoutePlanner planner,IPlaceRepository place
         var validPrice=schedule.Info is {} info&&info.ConfirmedAt<=DateTime.UtcNow&&info.ValidUntil>time&&info.ValidUntil>DateTime.UtcNow?info.EntryPrice:null;
         var outbound=plan.Options.FirstOrDefault() is {Currency:"BRL"} route?route.Fare:null;
         var costs=VisitRecommendationService.Cost(outbound,validPrice,inbound,optional);
+        ViewData["VisitSuggestion"]=VisitRecommendationService.Suggest(schedule,time,DateTime.UtcNow);
         ViewData["Places"]=await places.SearchAsync(new PlaceQuery{PublishedOnly=true,PageSize=30,Culture=CultureInfo.CurrentUICulture.Name},ct);
         return View("Index",new VisitPage(query,place,plan,schedule,assessment,validPrice,costs.KnownSubtotal,costs.Total,inbound,optional,await transit.GetActiveAlertsAsync(ct)));
     }

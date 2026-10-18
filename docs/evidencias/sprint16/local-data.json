@@ -1,0 +1,42 @@
+{
+  "counts": {
+    "content": 34,
+    "users": 3,
+    "lines": 5,
+    "river": 0
+  },
+  "users": [
+    {
+      "email": "superadmin@minhabelem.com.br",
+      "must_change_password": true,
+      "two_factor_enabled": false,
+      "role": "SuperAdmin"
+    },
+    {
+      "email": "editor.teste@minhabelem.com.br",
+      "must_change_password": true,
+      "two_factor_enabled": false,
+      "role": "Editor"
+    },
+    {
+      "email": "moderador.teste@minhabelem.com.br",
+      "must_change_password": true,
+      "two_factor_enabled": false,
+      "role": "Moderator"
+    }
+  ],
+  "accounts": [
+    {
+      "email": "superadmin@minhabelem.com.br",
+      "loginHttp": true
+    },
+    {
+      "email": "editor.teste@minhabelem.com.br",
+      "loginHttp": true
+    },
+    {
+      "email": "moderador.teste@minhabelem.com.br",
+      "loginHttp": true
+    }
+  ]
+}

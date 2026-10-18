@@ -21,7 +21,7 @@ public sealed class ContentRepository(MySqlDataSource dataSource) : IContentRepo
                verification_status AS VerificationStatus, flags AS Flags, duplicate_of_id AS DuplicateOfId,
                requires_human_approval AS RequiresHumanApproval, published_at AS PublishedAt,
                expires_at AS ExpiresAt, last_verified_at AS LastVerifiedAt, reviewed_by_id AS ReviewedById,
-               created_by_id AS CreatedById, revision AS Revision, created_at AS CreatedAt, updated_at AS UpdatedAt
+               created_by_id AS CreatedById, revision AS Revision, editorial_priority AS EditorialPriority,review_queue AS ReviewQueue, created_at AS CreatedAt, updated_at AS UpdatedAt
         FROM mb_content_items
         """;
 
@@ -44,7 +44,7 @@ public sealed class ContentRepository(MySqlDataSource dataSource) : IContentRepo
             _ => "published_at DESC"
         };
         var sql = $"""
-            {Select} {where} ORDER BY {order} LIMIT @limit OFFSET @offset
+            {Select} {where} ORDER BY {(publicOnly?"":"editorial_priority DESC,")} {order} LIMIT @limit OFFSET @offset
             """;
         parameters.Add("limit", query.PageSize);
         parameters.Add("offset", (Math.Max(1, query.Page) - 1) * query.PageSize);
@@ -61,11 +61,18 @@ public sealed class ContentRepository(MySqlDataSource dataSource) : IContentRepo
         await using var connection = await OpenAsync(ct);
         return await connection.ExecuteScalarAsync<int>(new CommandDefinition($"SELECT COUNT(*) FROM mb_content_items {where}", parameters, cancellationToken: ct));
     }
+    public async Task<int> CountEditorialAsync(ContentQuery query, CancellationToken ct)
+    {
+        var (where,parameters)=BuildFilter(query,false);
+        await using var db=await OpenAsync(ct);
+        return await db.ExecuteScalarAsync<int>(new CommandDefinition($"SELECT COUNT(*) FROM mb_content_items {where}",parameters,cancellationToken:ct));
+    }
 
     private static (string Where, DynamicParameters Parameters) BuildFilter(ContentQuery query, bool publicOnly)
     {
         var clauses = new List<string>();
         var parameters = new DynamicParameters();
+        if(query.Kind is {} kind){clauses.Add("kind=@kind");parameters.Add("kind",kind.ToString());}
 
         if (publicOnly)
             clauses.Add("status IN ('Published','Cancelled') AND (expires_at IS NULL OR expires_at > UTC_TIMESTAMP(6)) AND verification_status <> 'Outdated'");

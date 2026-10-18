@@ -40,12 +40,11 @@ public sealed class AgendaController(IContentRepository content, IStringLocalize
         return File(System.Text.Encoding.UTF8.GetBytes(output.ToString()), "text/calendar; charset=utf-8", $"minhabelem-evento-{id}.ics");
     }
     [HttpGet("agenda"), HttpGet("{culture:regex(^(pt-BR|en|fr|es|ru|zh-Hans|ja)$)}/agenda"), HttpGet("agenda/semana"), HttpGet("proximos-eventos"), HttpGet("programacao-infantil"), HttpGet("cinema-teatro"), HttpGet("esporte-lazer"), HttpGet("eventos-gratuitos"), HttpGet("agenda/meu-bairro"), HttpGet("fim-de-semana"), HttpGet("eventos-do-para"), HttpGet("feriados"), HttpGet("agora")]
-    public async Task<IActionResult> Index(int dias = 90, string? busca = null, string? bairro = null, string? municipio = null, string? categoria = null, Audience? publico = null, AccessibilityFeature? acessibilidade = null, int? idade = null, bool gratuito = false, DateOnly? data = null, DateOnly? mes = null, string? tipo = null, CancellationToken ct = default)
+    public async Task<IActionResult> Index(int dias = 365, string? busca = null, string? bairro = null, string? municipio = null, string? categoria = null, Audience? publico = null, AccessibilityFeature? acessibilidade = null, int? idade = null, bool gratuito = false, DateOnly? data = null, DateOnly? mes = null, string? tipo = null, CancellationToken ct = default)
     {
         if (!new[] { 0, 1, 7, 30, 90, 180, 365 }.Contains(dias) || busca?.Length > 120 || bairro?.Length > 120 || municipio?.Length > 120 || idade is < 0 or > 18 || publico is { } p && !Enum.IsDefined(p) || acessibilidade is { } a && !Enum.IsDefined(a)) return BadRequest();
         var today = PortalTime.Local(DateTime.UtcNow).Date;
         var from = today; var until = today.AddDays(dias == 0 ? 1 : dias == 1 ? 2 : dias + 1);
-        if (dias == 90) until = today.AddMonths(3).AddDays(1);
         if (tipo is not null && !MinhaBelem.Infrastructure.MySql.CuratedAgendaImporter.AgendaSubjects.Contains(tipo)) return BadRequest();
         if (dias == 1) from = today.AddDays(1);
         var currentCulture = CultureInfo.CurrentUICulture.Name;

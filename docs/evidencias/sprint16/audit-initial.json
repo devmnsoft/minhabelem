@@ -1,0 +1,335 @@
+{
+  "baseline": "7493df6b4b0adff238ed3ae8c2dfa491551add88",
+  "views": [
+    {
+      "path": "src/MinhaBelem.Web/Views/_ViewImports.cshtml",
+      "lines": 6,
+      "sha256": "086726fe7b9ba34464543ee0023f77f78d2b667f970279ab9a6554e9be61aba5"
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/_ViewStart.cshtml",
+      "lines": 1,
+      "sha256": "99d9bf4541240f8c0ed87db906c7e9075b4e9b88b2ba62058bb0950eab68c2b9"
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Admin/Anunciantes.cshtml",
+      "lines": 87,
+      "sha256": "ea2cd7f5976ee6e6bdb3baf93a06c0db153e752b5c8985610737db9489e6b721"
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Admin/Auditoria.cshtml",
+      "lines": 65,
+      "sha256": "49e147fda4b86f015f4637122a081ec3e06223d5e8729743961f34593eba4eec"
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Admin/Bairros.cshtml",
+      "lines": 108,
+      "sha256": "fd3235fbd16e5fdc48edd4081e540b155c61e986f80e61b82363a7d4cac571a9"
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Admin/Colaboracoes.cshtml",
+      "lines": 67,
+      "sha256": "0efd0bdcdf2b0183325b60686c1de3e8efab1b210df07938f9e51239bd245e0c"
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Admin/Comparar.cshtml",
+      "lines": 114,
+      "sha256": "91c46a5fdbea91038957e7c521123c377d9302a9717d1b91a0f8a9cf5d3b0173"
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Admin/Configuracoes.cshtml",
+      "lines": 3,
+      "sha256": "f891f400084d0bd720367f97c40c0766ea20e4f927d9f2ae16ba6812f4da7068"
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Admin/Conteudo.cshtml",
+      "lines": 161,
+      "sha256": "107111433ff1806ebae6ca70668e72ca4edf23789fb98a77cfbdb4eba0cfc05c"
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Admin/Evolucao.cshtml",
+      "lines": 11,
+      "sha256": "07074131260406ae9e76c56f18c482f83f5285c4e678463d56fbd981b3f01a21"
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Admin/Fontes.cshtml",
+      "lines": 266,
+      "sha256": "6e092812cfba7f12b4ff1fb47691c44f69d28e1677bf4598627253f00de47f9b"
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Admin/Idiomas.cshtml",
+      "lines": 155,
+      "sha256": "3c0a015346c9386eba97a4d517961ad4a6913b19afaf94f00e1402950614aaf6"
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Admin/Index.cshtml",
+      "lines": 112,
+      "sha256": "7e3758460fa20f4a6a20b95eefb84eb9b20c409478ababdc23b52b7c80b537f1"
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Admin/Integracoes.cshtml",
+      "lines": 4,
+      "sha256": "fe7f98754dcab853ac64cd9619953285c03b54f21bd443c3cf59ad172b743a7f"
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Admin/Lugares.cshtml",
+      "lines": 127,
+      "sha256": "c3023f3efa727cb70bb5748186ef598b22c1dee03ecfc4bbbe55e12161b2aed2"
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Admin/Mobilidade.cshtml",
+      "lines": 142,
+      "sha256": "1b1ad036cfb34ec3f2087dfbb07b648ea8ac716a7d6a16066000747cd5dc1497"
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Admin/Perfis.cshtml",
+      "lines": 4,
+      "sha256": "f8b8300b819f1e578858f82e66092286878929888d0a7d90f0c52507917c00c8"
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Admin/Radar.cshtml",
+      "lines": 710,
+      "sha256": "ecf632c1b65d464727a9dc62a8f4753b6268da1ea9b917856331b40c11de9bb9"
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Admin/Relatorios.cshtml",
+      "lines": 84,
+      "sha256": "180140f65ac0c5156d6d7af12c21e7e71fe52b90485b05fdde5b57944dfae112"
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Admin/Traducoes.cshtml",
+      "lines": 203,
+      "sha256": "ca3c331bb5292ba7cf060f49da0db7d1c72f61a6ae89526a18656c889385a64f"
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Admin/Usuarios.cshtml",
+      "lines": 127,
+      "sha256": "19387f0e5b0a4db3c03f9b23190cb06c4d067e27ee18e5d42d8c9cbcea01c391"
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/AdminVisit/Index.cshtml",
+      "lines": 11,
+      "sha256": "e932029cf71911675147e1dd4a4b4be4bf64f0815016c5c3bea37ab40184c9e0"
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Agenda/Index.cshtml",
+      "lines": 57,
+      "sha256": "0c70497de7a6233e0681d82e6d107cc54caeffd1abeb0bdf3ec7600baeacb864"
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Bairro/Detalhe.cshtml",
+      "lines": 98,
+      "sha256": "9b75d392c50e6f9a163aa46c62f36a7f035f7d7a370bbb59294be18c47983b77"
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Bairro/Index.cshtml",
+      "lines": 52,
+      "sha256": "197dfc0f145ec431f89549456e08bf373683af7c8c0b171179997c84416e90d8"
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Conta/AcessoNegado.cshtml",
+      "lines": 1,
+      "sha256": "d68b9c1c71d40b6c0bbf5283889419d653d3f213fa7ff19d5495d8b653ee80d9"
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Conta/Login.cshtml",
+      "lines": 3,
+      "sha256": "60c4075715022d923e8f318cb71085386cf5b22148eea5b4e99d255e97238331"
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Conta/Mfa.cshtml",
+      "lines": 56,
+      "sha256": "34ad911fb82c1b94314ff9e0600953e207aa8bc0d3b220ac631454e6bfdb0089"
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Conta/Perfil.cshtml",
+      "lines": 67,
+      "sha256": "57e79499ef99298f514f430d4c2b8e962728bffc54cea0155b5a58cae8030aa2"
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Conta/Recovery.cshtml",
+      "lines": 2,
+      "sha256": "ce50202c0ed8c78ab9cbc99b8f05d0f9e0706a2187cc280e6ab9b6469f4af312"
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Conta/Sessoes.cshtml",
+      "lines": 2,
+      "sha256": "4128bba6d6019d5c06962d5a3c92e0c257bd77ab27a8c9b101b91de867c5c6c5"
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Conta/Verificar.cshtml",
+      "lines": 2,
+      "sha256": "b1f0c0b7799fcccd1620521db1996bff7e0bc5ace5ead11b574a669643cc205f"
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Editorial/Comparar.cshtml",
+      "lines": 107,
+      "sha256": "d0253761c1ace50ef8f85328617336dd0c07f654bcea9b30e231793bc497af2e"
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Editorial/Editar.cshtml",
+      "lines": 266,
+      "sha256": "9db3b3af4954974d17b42435c9dac0b61fdd50577e4526bc0387ad90eb6b52a1"
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Editorial/Index.cshtml",
+      "lines": 118,
+      "sha256": "5a7118af2b35a806c5316146511612ca7dcfb9ef9acc2fb90447dea5053e86bb"
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Editorial/Ocr.cshtml",
+      "lines": 4,
+      "sha256": "a21ebcf8fa653c69814b81d199160c66225b1a6f6d0a1eceba733e93952656f9"
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/EditorialBatches/Details.cshtml",
+      "lines": 10,
+      "sha256": "a7678e92feceda398685cbfc4b7a96d32e5231e56dd1608ca3250c6e14926822"
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/EditorialBatches/Index.cshtml",
+      "lines": 31,
+      "sha256": "9fa871374d94fe60769b65de9cccca9af88547780dd5cb6c9502dbe6b1ee3a3f"
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Explore/Glossario.cshtml",
+      "lines": 47,
+      "sha256": "15386c5ac4de2a46527f36cb3540444e9d74d88eae8e2b02b360bf5cdca87103"
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Explore/Index.cshtml",
+      "lines": 164,
+      "sha256": "3d3aa8e0e0d17849efb2851c80451e3ad04f40af314e316ec9fd77e85d29103d"
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Explore/Roteiro.cshtml",
+      "lines": 66,
+      "sha256": "8d169ca01d505f77f93c375687a0a78a6c961335a2b172c9fb47d0868a0590d6"
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Guia/Detalhe.cshtml",
+      "lines": 104,
+      "sha256": "ed2cdd7064303ab296e9db8217fdfe981cef28c904f1857250484314006f25e3"
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Guia/Index.cshtml",
+      "lines": 77,
+      "sha256": "83967a09e66feee8fd2667b129173f0d3d890f7c9808bd5f37c071eb7a6060de"
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Home/Detalhe.cshtml",
+      "lines": 235,
+      "sha256": "48cc563e0f47bbc18afc98abef7b337390e434970913b47587f2d3a85038b431"
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Home/Error.cshtml",
+      "lines": 1,
+      "sha256": "5bf58c72efc1cc174a31346f312ba2186e0a637aac57c7ab4b3a674f615c391e"
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Home/Index.cshtml",
+      "lines": 109,
+      "sha256": "cd1e77318ed1429d3d4bd462dcb32ded4a418c5f8083c8b5a24b9ee1160ea5e5"
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Home/Privacidade.cshtml",
+      "lines": 1,
+      "sha256": "93ef527f6a1035651c42c09460e8f642d04b27ad6646a72350e858512391dbdf"
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Home/Status.cshtml",
+      "lines": 1,
+      "sha256": "73264c18a716bf0676a81a439ac7e94c02f20115bd00be92eb3adabb0e0ef4a0"
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Home/Termos.cshtml",
+      "lines": 1,
+      "sha256": "f10d7668aacc63a9073191b22a0a301fb6fbd831de0fbd7d78373552e81905f1"
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/ItineraryPlanning/Index.cshtml",
+      "lines": 7,
+      "sha256": "18cb85e127d6c7ed80b043a9d8701864f02c6411d20a0926fd119d651534ab13"
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Media/Index.cshtml",
+      "lines": 5,
+      "sha256": "f1b5483d9921f8ecbbb396d2d4fc81b60ed5eeb033c02afefeed2b16ef014241"
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Mobilidade/Alertas.cshtml",
+      "lines": 3,
+      "sha256": "cfd640d4275328c526b8b5b4d5b37692a6e2c8eed1f6b7438c44c6a3ecd6a581"
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Mobilidade/Fluvial.cshtml",
+      "lines": 3,
+      "sha256": "ff07689003377618cac04e8e1ff7fc5b321c5b09467eb8a414e3fb827c75cefd"
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Mobilidade/Index.cshtml",
+      "lines": 146,
+      "sha256": "4c7d7fc1ab69780a0e8d0121b3144d03d0349d6f46b07637b407d97f3575ec1d"
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Mobilidade/Linha.cshtml",
+      "lines": 63,
+      "sha256": "afa17b4e32bde0101f5e7f366ed49e0d793135577a9dd319f2012aea5ff44c61"
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Parceiros/Index.cshtml",
+      "lines": 110,
+      "sha256": "810109be7d8109b5b836b858ef1614e7066430b8d2c12d125bda8b8148e3cd64"
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Shared/_AdminLayout.cshtml",
+      "lines": 12,
+      "sha256": "8314ad01546c744586c42b9cbf5ee0dc4a01eb8799fa460a248700ac53b4cb7d"
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Shared/_AdminSidebar.cshtml",
+      "lines": 129,
+      "sha256": "862464171c56cdb07292f851be2541e94fb9317cc119eabb223437978be0c4fa"
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Shared/_CollectionQueue.cshtml",
+      "lines": 15,
+      "sha256": "5efa3d7580997f0d2be713fa32f0c50c6eab7c44ed3968ce53c046245775831c"
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Shared/_Layout.cshtml",
+      "lines": 220,
+      "sha256": "c8b26c915d76fc98e0503636550f0ad55d5d644cd169fdc75a844b4679b64cd3"
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Shared/_MediaAssets.cshtml",
+      "lines": 2,
+      "sha256": "6d43601d2c7b9a56a10e2966db57c4555eca3b961f903b3185edf68e624c4c06"
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Shared/_MediaGallery.cshtml",
+      "lines": 6,
+      "sha256": "4ba408693c860c35a5c373cd41536fdedc59f5bdb82102e40a221de9bda11228"
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Shared/_PlaceMediaGallery.cshtml",
+      "lines": 6,
+      "sha256": "f6385a1606414ecb4fd4c5e284285d441bcee36d76161852343585e5cbcecc06"
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/TouristAssistant/Index.cshtml",
+      "lines": 5,
+      "sha256": "019d8fd7ffb2352e866237808b873a37e057bcf4bdb202eab3e0ea75f1f5df0a"
+    },
+    {
+      "path": "src/MinhaBelem.Web/Views/Visit/Index.cshtml",
+      "lines": 21,
+      "sha256": "6b545123f93f3902c7944cc88d7fa311c5885abb554e8d16b4bbf46791c728b4"
+    }
+  ],
+  "missingDapperTables": [],
+  "trackedGeneratedCount": 165,
+  "trackedGeneratedBytes": 18678953,
+  "filesRead": 229,
+  "scope": "Source audit before Sprint 16 modifications; no secrets or connection strings included."
+}
