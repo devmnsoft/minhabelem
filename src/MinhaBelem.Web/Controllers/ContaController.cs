@@ -121,6 +121,11 @@ public sealed class ContaController(UserManager<ApplicationUser> users, SignInMa
     public async Task<IActionResult> Senha(PasswordInput model)
     {
         var user = (await users.GetUserAsync(User))!;
+        if (string.Equals(model.CurrentPassword, model.NewPassword, StringComparison.Ordinal))
+        {
+            TempData["Notice"] = "Escolha uma senha diferente da senha atual.";
+            return RedirectToAction(nameof(Perfil));
+        }
         if (!ModelState.IsValid) { TempData["Notice"] = "Confira os campos. A senha deve ter pelo menos 12 caracteres."; return RedirectToAction(nameof(Perfil)); }
         var result = await users.ChangePasswordAsync(user, model.CurrentPassword, model.NewPassword);
         if (!result.Succeeded) { TempData["Notice"] = "Não foi possível trocar a senha. Confira a senha atual e os requisitos."; return RedirectToAction(nameof(Perfil)); }

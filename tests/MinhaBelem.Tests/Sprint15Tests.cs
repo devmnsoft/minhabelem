@@ -12,6 +12,31 @@ namespace MinhaBelem.Tests;
 [Collection("MySql")]
 public sealed class Sprint15Tests(PortalFixture fixture)
 {
+    [MySqlFact]
+    public async Task MandatoryPasswordChangeRejectsReuseAndRequiresActualRotation()
+    {
+        using var client = fixture.Client();
+        using var scope = fixture.Factory.Services.CreateScope();
+        var users = scope.ServiceProvider.GetRequiredService<Microsoft.AspNetCore.Identity.UserManager<ApplicationUser>>();
+        var password = Guid.NewGuid().ToString("N") + "Aa1!";
+        var replacement = Guid.NewGuid().ToString("N") + "Bb2!";
+        var email = Guid.NewGuid().ToString("N") + "@example.com";
+        var user = new ApplicationUser { Email = email, UserName = email, EmailConfirmed = true, Enabled = true, MustChangePassword = true };
+        Assert.True((await users.CreateAsync(user, password)).Succeeded);
+        Assert.True((await users.AddToRoleAsync(user, Roles.Editor)).Succeeded);
+        Assert.Equal(HttpStatusCode.Redirect, (await PortalFixture.Post(client, "/conta/login", "/conta/login", new() { ["Email"] = email, ["Password"] = password })).StatusCode);
+        Assert.EndsWith("/conta/perfil", (await client.GetAsync("/editorial")).Headers.Location!.ToString());
+        Assert.Equal(HttpStatusCode.Redirect, (await PortalFixture.Post(client, "/conta/senha", "/conta/perfil", new() { ["CurrentPassword"] = password, ["NewPassword"] = password })).StatusCode);
+        Assert.True((await users.FindByIdAsync(user.Id.ToString()))!.MustChangePassword);
+        var changed = await PortalFixture.Post(client, "/conta/senha", "/conta/perfil", new() { ["CurrentPassword"] = password, ["NewPassword"] = replacement });
+        Assert.Equal(HttpStatusCode.Redirect, changed.StatusCode);
+        Assert.EndsWith("/conta/login", changed.Headers.Location!.ToString());
+        var updated = (await users.FindByIdAsync(user.Id.ToString()))!;
+        Assert.False(updated.MustChangePassword);
+        Assert.False(await users.CheckPasswordAsync(updated, password));
+        Assert.True(await users.CheckPasswordAsync(updated, replacement));
+        Assert.Equal(HttpStatusCode.Redirect, (await client.GetAsync("/conta/perfil")).StatusCode);
+    }
     [Theory]
     [InlineData("pt-BR")][InlineData("en")][InlineData("fr")][InlineData("es")][InlineData("ru")][InlineData("zh-Hans")][InlineData("ja")]
     public void BatchMessagesAreLocalized(string culture)
