@@ -84,6 +84,18 @@ builder.Services.AddRateLimiter(o =>
 
 var app = builder.Build();
 app.UseForwardedHeaders();
+if (Array.IndexOf(args, "--import-agenda") is var agendaArgument && agendaArgument >= 0)
+{
+    var connection = new MySqlConnector.MySqlConnectionStringBuilder(builder.Configuration.GetConnectionString("Default") ?? "");
+    if (!app.Environment.IsDevelopment() || connection.Server is not ("localhost" or "127.0.0.1") || agendaArgument + 1 >= args.Length)
+        throw new InvalidOperationException("Importação explícita exclusiva do banco local em Development.");
+    var manifest = CuratedAgendaImporter.Parse(await File.ReadAllTextAsync(args[agendaArgument + 1]));
+    using var scope = app.Services.CreateScope();
+    var importer = new CuratedAgendaImporter(scope.ServiceProvider.GetRequiredService<MinhaBelem.Core.Abstractions.IContentRepository>());
+    var result = await importer.ImportAsync(manifest, default);
+    Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(result));
+    return;
+}
 if (args.Contains("--register-researched-sources"))
 {
     if (!app.Environment.IsDevelopment()) throw new InvalidOperationException("Comando exclusivo de Development local.");

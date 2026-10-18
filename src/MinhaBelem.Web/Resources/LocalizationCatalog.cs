@@ -732,6 +732,7 @@ public static class LocalizationCatalog
             Sprint14Translations.Register(Translations);
             Sprint15Translations.Register(Translations);
             Sprint15bTranslations.Register(Translations);
+            AgendaTranslations.Register(Translations);
     }
 
     public static string Get(string key, string? culture = null)

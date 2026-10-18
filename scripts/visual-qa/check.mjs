@@ -41,6 +41,8 @@ try {
       await page.route(/^https?:\/\/(?!127\.0\.0\.1)/, route => route.abort());
       for (const file of files) {
         await page.goto(`http://127.0.0.1:${port}/qa/${culture}/${file}`, { waitUntil: 'load' });
+        // Decode lazy images explicitly so off-screen assets are checked as well.
+        await page.evaluate(async () => { await Promise.all([...document.images].map(img => { img.loading = 'eager'; return img.decode().catch(() => {}); })); });
         await page.evaluate(() => window.scrollTo(0, 0));
         await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
         const layout = await page.evaluate(() => ({
@@ -56,8 +58,22 @@ try {
           }).slice(0, 5).map(el => ({ tag: el.tagName, class: el.className, width: Math.round(el.getBoundingClientRect().width) }))
         }));
         results.push({ culture, device, file, ...layout });
-        if (culture === 'pt-BR' && (!screenshotPages || screenshotPages.includes(file.replace('.html',''))) && (!screenshotDevices || screenshotDevices.includes(device)) && ['home.html', 'admin.html', 'admin-radar.html', 'agenda.html', 'explore.html', 'conta-login.html', 'mobilidade.html', 'como-chegar.html', 'editorial-lotes.html', 'admin-midias.html', 'explore-planejar.html', 'guia-ia.html'].includes(file)) {
+        if (culture === 'pt-BR' && (!screenshotPages || screenshotPages.includes(file.replace('.html',''))) && (!screenshotDevices || screenshotDevices.includes(device)) && ['home.html', 'admin.html', 'admin-radar.html', 'agenda.html', 'agenda-today.html', 'agenda-detail.html', 'agenda-date-only.html', 'explore.html', 'conta-login.html', 'mobilidade.html', 'como-chegar.html', 'editorial-lotes.html', 'admin-midias.html', 'explore-planejar.html', 'guia-ia.html'].includes(file)) {
           await page.screenshot({ path: path.join(output, `${file.replace('.html', '')}-${device}.jpg`), type: 'jpeg', quality: 82, fullPage: device === 'mobile' });
+        }
+        if (file === 'agenda.html' && await page.locator('[data-save-event]').count()) {
+          const first = page.locator('[data-save-event]').first();
+          await first.click();
+          if (await first.getAttribute('aria-pressed') !== 'true') throw new Error('Agenda favorite did not save');
+          await page.reload({ waitUntil: 'load' });
+          if (await page.locator('[data-save-event]').first().getAttribute('aria-pressed') !== 'true') throw new Error('Agenda favorite did not persist');
+          await page.locator('[data-agenda-saved]').click();
+          if (await page.locator('[data-event-id]:visible').count() !== 1) throw new Error('Agenda saved filter mismatch');
+          await page.locator('[data-save-event]:visible').click();
+          if (!await page.locator('[data-agenda-no-saved]').isVisible()) throw new Error('Agenda saved empty state missing');
+          await page.locator('[data-agenda-saved]').click();
+          await page.locator('[data-agenda-list]').click();
+          if (await page.locator('[data-agenda-list]').getAttribute('aria-pressed') !== 'true') throw new Error('Agenda list toggle failed');
         }
         if (file === 'home.html' && device === 'mobile') {
           const toggle = page.locator('.menu-toggle');

@@ -1,147 +1,57 @@
 @model MinhaBelem.Web.Models.AgendaPage
 @using MinhaBelem.Web.Models
 @using System.Globalization
-
+@using Microsoft.AspNetCore.WebUtilities
 @{
     ViewData["Title"] = $"{Model.Title} — MinhaBelém";
-    var currentCulture = CultureInfo.CurrentUICulture;
+    var culture = CultureInfo.CurrentUICulture;
+    var today = DateOnly.FromDateTime(PortalTime.Local(DateTime.UtcNow));
+    var month = Model.Month ?? today;
+    var first = new DateOnly(month.Year, month.Month, 1);
+    string Link(string key, string? value, bool resetDate = false) {
+        var q = Context.Request.Query.ToDictionary(x => x.Key, x => (string?)x.Value.ToString());
+        if(resetDate){q.Remove("data");q.Remove("mes");}
+        if(value is null)q.Remove(key);else q[key]=value;
+        return QueryHelpers.AddQueryString("/agenda", q);
+    }
+    var types = new[]{("teatro","stage"),("musica","music"),("danca","stage"),("humor","music"),("infantil","family"),("corrida","sport"),("congressos","city"),("feiras","city"),("cinema","stage"),("exposicoes","city"),("religioso","city")};
 }
-
-<section class="hero">
-    <p class="eyebrow">VIVA BELÉM E O PARÁ 🇧🇷</p>
-    <h1>@Model.Title</h1>
-    <p>@Model.Description</p>
+<link rel="stylesheet" href="~/css/agenda.css" asp-append-version="true"/>
+<section class="agenda-hero">
+    <div class="agenda-hero-copy"><p class="eyebrow">MINHABELÉM / @Loc["Nav_Agenda"]</p><h1>@Loc["AgendaDiscover"]</h1><p>@Loc["AgendaExploreIntro"]</p>
+    <div class="agenda-hero-actions"><a class="button" href="@Link("dias","0",true)">@Loc["AgendaPeriod_0"] ↗</a><a href="#agenda-results">@Loc["AgendaSeeEvents"] ↓</a></div>
+    <div class="agenda-stats"><span><strong>@Model.Items.Count</strong> @Loc["AgendaSessions"]</span><span><strong>@Model.Items.Select(x=>x.EventStartAt is {} s?PortalTime.Local(s).Date:DateTime.MinValue).Distinct().Count()</strong> @Loc["AgendaDays"]</span><span><strong>@Model.Items.Select(x=>x.SourceName).Distinct().Count()</strong> @Loc["AgendaSources"]</span></div></div>
+    <figure class="agenda-hero-art"><img src="/images/agenda/city.svg" alt="" width="720" height="360"/><figcaption>@Loc["AgendaIllustration"]</figcaption><span class="agenda-art-note">BELÉM<br/><strong>@Loc["AgendaAlive"]</strong></span></figure>
 </section>
-
-<nav class="categories" aria-label="Explorar a agenda">
-    <a href="/agora">@Loc["CityNow"]</a>
-    <a href="/agenda/semana">@Loc["ThisWeek"]</a>
-    <a href="/programacao-infantil">@Loc["ChildrenProgram"]</a>
-    <a href="/cinema-teatro">@Loc["CinemaTheater"]</a>
-    <a href="/esporte-lazer">@Loc["Category_esporte"]</a>
-    <a href="/eventos-gratuitos">@Loc["FreeEvents"]</a>
-    <a href="/meu-bairro">@Loc["NavNeighborhood"]</a>
-    <a href="/fim-de-semana">@Loc["ThisWeekend"]</a>
-    <a href="/eventos-do-para">Todo o Pará</a>
-    <a href="/feriados">Feriados</a>
-</nav>
-
-<section class="section">
-    @{var calendarMonth=Model.Month??DateOnly.FromDateTime(PortalTime.Local(DateTime.UtcNow));var firstDay=new DateOnly(calendarMonth.Year,calendarMonth.Month,1);}
-    <nav class="pagination" aria-label="@Loc["MonthlyEvents"]"><a href="/agenda?mes=@firstDay.AddMonths(-1).ToString("yyyy-MM-dd")">←</a><h2>@firstDay.ToString("MMMM yyyy",currentCulture)</h2><a href="/agenda?mes=@firstDay.AddMonths(1).ToString("yyyy-MM-dd")">→</a></nav>
-    <div class="month-calendar">
-    @for(var blank=0;blank<(int)firstDay.DayOfWeek;blank++){<span aria-hidden="true"></span>}
-    @for(var n=1;n<=DateTime.DaysInMonth(firstDay.Year,firstDay.Month);n++){
-        var calendarDay=new DateOnly(firstDay.Year,firstDay.Month,n);var eventCount=Model.Items.Count(x=>x.EventStartAt is {} start&&DateOnly.FromDateTime(PortalTime.Local(start))==calendarDay);
-        <a href="/agenda?data=@calendarDay.ToString("yyyy-MM-dd")"><strong>@n</strong>@if(eventCount>0){<small>@eventCount · @Loc["Nav_Agenda"]</small>}</a>
-    }
-    </div>
-    <nav class="week-calendar" aria-label="@Loc["ThisWeek"]">
-    @for (var offset = 0; offset < 7; offset++)
-    {
-        var day = DateOnly.FromDateTime(PortalTime.Local(DateTime.UtcNow)).AddDays(offset);
-        <a href="/agenda?data=@day.ToString("yyyy-MM-dd")" aria-current="@(Model.SelectedDate == day ? "date" : null)"><span>@day.ToString("ddd", currentCulture)</span><strong>@day.ToString("dd", currentCulture)</strong><span>@day.ToString("MMM", currentCulture)</span></a>
-    }
-    </nav>
-    <form method="get" class="filters" role="search">
-        <label>
-            @Loc["Period"]
-            <select name="dias">
-                @foreach (var period in new[] { (0, "Hoje"), (1, "Amanhã"), (7, "7 dias"), (30, "30 dias"), (90, "90 dias"), (180, "6 meses"), (365, "12 meses") })
-                {
-                    <option value="@period.Item1" selected="@(Model.Days == period.Item1)">@period.Item2</option>
-                }
-            </select>
-        </label>
-        <label>
-            @Loc["AgeRating"]
-            <input type="number" name="idade" min="0" max="18" />
-        </label>
-        <label>
-            @Loc["Search"]
-            <input name="busca" maxlength="120" placeholder="@Loc["Search_Placeholder"]" />
-        </label>
-        <label>
-            @Loc["Neighborhood"]
-            <input name="bairro" maxlength="120" />
-        </label>
-        <label>
-            @Loc["Municipality"]
-            <input name="municipio" list="municipios" maxlength="120" />
-        </label>
-        <datalist id="municipios">
-            @foreach (var m in MinhaBelem.Core.Text.BelemGeography.Municipalities)
-            {
-                <option value="@m.Name"></option>
-            }
-        </datalist>
-        <label>
-            @Loc["Audience"]
-            <select name="publico">
-                <option value="">Todos</option>
-                @foreach (var audience in Enum.GetNames<MinhaBelem.Core.Taxonomy.Audience>())
-                {
-                    <option value="@audience">@audience</option>
-                }
-            </select>
-        </label>
-        <label>
-            @Loc["Explore_Accessibility_Title"]
-            <select name="acessibilidade">
-                <option value="">Todas</option>
-                @foreach (var feature in Enum.GetNames<MinhaBelem.Core.Taxonomy.AccessibilityFeature>())
-                {
-                    <option value="@feature">@feature</option>
-                }
-            </select>
-        </label>
-        <label>
-            <input name="gratuito" type="checkbox" value="true" /> Gratuitos
-        </label>
-        <button type="submit">@Loc["Search_Button"]</button>
-    </form>
-
-    @if (Model.Items.Count == 0)
-    {
-        <div class="empty">
-            <h2>@Loc["General_Empty"]</h2>
-            <p>@Loc["AgendaEmpty"]</p>
-        </div>
-    }
-    else
-    {
-        <div class="grid">
-            @foreach (var item in Model.Items)
-            {
-                <article class="card event-card">
-                    <p class="eyebrow">@MinhaBelem.Core.Taxonomy.Taxonomy.Info(item.Category).Label</p>
-                    @if (item.Status == MinhaBelem.Core.Entities.ContentStatus.Cancelled)
-                    {
-                        <p class="notice error-notice">Cancelado</p>
-                    }
-                    <h2><a href="/Home/Detalhe/@item.Id">@item.DisplayTitle</a></h2>
-
-                    @if (item.EventStartAt is { } start)
-                    {
-                        <p class="event-time">
-                            📅 <time datetime="@start.ToString("O")">
-                                @PortalTime.Local(start).ToString("g", currentCulture)
-                            </time>
-                        </p>
-                    }
-
-                    <p>@(item.LocalizedSummary ?? item.Summary)</p>
-
-                    @if (!string.IsNullOrWhiteSpace(item.CulturalNotes))
-                    {
-                        <div class="cultural-badge">🌿 @item.CulturalNotes</div>
-                    }
-
-                    <p class="small">📍 @item.Neighborhood · @item.Municipality</p>
-                    <p><strong>@(item.IsFree ? "Gratuito" : item.TicketPriceText ?? "Consulte preço na fonte")</strong></p>
-                    <p class="small">📰 @item.SourceName · Verificado em @PortalTime.Local(item.LastVerifiedAt).ToString("d", currentCulture)</p>
-                </article>
-            }
-        </div>
-    }
-</section>
+<nav class="agenda-topics" aria-label="@Loc["AgendaThemes"]"><a href="@Link("tipo",null)" aria-current="@(string.IsNullOrEmpty(Context.Request.Query["tipo"])?"page":null)">@Loc["AgendaAll"]</a>@foreach(var (key,art) in types){<a href="@Link("tipo",key)" aria-current="@(Context.Request.Query["tipo"]==key?"page":null)"><img src="/images/agenda/@(art).svg" alt="" width="32" height="32"/>@Loc["AgendaTopic_"+key]</a>}</nav>
+<main class="section agenda-workspace">
+    <aside class="agenda-sidebar"><section class="card agenda-calendar"><p class="eyebrow">@Loc["MonthlyEvents"]</p><nav class="agenda-month-nav" aria-label="@Loc["MonthlyEvents"]"><a href="@Link("mes",first.AddMonths(-1).ToString("yyyy-MM-dd"),true)" aria-label="@Loc["AgendaPreviousMonth"]">←</a><h2>@first.ToString("MMMM yyyy",culture)</h2><a href="@Link("mes",first.AddMonths(1).ToString("yyyy-MM-dd"),true)" aria-label="@Loc["AgendaNextMonth"]">→</a></nav>
+    <div class="agenda-weekdays" aria-hidden="true">@for(var d=0;d<7;d++){<span>@culture.DateTimeFormat.AbbreviatedDayNames[d][..1]</span>}</div><div class="month-calendar">
+    @for(var blank=0;blank<(int)first.DayOfWeek;blank++){<span aria-hidden="true"></span>}
+    @for(var n=1;n<=DateTime.DaysInMonth(first.Year,first.Month);n++){var day=new DateOnly(first.Year,first.Month,n);var count=Model.CalendarItems.Count(x=>AgendaPage.OccursOn(x,day));<a class="@(day==today?"is-today":"") @(count>0?"has-events":"")" href="@Link("data",day.ToString("yyyy-MM-dd"),true)" aria-current="@(Model.SelectedDate==day?"date":null)" aria-label="@day.ToString("D",culture) · @count @Loc["AgendaSessions"]"><strong>@n</strong>@if(count>0){<small>@count</small>}</a>}
+    </div><p class="small">● @Loc["AgendaCalendarHint"]</p></section>
+    <details class="card agenda-filters" open><summary>@Loc["AgendaRefine"]</summary><form method="get" action="/agenda" role="search">
+    @if(!string.IsNullOrEmpty(Context.Request.Query["tipo"])){<input type="hidden" name="tipo" value="@Context.Request.Query["tipo"]"/>}
+    <label>@Loc["Period"]<select name="dias">@foreach(var period in new[]{0,1,7,30,90,180,365}){<option value="@period" selected="@(Model.Days==period)">@Loc["AgendaPeriod_"+period]</option>}</select></label>
+    <label>@Loc["Search"]<input name="busca" maxlength="120" value="@Context.Request.Query["busca"]" placeholder="@Loc["Search_Placeholder"]"/></label>
+    <label>@Loc["Neighborhood"]<input name="bairro" maxlength="120" value="@Context.Request.Query["bairro"]"/></label>
+    <label>@Loc["Municipality"]<input name="municipio" maxlength="120" value="@Context.Request.Query["municipio"]"/></label>
+    <label>@Loc["AgeRating"]<input type="number" name="idade" min="0" max="18" value="@Context.Request.Query["idade"]"/></label>
+    <label>@Loc["Audience"]<select name="publico"><option value="">@Loc["AgendaAll"]</option>@foreach(var a in Enum.GetNames<MinhaBelem.Core.Taxonomy.Audience>()){<option value="@a" selected="@(Context.Request.Query["publico"]==a)">@a</option>}</select></label>
+    <label>@Loc["Explore_Accessibility_Title"]<select name="acessibilidade"><option value="">@Loc["AgendaAll"]</option>@foreach(var a in Enum.GetNames<MinhaBelem.Core.Taxonomy.AccessibilityFeature>()){<option value="@a" selected="@(Context.Request.Query["acessibilidade"]==a)">@a</option>}</select></label>
+    <label class="agenda-check"><input type="checkbox" name="gratuito" value="true" checked="@(Context.Request.Query["gratuito"]=="true")"/>@Loc["FreeEvents"]</label><button>@Loc["Search_Button"]</button><a href="/agenda">@Loc["AgendaClear"]</a></form></details>
+    <p class="agenda-source-note">@Loc["AgendaSourceNotice"]</p></aside>
+    <section id="agenda-results" class="agenda-results"><div class="agenda-results-head"><div><p class="eyebrow">@Loc["AgendaYourPlans"]</p><h2>@Model.Title</h2><p>@Model.Items.Count @Loc["AgendaSessions"] @if(Model.SelectedDate is {} chosen){<span>· @chosen.ToString("D",culture)</span>}</p></div><div class="agenda-tools" hidden data-agenda-tools><button type="button" data-agenda-saved aria-pressed="false">☆ @Loc["AgendaSaved"]</button><button type="button" data-agenda-list aria-pressed="false">☷ @Loc["AgendaList"]</button></div></div>
+    <nav class="agenda-periods" aria-label="@Loc["Period"]">@foreach(var days in new[]{0,1,7,30,90}){<a href="@Link("dias",days.ToString(),true)" aria-current="@(Model.Days==days&&Model.SelectedDate is null&&!Context.Request.Query.ContainsKey("mes")?"page":null)">@Loc["AgendaPeriod_"+days]</a>}</nav>
+    <p role="status" aria-live="polite" id="agenda-status" data-saved-label="@Loc["AgendaSave"]" data-unsave-label="@Loc["AgendaUnsave"]" data-shared="@Loc["AgendaCopied"]" data-failed="@Loc["AgendaShareFailed"]"></p>
+    @if(Model.Items.Count==0){<div class="empty"><img src="/images/agenda/city.svg" alt="" width="240" height="120"/><h3>@Loc["General_Empty"]</h3><p>@Loc["AgendaEmpty"]</p><a class="button secondary" href="/agenda">@Loc["AgendaAll"]</a></div>}
+    <p class="notice" data-agenda-no-saved hidden>@Loc["AgendaNoSaved"]</p>
+    @foreach(var group in Model.Items.GroupBy(x=>x.EventStartAt is {} start?new DateOnly(PortalTime.Local(start).Year,PortalTime.Local(start).Month,1):first)){
+    <section class="agenda-month-group"><div class="agenda-group-title"><h3>@group.Key.ToString("MMMM yyyy",culture)</h3><span>@group.Count() @Loc["AgendaSessions"]</span></div><div class="agenda-event-grid">
+    @foreach(var item in group){var local=PortalTime.Local(item.EventStartAt??item.PublishedAt);var topic=MinhaBelem.Infrastructure.MySql.CuratedAgendaImporter.AgendaSubjects.Contains(item.Subject??"")?"AgendaTopic_"+item.Subject:"Category_"+MinhaBelem.Core.Taxonomy.Taxonomy.Info(item.Category).Slug;var art=item.Subject switch{"corrida"=>"sport","musica" or "humor"=>"music","infantil"=>"family","congressos" or "feiras"=>"city",_=>"stage"};
+    <article class="agenda-card" data-event-id="@item.Id"><div class="agenda-card-art"><img src="/images/agenda/@(art).svg" alt="" width="720" height="360" loading="lazy"/><span class="agenda-illustration-label">@Loc["AgendaIllustration"]</span><div class="agenda-date-tile"><strong>@local.ToString("dd")</strong><span>@local.ToString("MMM",culture)</span></div><button type="button" class="agenda-save" data-save-event="@item.Id" aria-pressed="false" aria-label="@Loc["AgendaSave"]: @item.DisplayTitle" hidden>☆</button></div>
+    <div class="agenda-card-body"><p class="eyebrow">@Loc[topic] @if(item.Status==MinhaBelem.Core.Entities.ContentStatus.Cancelled){<span class="notice error-notice">@Loc["AgendaCancelled"]</span>}</p><h4><a href="/Home/Detalhe/@item.Id">@item.DisplayTitle</a></h4><p class="agenda-card-when"><time datetime="@(AgendaPage.DateOnlyEvent(item)?local.ToString("yyyy-MM-dd"):(item.EventStartAt??item.PublishedAt).ToString("O"))">@local.ToString("ddd, dd MMM",culture) · @(AgendaPage.DateOnlyEvent(item)?Loc["AgendaUnknownTime"].Value:local.ToString("HH:mm"))</time></p><p class="agenda-card-place">⌖ @(item.EventDetails?.Location??item.Address??item.Municipality)</p><p>@item.DisplaySummary</p><p class="agenda-card-price">@(item.IsFree?Loc["FreeEvents"].Value:item.TicketPriceText??Loc["AgendaCheckPrice"].Value)</p><p class="small agenda-verification">✓ @item.SourceName · @PortalTime.Local(item.LastVerifiedAt).ToString("dd/MM",culture)</p>
+    <div class="agenda-card-actions"><a href="/Home/Detalhe/@item.Id">@Loc["AgendaDetails"] ↗</a>@if(item.EventStartAt is not null && item.Kind==MinhaBelem.Core.Entities.ContentKind.Event){<a href="/agenda/eventos/@item.Id/calendario.ics" aria-label="@Loc["AgendaAddCalendar"]: @item.DisplayTitle">＋ @Loc["Nav_Agenda"]</a>}<button type="button" data-share-event="/Home/Detalhe/@item.Id" data-title="@item.DisplayTitle" aria-label="@Loc["AgendaShare"]: @item.DisplayTitle" hidden>↗</button></div><a class="agenda-source-link" href="@item.SourceUrl" target="_blank" rel="noopener noreferrer">@Loc["AgendaOfficialSource"] ↗</a></div></article>}
+    </div></section>}
+    </section></main>
+<script src="~/js/agenda.js" asp-append-version="true" defer></script>

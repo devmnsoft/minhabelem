@@ -119,8 +119,8 @@ public sealed class ContentRepository(MySqlDataSource dataSource) : IContentRepo
             parameters.Add("dateTo", query.DateTo.Value.ToDateTime(TimeOnly.MinValue));
         }
         if (query.OnlyUpcomingEvents)
-            clauses.Add("event_start_at IS NOT NULL AND COALESCE(event_end_at,event_start_at) >= UTC_TIMESTAMP(6)");
-        if (query.StartsFromUtc is { } from) { clauses.Add("event_start_at >= @startsFrom"); parameters.Add("startsFrom", from); }
+            clauses.Add("event_start_at IS NOT NULL AND COALESCE(event_end_at,expires_at,event_start_at) >= UTC_TIMESTAMP(6)");
+        if (query.StartsFromUtc is { } from) { clauses.Add(query.EventsOverlapWindow ? "COALESCE(event_end_at,expires_at,event_start_at) >= @startsFrom" : "event_start_at >= @startsFrom"); parameters.Add("startsFrom", from); }
         if (query.StartsBeforeUtc is { } before) { clauses.Add("event_start_at < @startsBefore"); parameters.Add("startsBefore", before); }
         if (query.AgeAtMost is { } age)
         {

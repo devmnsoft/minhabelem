@@ -33,10 +33,10 @@
   @if (Model.Kind == ContentKind.Event && Model.EventStartAt is { } dt)
   {
     <text>
-    ,"startDate": "@dt.ToString("O")"
+    ,"startDate": "@(AgendaPage.DateOnlyEvent(Model)?PortalTime.Local(dt).ToString("yyyy-MM-dd"):dt.ToString("O"))"
     @if (Model.EventEndAt is { } endDt)
     {
-        <text>,"endDate": "@endDt.ToString("O")"</text>
+        <text>,"endDate": "@(AgendaPage.DateOnlyEvent(Model)?PortalTime.Local(endDt).ToString("yyyy-MM-dd"):endDt.ToString("O"))"</text>
     }
     @if (Model.Address is not null)
     {
@@ -80,6 +80,11 @@
     </div>
 
     <h1 style="font-size:clamp(2rem, 4vw, 3rem);line-height:1.15;margin-bottom:18px;">@Model.DisplayTitle</h1>
+    @if (Model.ImageUrl?.StartsWith("/images/agenda/", StringComparison.Ordinal) == true)
+    {
+        <figure style="margin:24px 0"><img src="@Model.ImageUrl" alt="" width="720" height="360" style="width:100%;height:auto;border-radius:18px"/><figcaption class="small">@Loc["AgendaIllustration"] · MinhaBelém</figcaption></figure>
+        <p><a class="button secondary" href="/agenda/eventos/@Model.Id/calendario.ics">@Loc["AgendaAddCalendar"]</a> <a href="/agenda">@Loc["AgendaAll"]</a></p>
+    }
 
     @if (!isPortuguese && !hasTranslation)
     {
@@ -113,8 +118,9 @@
             <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:14px;font-size:0.95rem;">
                 <div>
                     <strong>Data e Horário:</strong><br />
-                    @PortalTime.Local(start).ToString("g", currentCulture)
-                    @if (Model.EventEndAt is { } end)
+                    @PortalTime.Local(start).ToString(AgendaPage.DateOnlyEvent(Model)?"D":"g", currentCulture)
+                    @if (AgendaPage.DateOnlyEvent(Model)) { <span> · @Loc["AgendaUnknownTime"]</span> }
+                    @if (!AgendaPage.DateOnlyEvent(Model) && Model.EventEndAt is { } end)
                     {
                         <span> até @PortalTime.Local(end).ToString("t", currentCulture)</span>
                     }
@@ -141,7 +147,7 @@
                 {
                     <div>
                         <strong>Classificação Etária:</strong><br />
-                        @(ev.AgeRating ?? "Classificação Livre")
+                        @(ev.AgeRating ?? Loc["RouteUnknown"].Value)
                     </div>
                     @if (ev.Organizer is not null)
                     {
