@@ -17,7 +17,7 @@ try
     if (args.Contains("--auth-audit"))
     {
         await using var data = new MySqlDataSourceBuilder(builder.ConnectionString).Build();
-        Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(await MinhaBelem.Infrastructure.Identity.AuthenticationDiagnostics.ReadLocalAsync(data), new System.Text.Json.JsonSerializerOptions { WriteIndented = true }));
+        Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(await MinhaBelem.Infrastructure.Identity.AuthenticationDiagnostics.ReadLocalAsync(data, environment: Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "not_supplied"), new System.Text.Json.JsonSerializerOptions { WriteIndented = true }));
         var files = new ConfigurationBuilder().AddJsonFile(Path.Combine(Directory.GetCurrentDirectory(), "src/MinhaBelem.Web/appsettings.json"), false).AddJsonFile(Path.Combine(Directory.GetCurrentDirectory(), "src/MinhaBelem.Web/appsettings.Development.json"), true).Build();
         if (files.GetConnectionString("Default") is { Length: > 0 } fileConnection && fileConnection != builder.ConnectionString)
         {

@@ -90,7 +90,7 @@ app.UseForwardedHeaders();
 if (args.Contains("--audit-auth"))
 {
     if (!app.Environment.IsDevelopment()) throw new InvalidOperationException("Diagnóstico exclusivo de Development local.");
-    Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(await AuthenticationDiagnostics.ReadLocalAsync(app.Services.GetRequiredService<MySqlConnector.MySqlDataSource>()), new System.Text.Json.JsonSerializerOptions { WriteIndented = true }));
+    Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(await AuthenticationDiagnostics.ReadLocalAsync(app.Services.GetRequiredService<MySqlConnector.MySqlDataSource>(), environment: app.Environment.EnvironmentName), new System.Text.Json.JsonSerializerOptions { WriteIndented = true }));
     return;
 }
 if (Array.IndexOf(args, "--import-agenda") is var agendaArgument && agendaArgument >= 0)

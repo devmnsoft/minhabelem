@@ -24,6 +24,9 @@ public sealed class ContaController(UserManager<ApplicationUser> users, SignInMa
         var result = user is { Enabled: true }
             ? await signIn.PasswordSignInAsync(user, model.Password, false, true)
             : Microsoft.AspNetCore.Identity.SignInResult.Failed;
+        await AuthenticationAttemptAsync(user, "password", user is null ? "account_absent" : !user.Enabled ? "disabled" :
+            result.IsLockedOut ? "locked_out" : result.IsNotAllowed ? "sign_in_not_allowed" :
+            result.RequiresTwoFactor ? "mfa_required" : result.Succeeded ? "password_accepted" : "invalid_password");
         if (result.RequiresTwoFactor) return RedirectToAction(nameof(Verificar));
         if (result.Succeeded)
         {
@@ -44,21 +47,29 @@ public sealed class ContaController(UserManager<ApplicationUser> users, SignInMa
     public async Task<IActionResult> Verificar(string code, bool recovery = false)
     {
         var user = await signIn.GetTwoFactorAuthenticationUserAsync();
-        if (user is null || !user.Enabled || string.IsNullOrWhiteSpace(code) || code.Length > 30) return RedirectToAction(nameof(Login));
+        if (user is null || !user.Enabled || string.IsNullOrWhiteSpace(code) || code.Length > 30)
+        {
+            await AuthenticationAttemptAsync(user, recovery ? "recovery" : "mfa", user is null ? "challenge_missing_or_expired" : !user.Enabled ? "disabled" : "invalid_factor");
+            return RedirectToAction(nameof(Login));
+        }
         var result = recovery
             ? await signIn.TwoFactorRecoveryCodeSignInAsync(code.Trim())
             : await signIn.TwoFactorAuthenticatorSignInAsync(code.Trim(), false, false);
         if (!result.Succeeded)
         {
+            var locked = result.IsLockedOut;
             if (recovery && !result.IsLockedOut && await users.FindByIdAsync(user.Id.ToString()) is {} attempted)
             {
                 var failed = await users.AccessFailedAsync(attempted);
                 if (!failed.Succeeded) { await signIn.SignOutAsync(); return Conflict("Reinicie o login."); }
+                locked = await users.IsLockedOutAsync(attempted);
             }
+            await AuthenticationAttemptAsync(user, recovery ? "recovery" : "mfa", locked ? "locked_out" : "invalid_factor");
             ModelState.AddModelError("", "Código inválido ou acesso temporariamente bloqueado."); return View();
         }
         var fresh = await RecordLoginAsync(user.Id, "session.mfa_login");
         if (fresh is null) { await signIn.SignOutAsync(); return Conflict("Reinicie o login."); }
+        await AuthenticationAttemptAsync(fresh, recovery ? "recovery" : "mfa", "authenticated");
         return await DestinationAsync(fresh);
     }
 
@@ -185,6 +196,13 @@ public sealed class ContaController(UserManager<ApplicationUser> users, SignInMa
         await audit.WriteAsync(new AuditEntry { ActorId = id, Action = action, EntityType = "user", EntityId = id }, HttpContext.RequestAborted);
         return fresh;
     }
+
+    // Administrative audit only: never store the submitted email, password, TOTP or recovery code.
+    private Task AuthenticationAttemptAsync(ApplicationUser? user, string stage, string reason) => audit.WriteAsync(new AuditEntry
+    {
+        Action = "auth.attempt", EntityType = "user", EntityId = user?.Id,
+        DetailsJson = System.Text.Json.JsonSerializer.Serialize(new { stage, reason })
+    }, HttpContext.RequestAborted);
 
     private async Task<IActionResult> DestinationAsync(ApplicationUser user)
     {
