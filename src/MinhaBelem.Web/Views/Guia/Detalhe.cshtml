@@ -1,104 +1,68 @@
+@using System.Globalization
+@using MinhaBelem.Core.Abstractions
+@using MinhaBelem.Core.Security
+@using MinhaBelem.Web.Models
+@inject IConfiguration Configuration
 @model MinhaBelem.Core.Entities.Place
-<section class="section"><a class="button" href="/como-chegar?placeId=@Model.Id">@Loc["RouteTitle"] →</a></section>
-
 @{
-    ViewData["Title"] = $"{Model.DisplayName} — {Loc["Nav_Guide"].Value}";
+    ViewData["Title"] = Model.DisplayName;
+    var live = ViewData["Live"] is true;
+    var schedule = ViewData["VisitSchedule"] as VisitSchedule ?? new(null,[]);
+    var assessment = ViewData["VisitAssessment"] as VisitAssessment ?? new("unknown","unavailable","");
+    var now = DateTime.UtcNow;
+    var confirmed = schedule.Info is {} evidence && evidence.ConfirmedAt <= now && evidence.ValidUntil > now && SafeUrl.Validate(evidence.SourceUrl).IsValid;
+    var mapUrl = "https://www.google.com/maps/search/?api=1&query="+Uri.EscapeDataString(Model.DisplayName+", Belém")+
+        (string.IsNullOrWhiteSpace(Model.GooglePlaceId)?"":"&query_place_id="+Uri.EscapeDataString(Model.GooglePlaceId));
+    var canMap = live && Model.Latitude is >=-90 and <=90 && Model.Longitude is >=-180 and <=180 && Configuration["Maps:BrowserKey"] is {Length:>0};
 }
-
-<article class="section article">
-    <p class="eyebrow">@Loc["Nav_Guide"].Value.ToUpperInvariant()</p>
-    <h1>@Model.DisplayName</h1>
-    <p class="lead">@Model.DisplayEditorialNote</p>
-
-    @if (!string.IsNullOrWhiteSpace(Model.CulturalNotes))
-    {
-        <div class="cultural-badge-box">
-            <h4>💡 @Loc["Glossary_Title"]</h4>
-            <p>@Model.CulturalNotes</p>
-        </div>
-    }
-
-    @if (ViewData["Live"] is true)
-    {
-        <div class="google-place-content">
-            <h2>@Model.Name</h2>
-            <p><strong>Endereço:</strong> @Model.FormattedAddress</p>
-            @if (!string.IsNullOrWhiteSpace(Model.Phone))
-            {
-                <p><strong>Telefone:</strong> @Model.Phone</p>
-            }
-            <p><strong>Preço informado:</strong> @(Model.PriceText ?? "Consulte o estabelecimento")</p>
-
-            @if (Model.OpeningHours.Count > 0)
-            {
-                <h4>Horários de Funcionamento:</h4>
-                <ul>
-                    @foreach (var hours in Model.OpeningHours)
-                    {
-                        <li>@hours.Label</li>
-                    }
-                </ul>
-            }
-
-            @if (ViewData["Photo"] is string photo)
-            {
-                <figure>
-                    <img src="@photo" alt="Vista de @Model.Name, fornecida pelo Google Maps" loading="lazy" referrerpolicy="no-referrer" />
-                    <figcaption>
-                        @foreach (var author in Model.PhotoAuthors)
-                        {
-                            <span>
-                                Foto:
-                                @if (author.PhotoUri is not null)
-                                {
-                                    <img class="author-avatar" src="@author.PhotoUri" alt="" />
-                                }
-                                <a href="@author.Uri" target="_blank" rel="noopener noreferrer">@author.Name</a>
-                            </span>
-                        }
-                        @if (MinhaBelem.Core.Security.SafeUrl.Validate(Model.PhotoGoogleMapsUri).IsValid)
-                        {
-                            <a href="@Model.PhotoGoogleMapsUri" target="_blank" rel="noopener noreferrer">Foto original no Google Maps</a>
-                        }
-                    </figcaption>
-                </figure>
-            }
-
-            <p class="attribution">
-                <img src="~/images/google-maps-attribution.svg" alt="Google Maps" width="100" height="18" />
-            </p>
-            <p class="small">Detalhes consultados via Google Places API. Confirme horários, preços e acessibilidade com o local.</p>
-        </div>
-    }
-
-    @if (ViewData["Live"] is true && Model.WheelchairAccessible is { } accessible)
-    {
-        <p>
-            <strong>Acessibilidade para cadeira de rodas:</strong>
-            @(accessible ? "✅ Informado como disponível pelo Google Maps" : "Informado como indisponível pelo Google Maps"). Confirme as condições com o estabelecimento.
-        </p>
-    }
-    else
-    {
-        <p class="small text-muted">Os detalhes em tempo real do Google Maps podem estar indisponíveis ou sujeitos a limitações de cota.</p>
-    }
-
-    <div class="actions">
-        @if (!string.IsNullOrWhiteSpace(Model.GooglePlaceId))
+<header class="section guide-heading">
+    <div><span class="eyebrow">@Loc["Nav_Guide"] · BELÉM DO PARÁ</span><h1>@Model.DisplayName</h1><p class="lead">@Model.DisplayEditorialNote</p></div>
+    <svg class="icon guide-intro-icon" aria-hidden="true" viewBox="0 0 64 64"><use href="/images/icons.svg#market"/></svg>
+</header>
+<article class="section guide-place-layout">
+    <div>
+        @if(live && ViewData["Photo"] is string photo)
         {
-            <a class="button" href="https://www.google.com/maps/search/?api=1&amp;query=local&amp;query_place_id=@Uri.EscapeDataString(Model.GooglePlaceId)" target="_blank" rel="noopener noreferrer">
-                🗺️ Ver no Google Maps
-            </a>
+            <figure class="guide-visual"><img src="@photo" alt="@Model.DisplayName" loading="lazy" referrerpolicy="no-referrer"/>
+                <figcaption>@Loc["GuidePhoto"]:
+                @foreach(var author in Model.PhotoAuthors){<span>@if(SafeUrl.Validate(author.Uri).IsValid){<a href="@author.Uri" target="_blank" rel="noopener noreferrer">@author.Name</a>}else{@author.Name} </span>}
+                @if(SafeUrl.Validate(Model.PhotoGoogleMapsUri).IsValid){<a href="@Model.PhotoGoogleMapsUri" target="_blank" rel="noopener noreferrer">Google Maps ↗</a>}</figcaption>
+            </figure>
         }
-        @if (MinhaBelem.Core.Security.SafeUrl.Validate(Model.WebsiteUri).IsValid)
+        @if(!string.IsNullOrWhiteSpace(Model.CulturalNotes)){<section class="card"><h2>@Loc["Glossary_Title"]</h2><p>@Model.CulturalNotes</p></section>}
+        @if(live)
         {
-            <a class="button secondary" href="@Model.WebsiteUri" target="_blank" rel="noopener noreferrer">
-                🌐 Site do estabelecimento
-            </a>
+            <dl class="guide-information">
+                <div><dt>@Loc["GuideAddress"]</dt><dd>@Model.FormattedAddress</dd></div>
+                @if(!string.IsNullOrWhiteSpace(Model.Phone)){<div><dt>@Loc["GuidePhone"]</dt><dd>@Model.Phone</dd></div>}
+                <div><dt>@Loc["GuidePrice"]</dt><dd>@(Model.PriceText??Loc["NoVerifiedPrice"].Value)</dd></div>
+                @if(Model.WheelchairAccessible is {} wheelchair){<div><dt>@Loc["GuideWheelchair"]</dt><dd>@Loc[wheelchair?"GuideYes":"GuideNo"]</dd></div>}
+            </dl>
+            @if(Model.OpeningHours.Count>0){<section class="card"><h2>@Loc["GuideHours"]</h2><ul>@foreach(var hours in Model.OpeningHours){<li>@hours.Label</li>}</ul></section>}
+            <p class="small attribution"><img src="/images/google-maps-attribution.svg" alt="Google Maps" width="100" height="18"/> @Loc["GuideProviderNote"]</p>
         }
-        <a class="button secondary" href="/guia">← Voltar ao guia</a>
-        <a class="button secondary" href="/explore">🌎 Explore Belém</a>
+        else{<p class="notice" role="status">@Loc["GuideUnavailable"]</p>}
+        <section class="card"><h2>@Loc["RouteMap"]</h2>
+            @if(canMap)
+            {
+                <button type="button" class="button secondary" data-guide-map-load data-lat="@(Model.Latitude.GetValueOrDefault().ToString(CultureInfo.InvariantCulture))" data-lng="@(Model.Longitude.GetValueOrDefault().ToString(CultureInfo.InvariantCulture))" data-map-key="@Configuration["Maps:BrowserKey"]" data-loading="@Loc["GuideMapLoading"]" data-failed="@Loc["RouteMapFallback"]">@Loc["GuideInteractiveMap"]</button>
+                <p data-guide-map-status role="status" class="small"></p><div class="guide-map" data-guide-map role="region" aria-label="@Loc["RouteMap"]" hidden></div>
+            }
+            else{<p>@Loc["RouteMapFallback"]</p>}
+            <a class="button secondary" href="@mapUrl" target="_blank" rel="noopener noreferrer">@Loc["RouteOpenMaps"] ↗</a>
+        </section>
     </div>
+    <aside class="card guide-visit-card"><span class="eyebrow">@Loc["RouteVisit"]</span><h2>@Loc["VisitState_"+assessment.State]</h2>
+        @if(confirmed && schedule.Info is {} info)
+        {
+            @if(info.EntryPrice is {} price){<p><strong>@Loc["RouteEntry"]: BRL @price.ToString("N2")</strong></p>}
+            <p>@info.PriceConditions</p><p class="small"><a href="@info.SourceUrl" target="_blank" rel="noopener noreferrer">@Loc["RouteSource"] ↗</a><br/>@PortalTime.Local(info.ConfirmedAt).ToString("d") → @PortalTime.Local(info.ValidUntil).ToString("d")</p>
+        }
+        else{<p>@Loc["RouteUnknown"] · @Loc["NoVerifiedPrice"]</p>}
+        <a class="button" href="/como-chegar?placeId=@Model.Id">@Loc["RouteTitle"] ↗</a>
+        @if(SafeUrl.Validate(Model.WebsiteUri).IsValid && live){<a class="button secondary" href="@Model.WebsiteUri" target="_blank" rel="noopener noreferrer">@Loc["GuideWebsite"] ↗</a>}
+        <a class="button secondary" href="/guia">← @Loc["Nav_Guide"]</a><p class="small">@Loc["RouteNoCrowding"]</p>
+    </aside>
 </article>
-
-<partial name="_PlaceMediaGallery" model="Model.Id" />
+<partial name="_PlaceMediaGallery" model="Model.Id"/>
+@if(canMap){<script src="~/js/guide-map.js" asp-append-version="true" defer></script>}

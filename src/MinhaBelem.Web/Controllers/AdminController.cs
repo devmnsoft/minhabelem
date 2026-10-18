@@ -17,14 +17,30 @@ namespace MinhaBelem.Web.Controllers;
 
 [Route("admin"), Authorize]
 public sealed class AdminController(IAdministrationRepository admin, IDashboardRepository dashboard, IIngestionRepository ingestion, IAuditRepository audit,
-    IAiRunRepository aiRuns, UserManager<ApplicationUser> users, ICommunityRepository community, IPlaceRepository places, IPlacesClient google, IOptions<AiOptions> aiOptions,
+    IAiRunRepository aiRuns, UserManager<ApplicationUser> users, ICommunityRepository community, IPlaceRepository places, IPlacesClient google, IOptions<AiOptions> aiOptions, IOptions<CollectorOptions> collectorOptions,
     IDiscoveryRepository discovery, ICollectionQueue collectionQueue, ITranslationRepository translation, IContentTranslationService translationService, IContentRepository content,
     ITransitRepository transit, IAdvertiserRepository advertisers, INeighborhoodRepository neighborhoods,
-    IRadarRepository radar) : Controller
+    IRadarRepository radar, IConfiguration configuration) : Controller
 {
     private long Actor => long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+    [HttpGet("ambiente"), Authorize(Policy = Permissions.SettingsManage)]
+    public IActionResult Ambiente([FromServices] IWebHostEnvironment environment)
+    {
+        Response.Headers.CacheControl="private,no-store";
+        var connection=configuration.GetConnectionString("Default")??throw new InvalidOperationException("Conexão não configurada.");
+        var target=new MySqlConnector.MySqlConnectionStringBuilder(connection);
+        return Json(new{host=target.Server,port=target.Port,database=target.Database,environment=environment.EnvironmentName,
+            databaseReference=AuthenticationDiagnostics.DatabaseReference(connection)});
+    }
+
     private Task Audit(string action, string type, long? id, CancellationToken ct) => audit.WriteAsync(new AuditEntry { ActorId = Actor, Action = action, EntityType = type, EntityId = id }, ct);
-    [HttpGet(""), Authorize(Policy = Permissions.DashboardRead)] public async Task<IActionResult> Index(CancellationToken ct) => View(await dashboard.BuildAsync(ct));
+    [HttpGet(""), Authorize(Policy = Permissions.DashboardRead)]
+    public async Task<IActionResult> Index(CancellationToken ct)
+    {
+        ViewData["RadarStats"]=await radar.GetDashboardStatsAsync(ct);
+        ViewData["RoutesConfigured"]=configuration.GetValue<bool>("GoogleRoutes:Enabled")&&!string.IsNullOrWhiteSpace(configuration["GoogleRoutes:ApiKey"])&&configuration.GetValue<int>("GoogleRoutes:DailyLimit")>0;
+        return View(await dashboard.BuildAsync(ct));
+    }
     [HttpGet("perfis"), Authorize(Policy = Permissions.UserManage)]
     public async Task<IActionResult> Perfis(CancellationToken ct) => View(await admin.RolePermissionsAsync(ct));
     [HttpPost("perfis"), Authorize(Policy = Permissions.UserManage)]
@@ -468,8 +484,11 @@ public sealed class AdminController(IAdministrationRepository admin, IDashboardR
     public async Task<IActionResult> Radar([FromQuery] DiscoveredSourceQuery query, CancellationToken ct)
     {
         ViewData["CollectionQueue"] = await collectionQueue.RecentAsync(ct);
+        var settings=await admin.SettingsAsync(ct);
         var model = new RadarDashboardViewModel
         {
+            CheckIntervalMinutes=int.TryParse(settings.GetValueOrDefault("radar.intervalMinutes"),out var interval)?Math.Clamp(interval,1,240):Math.Clamp(collectorOptions.Value.IntervalMinutes,1,240),
+            ConfiguredEnabled=bool.TryParse(settings.GetValueOrDefault("radar.enabled"),out var enabled)?enabled:collectorOptions.Value.Enabled,
             Stats = await radar.GetDashboardStatsAsync(ct),
             DiscoveredSources = await radar.DiscoveredSourcesAsync(query, ct),
             TotalDiscovered = await radar.CountDiscoveredSourcesAsync(query, ct),
@@ -487,7 +506,11 @@ public sealed class AdminController(IAdministrationRepository admin, IDashboardR
     [HttpPost("radar/fontes/{id:long}/estado"), Authorize(Policy = Permissions.SourceManage)]
     public async Task<IActionResult> EstadoFonte(long id, bool enabled, CancellationToken ct)
     {
-        await radar.ToggleSourceStateAsync(id, enabled, ct);
+        if(!await radar.ToggleSourceStateAsync(id, enabled, ct))
+        {
+            TempData["Notice"]="Fonte não alterada. Para ativar, confirme a aprovação e registre a autorização na gestão de fontes.";
+            return RedirectToAction(nameof(Radar));
+        }
         await Audit("radar.source_state", "ingestion_source", id, ct);
         TempData["Notice"] = $"Status da fonte atualizado para {(enabled ? "Ativa" : "Pausada")}.";
         return RedirectToAction(nameof(Radar));
@@ -550,7 +573,9 @@ public sealed class AdminController(IAdministrationRepository admin, IDashboardR
 
         await radar.EvaluateDiscoveredSourceAsync(id, parsedStatus, notes, Actor, ct);
         await Audit("radar.source_evaluated", "discovered_source", id, ct);
-        TempData["Notice"] = $"Fonte avaliada com sucesso ({parsedStatus}).";
+        TempData["Notice"] = parsedStatus == SourceEvaluationStatus.Approved
+            ? "Fonte avaliada e cadastrada para revisão. A avaliação não ativa a coleta: confirme a autorização e os limites na gestão de fontes."
+            : $"Fonte avaliada com sucesso ({parsedStatus}).";
         return RedirectToAction(nameof(Radar));
     }
 

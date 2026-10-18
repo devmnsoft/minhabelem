@@ -8,7 +8,7 @@ namespace MinhaBelem.Web.Controllers;
 
 [Route("guia")]
 [Route("{culture:regex(^(pt-BR|en|fr|es|ru|zh-Hans|ja)$)}/guia")]
-public sealed class GuiaController(IPlaceRepository places, IPlacesClient google) : Controller
+public sealed class GuiaController(IPlaceRepository places, IPlacesClient google, IVisitRepository visits) : Controller
 {
     [HttpGet("")]
     public async Task<IActionResult> Index(string? busca, string? bairro, string? municipio, string? categoria, Core.Taxonomy.Audience? publico, Core.Taxonomy.AccessibilityFeature? acessibilidade, CancellationToken ct)
@@ -29,8 +29,13 @@ public sealed class GuiaController(IPlaceRepository places, IPlacesClient google
         if (live is not null)
         {
             live.Id = stored.Id; live.EditorialNote = stored.EditorialNote;
+            live.CulturalNotes = stored.CulturalNotes;
+            live.LocalizedName = stored.LocalizedName; live.LocalizedEditorialNote = stored.LocalizedEditorialNote;
             ViewData["Photo"] = await google.GetPhotoUriAsync(live.PhotoName, ct);
         }
+        var schedule = await visits.GetAsync(id,ct);
+        ViewData["VisitSchedule"] = schedule;
+        ViewData["VisitAssessment"] = MinhaBelem.Core.Policies.VisitRecommendationService.Evaluate(schedule,DateTime.UtcNow,DateTime.UtcNow);
         ViewData["Live"] = live is not null;
         return View(live ?? stored);
     }

@@ -58,7 +58,7 @@ try {
           }).slice(0, 5).map(el => ({ tag: el.tagName, class: el.className, width: Math.round(el.getBoundingClientRect().width) }))
         }));
         results.push({ culture, device, file, ...layout });
-        if (culture === 'pt-BR' && (!screenshotPages || screenshotPages.includes(file.replace('.html',''))) && (!screenshotDevices || screenshotDevices.includes(device)) && ['home.html', 'admin.html', 'admin-radar.html', 'agenda.html', 'agenda-today.html', 'agenda-detail.html', 'agenda-date-only.html', 'explore.html', 'conta-login.html', 'mobilidade.html', 'como-chegar.html', 'editorial-lotes.html', 'admin-midias.html', 'explore-planejar.html', 'guia-ia.html'].includes(file)) {
+        if (culture === 'pt-BR' && (!screenshotPages || screenshotPages.includes(file.replace('.html',''))) && (!screenshotDevices || screenshotDevices.includes(device)) && ['home.html', 'admin.html', 'admin-radar.html', 'agenda.html', 'agenda-today.html', 'agenda-detail.html', 'agenda-date-only.html', 'explore.html', 'conta-login.html', 'mobilidade.html', 'como-chegar.html', 'editorial-lotes.html', 'admin-midias.html', 'explore-planejar.html', 'guia-ia.html', 'guide-place.html'].includes(file)) {
           await page.screenshot({ path: path.join(output, `${file.replace('.html', '')}-${device}.jpg`), type: 'jpeg', quality: 82, fullPage: device === 'mobile' });
         }
         if (file === 'agenda.html' && await page.locator('[data-save-event]').count()) {

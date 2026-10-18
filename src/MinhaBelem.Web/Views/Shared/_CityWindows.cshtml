@@ -1,0 +1,20 @@
+@{
+    var windows = new[] {
+        ("sprint18-ver-o-peso", "market", "CityHeritage", "CityHeritageText", "/guia?categoria=tourist_attraction", "Ver-o-Peso", "Cayambe", "https://commons.wikimedia.org/wiki/File:Bel%C3%A9m_Fishing_port_and_Ver-o-peso_01.jpg", "CC BY-SA 3.0", "https://creativecommons.org/licenses/by-sa/3.0/"),
+        ("sprint18-tacaca", "bowl", "CityFood", "CityFoodText", "/guia?categoria=restaurant", "Tacacá · Belém", "Ridiculopathy", "https://commons.wikimedia.org/wiki/File:Tacac%C3%A1_soup_at_Tacac%C3%A1_do_Renato,_Bel%C3%A9m,_Brazil_04.jpg", "CC0", "https://creativecommons.org/publicdomain/zero/1.0/"),
+        ("sprint18-guajara", "boat", "CityRivers", "CityRiversText", "/mobilidade/fluvial", "Guajará", "Ancalibor2019", "https://commons.wikimedia.org/wiki/File:Baia_do_Guajar%C3%A1.jpg", "CC BY-SA 4.0", "https://creativecommons.org/licenses/by-sa/4.0/")
+    };
+}
+<section class="section city-ways" aria-labelledby="city-ways-title">
+    <div class="city-ways-intro"><div><span class="eyebrow">@Loc["Nav_Explore"]</span><h2 id="city-ways-title">@Loc["CityWays"]</h2></div><p>@Loc["CityWaysIntro"]</p></div>
+    <div class="city-windows">
+    @foreach (var window in windows)
+    {
+        <article class="city-window">
+            <figure><picture><source srcset="/images/licensed/@(window.Item1)-640.webp 640w, /images/licensed/@(window.Item1)-1280.webp 1280w" sizes="(max-width:760px) 100vw, 33vw" type="image/webp"/><img src="/images/licensed/@(window.Item1)-640.webp" alt="@window.Item6" width="640" height="464" loading="lazy" decoding="async"/></picture>
+                <figcaption><a href="@window.Item8" target="_blank" rel="noopener noreferrer">@window.Item7 / Wikimedia Commons</a> · <a href="@window.Item10" target="_blank" rel="noopener noreferrer">@window.Item9</a> · @Loc["PhotoOptimized"]</figcaption></figure>
+            <div class="city-window-copy"><svg class="icon" aria-hidden="true"><use href="/images/icons.svg#@window.Item2"/></svg><h3>@Loc[window.Item3]</h3><p>@Loc[window.Item4]</p><a href="@window.Item5">@Loc["ViewMore"] <span aria-hidden="true">↗</span></a></div>
+        </article>
+    }
+    </div><p class="archive-note">@Loc["PhotoArchiveNote"]</p>
+</section>

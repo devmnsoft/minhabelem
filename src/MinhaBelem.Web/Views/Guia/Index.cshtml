@@ -5,40 +5,40 @@
 }
 
 <section class="section">
-    <p class="eyebrow">EXPLORE A CIDADE</p>
+    <p class="eyebrow">@Loc["Nav_Explore"]</p>
     <h1>@Loc["Nav_Guide"]</h1>
-    <p>Locais selecionados pela equipe editorial. Detalhes em tempo real integrados com o Google Places.</p>
+    <p>@Loc["GuideIntro"]</p>
 
     <form method="get" class="filters" role="search">
         <label>
-            Busca
+            @Loc["Search"]
             <input name="busca" maxlength="120" placeholder="Ex: Ver-o-Peso, Mangal..." />
         </label>
         <label>
-            Bairro
+            @Loc["Neighborhood"]
             <input name="bairro" maxlength="120" placeholder="Ex: Campina, Cidade Velha..." />
         </label>
         <label>
-            Município
+            @Loc["Municipality"]
             <input name="municipio" maxlength="120" placeholder="Belém" />
         </label>
         <label>
-            Categoria
+            @Loc["AllCategories"]
             <select name="categoria">
-                <option value="">Todas</option>
-                <option value="restaurant">Restaurantes & Gastronomia</option>
-                <option value="museum">Museus & Teatros</option>
-                <option value="park">Parques & Praças</option>
-                <option value="tourist_attraction">Atrações Turísticas & Feiras</option>
+                <option value="">@Loc["AgendaAll"]</option>
+                <option value="restaurant">@Loc["CategoryFood"]</option>
+                <option value="museum">@Loc["CategoryMuseum"]</option>
+                <option value="park">@Loc["CategoryPark"]</option>
+                <option value="tourist_attraction">@Loc["CategoryAttraction"]</option>
             </select>
         </label>
         <label>
-            Acessibilidade
+            @Loc["Explore_Accessibility_Title"]
             <select name="acessibilidade">
-                <option value="">Todas</option>
+                <option value="">@Loc["AgendaAll"]</option>
                 @foreach (var feature in Enum.GetNames<MinhaBelem.Core.Taxonomy.AccessibilityFeature>())
                 {
-                    <option value="@feature">@feature</option>
+                    <option value="@feature">@Loc["Accessibility_"+feature]</option>
                 }
             </select>
         </label>
@@ -49,7 +49,7 @@
     {
         <div class="empty">
             <h2>@Loc["General_Empty"]</h2>
-            <p>Nenhum local encontrado para os filtros selecionados.</p>
+            <p>@Loc["GuideEmpty"]</p>
         </div>
     }
     else

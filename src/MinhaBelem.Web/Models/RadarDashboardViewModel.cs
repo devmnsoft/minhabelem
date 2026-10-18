@@ -4,6 +4,8 @@ namespace MinhaBelem.Web.Models;
 
 public sealed class RadarDashboardViewModel
 {
+    public int CheckIntervalMinutes { get; set; } = 1;
+    public bool ConfiguredEnabled { get; set; }
     public RadarDashboardStats Stats { get; set; } = new();
     public IReadOnlyList<DiscoveredSource> DiscoveredSources { get; set; } = Array.Empty<DiscoveredSource>();
     public int TotalDiscovered { get; set; }

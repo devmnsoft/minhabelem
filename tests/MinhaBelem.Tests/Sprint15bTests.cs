@@ -38,7 +38,7 @@ public sealed class Sprint15bTests(PortalFixture fixture)
             Assert.Equal(1,(await visits.GetAsync(id,default)).Info!.Revision);
             foreach(var culture in SupportedCultures.All){
                 editor.DefaultRequestHeaders.AcceptLanguage.Clear();editor.DefaultRequestHeaders.AcceptLanguage.ParseAdd(culture);
-                foreach(var (name,url) in new[]{("visit-place","/como-chegar?placeId="+id),("admin-visit-hours",$"/admin/lugares/{id}/visita")}){
+                foreach(var (name,url) in new[]{("guide-place","/guia/"+id),("visit-place","/como-chegar?placeId="+id),("admin-visit-hours",$"/admin/lugares/{id}/visita")}){
                     var pageResponse=await editor.GetAsync(url);Assert.Equal(HttpStatusCode.OK,pageResponse.StatusCode);
                     if(Environment.GetEnvironmentVariable("MINHABELEM_VISUAL_SNAPSHOTS") is {Length:>0} output){var directory=Path.Combine(output,culture);Directory.CreateDirectory(directory);var html=await pageResponse.Content.ReadAsStringAsync();html=System.Text.RegularExpressions.Regex.Replace(html,"<input[^>]*name=\"__RequestVerificationToken\"[^>]*>","");await File.WriteAllTextAsync(Path.Combine(directory,name+".html"),html);}
                 }

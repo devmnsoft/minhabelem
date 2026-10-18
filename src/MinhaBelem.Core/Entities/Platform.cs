@@ -80,6 +80,7 @@ public sealed class DashboardSnapshot
     public int DuplicateCandidates { get; set; }
     public int ActiveSources { get; set; }
     public int FailingSources { get; set; }
+    public int IngestionRunsWithErrorsLast24h { get; set; }
     public int PublishedPlaces { get; set; }
     public int PendingSubmissions { get; set; }
     public int ActiveAdvertisers { get; set; }

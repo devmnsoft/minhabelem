@@ -3,7 +3,9 @@
 @using MinhaBelem.Web.Resources
 @inject IStringLocalizer<SharedResource> L
 @model object
-@{ ViewData["Title"] = L["BatchTitle"]; var kind = ViewData["Kind"] as string ?? "content"; var page = (int)ViewData["Page"]!; }
+@{ ViewData["Title"] = L["BatchTitle"]; var kind = ViewData["Kind"] as string ?? "content"; var page = (int)ViewData["Page"]!;
+var actions=(kind=="candidate"?new[]{"approve","rejectCandidate","reviewCandidate","retry"}:new[]{"review","reject","archive","publish","category","locality","eventStatus","analyze","translate","deduplicate"})
+    .Where(action=>User.HasClaim("mb:permission",MinhaBelem.Infrastructure.MySql.EditorialBatches.Permission(action))).ToArray(); }
 <div class="admin-shell"><partial name="_AdminSidebar"/><main class="admin-content">
 <header class="admin-header"><div><span class="eyebrow">MINHABELÉM · EDITORIAL</span><h1>@L["BatchTitle"]</h1><p>@L["BatchSafety"]</p></div></header>
 <div class="grid">@foreach(var metric in (IReadOnlyDictionary<string,long>)ViewData["BatchMetrics"]!){<div class="card"><strong>@metric.Value</strong><span>@L[metric.Key]</span></div>}</div>
@@ -21,11 +23,10 @@
 else { foreach (var item in (IReadOnlyList<ContentItem>)Model) { <tr><td><input type="checkbox" name="selected" value="content:@item.Id:@item.Revision" aria-label="@item.Title"/></td><td><a href="/editorial/editar/@item.Id">@item.Title</a><br/>@item.SourceName · @item.Status</td><td>@item.Revision</td></tr> } }
 </tbody></table></div>
 <div class="batch-toolbar card"><label>@L["BatchAction"]<select name="Action">
-@if (kind == "candidate") { <option value="approve">@L["BatchApprove"]</option><option value="rejectCandidate">@L["BatchReject"]</option><option value="reviewCandidate">@L["BatchReview"]</option><option value="retry">@L["BatchRetry"]</option> }
-else { <option value="review">@L["BatchReview"]</option><option value="reject">@L["BatchReject"]</option><option value="archive">@L["BatchArchive"]</option><option value="publish">@L["BatchPublish"]</option><option value="category">@L["BatchCategory"]</option><option value="locality">@L["BatchLocality"]</option><option value="eventStatus">@L["BatchEventStatus"]</option><option value="analyze">@L["BatchAnalyze"]</option><option value="translate">@L["TranslateWithAi"]</option><option value="deduplicate">@L["BatchDeduplicate"]</option> }
+@foreach(var action in actions){<option value="@action">@L[BatchLabels.ActionKey(action)]</option>}
 </select></label><label>@L["BatchValue"]<input name="Value" maxlength="64" list="batch-values"/><datalist id="batch-values">@foreach(var c in Enum.GetNames<MinhaBelem.Core.Taxonomy.ContentCategory>()){<option value="@c"/>}<option value="Cancelled"/><option value="Postponed"/><option value="UncertainDate"/><option value="AwaitingOrganizer"/><option value="Completed"/></datalist></label>
 <label>@L["BatchCity"]<input name="Municipality" maxlength="120"/></label><label>@L["BatchNeighborhood"]<input name="Neighborhood" maxlength="120"/></label>
-<label>@L["BatchReason"]<textarea name="Reason" required minlength="5" maxlength="500"></textarea></label><button>@L["BatchPreview"]</button></div>
+<label>@L["BatchReason"]<textarea name="Reason" required minlength="5" maxlength="500"></textarea></label><button disabled="@(actions.Length==0)">@L["BatchPreview"]</button>@if(actions.Length==0){<p class="notice">@L["BatchNoActions"]</p>}</div>
 </form><nav class="pagination"><a href="?kind=@kind&search=@Uri.EscapeDataString(ViewData["Search"] as string ?? "")&page=@Math.Max(1,page-1)">←</a><span>@(page)</span><a href="?kind=@kind&search=@Uri.EscapeDataString(ViewData["Search"] as string ?? "")&page=@(page+1)">→</a></nav>
 <section class="card"><h2>@L["BatchMyHistory"]</h2>
 @if(ViewData["BatchHistory"] is IReadOnlyList<MinhaBelem.Core.Abstractions.EditorialBatch> history) {

@@ -3,6 +3,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using MinhaBelem.Core.Services;
 using MinhaBelem.Infrastructure.Background;
+using MinhaBelem.Core.Abstractions;
 
 var builder = Host.CreateApplicationBuilder(args);
 
@@ -31,6 +32,29 @@ builder.Services.AddMinhaBelemInfrastructure(builder.Configuration);
 
 var host = builder.Build();
 
+if (args.Contains("--audit-operations"))
+{
+    Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(await OperationsDiagnostics.ReadLocalAsync(host.Services.GetRequiredService<MySqlConnector.MySqlDataSource>(),builder.Configuration,environment:builder.Environment.EnvironmentName),new System.Text.Json.JsonSerializerOptions{WriteIndented=true}));
+    host.Dispose();
+    return 0;
+}
+
+// Explicit local drain of already-confirmed editorial work. Never starts source collection.
+if (args.Contains("--run-editorial-once"))
+{
+    var connection=new MySqlConnector.MySqlConnectionStringBuilder(host.Services.GetRequiredService<MySqlConnector.MySqlDataSource>().ConnectionString);
+    if(!builder.Environment.IsDevelopment() || connection.Server is not("localhost" or "127.0.0.1"))
+        throw new InvalidOperationException("Execução editorial pontual exclusiva de Development local.");
+    using var scope=host.Services.CreateScope();
+    using var timeout=new CancellationTokenSource(TimeSpan.FromMinutes(10));
+    var batches=scope.ServiceProvider.GetRequiredService<IEditorialBatches>();
+    var processed=0;
+    while(processed<10 && await batches.ProcessNextAsync(timeout.Token))processed++;
+    Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(new{editorialBatchesProcessed=processed,sourceCollectionStarted=false}));
+    host.Dispose();
+    return 0;
+}
+
 // Modo de execução única (útil para rotinas agendadas no Task Scheduler ou testes de homologação)
 if (args.Contains("--run-once"))
 {
@@ -44,6 +68,9 @@ if (args.Contains("--run-once"))
 
     try
     {
+        logger.LogInformation("Processando lotes editoriais já confirmados...");
+        var batches = scope.ServiceProvider.GetRequiredService<IEditorialBatches>();
+        for (var i = 0; i < 10 && await batches.ProcessNextAsync(cts.Token); i++) { }
         logger.LogInformation("Processando solicitações manuais pendentes...");
         var queue = scope.ServiceProvider.GetRequiredService<CollectionQueueWorker>();
         for (var i = 0; i < 10 && await queue.ProcessNextAsync(cts.Token); i++) { }

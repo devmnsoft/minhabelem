@@ -14,7 +14,7 @@ public sealed class GoogleRoutePlanner(IHttpClientFactory clients,IConfiguration
         var external="https://www.google.com/maps/dir/?api=1&destination="+Uri.EscapeDataString(q.Destination)+"&travelmode="+(q.Mode is "walking" or "bicycling" or "driving"?q.Mode:"transit")+(string.IsNullOrWhiteSpace(q.Origin)?"":"&origin="+Uri.EscapeDataString(q.Origin));
         var queried=false;
         RoutePlan Result(string state,string message,IReadOnlyList<RouteOption>? routes=null)=>new(state,"Google Routes",message,queried?DateTime.UtcNow:null,routes??[],external);
-        if(q.Mode=="boat")return Result("unavailable","Travessia fluvial sem operação digital confirmada. Consulte operador e fonte oficial para embarque, maré e retorno.");
+        if(q.Mode=="boat")return new RoutePlan("unavailable","SEGBEL","Travessia fluvial sem operação digital confirmada. Consulte operador e fonte oficial para embarque, maré e retorno.",null,[],"https://seguranca.belem.pa.gov.br/");
         if(q.Accessible)return Result("unavailable","Este provedor não confirma acessibilidade integral da viagem. Confirme os trechos e os veículos com a operadora.");
         if(q.ArriveBy&&q.Mode=="driving")return Result("unavailable","Este provedor não calcula carro por horário de chegada. Informe o horário de saída ou consulte o serviço oficial.");
         var key=config["GoogleRoutes:ApiKey"];

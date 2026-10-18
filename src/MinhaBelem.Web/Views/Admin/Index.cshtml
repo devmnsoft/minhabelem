@@ -1,112 +1,44 @@
-@model MinhaBelem.Core.Entities.DashboardSnapshot
+@using MinhaBelem.Core.Security
+@using MinhaBelem.Core.Entities
+@model DashboardSnapshot
 @{
-    ViewData["Title"] = "Dashboard Executivo — Administração";
+    ViewData["Title"]=Loc["DashboardTitle"].Value;
+    var metrics=new[]{("DashboardPublished",Model.PublishedContent),("DashboardReview",Model.ContentInReview),("DashboardCandidates",Model.PendingCandidates),("DashboardFailingSources",Model.FailingSources)};
+    var tools=new[]{
+        (Permissions.ContentRead,"/editorial/lotes?kind=content","BatchTitle"),
+        (Permissions.ContentRead,"/editorial","AdminEditorial"),
+        (Permissions.SourceManage,"/admin/radar","RadarOperations"),
+        (Permissions.SubmissionModerate,"/admin/colaboracoes","AdminSubmissions"),
+        (Permissions.TranslationRead,"/admin/traducoes","AdminAiReview"),
+        (Permissions.PlaceManage,"/admin/lugares","AdminPlaces"),
+        (Permissions.UserManage,"/admin/usuarios","AdminUsers"),
+        (Permissions.AdvertiserManage,"/admin/anunciantes","NavPartners"),
+        (Permissions.AuditRead,"/admin/auditoria","AdminAudit")
+    };
 }
-
-<div class="admin-shell">
-    <partial name="_AdminSidebar" />
-
-    <main class="admin-content" id="conteudo-admin">
-        <div class="admin-header">
-            <div>
-                <span class="eyebrow">OPERAÇÃO & GOVERNANÇA 360</span>
-                <h1 class="view-26731c99">Painel Executivo MinhaBelém</h1>
-                <p class="small text-muted">Visão consolidada da redação, inteligência digital, infraestrutura e custos operacionais.</p>
-            </div>
-            <div class="view-88785587">
-                <a href="/admin/conteudo" class="button small">➕ Nova Matéria</a>
-                <a href="/admin/fontes" class="button secondary small">📡 Gerenciar Fontes</a>
-                <a href="/admin/relatorios" class="button outline small">📈 Relatório Completo</a>
-            </div>
-        </div>
-
-        <!-- CARDS DE ESTATÍSTICA PRINCIPAIS -->
-        <div class="admin-stats-grid">
-            <div class="stat-card">
-                <span class="view-9a1adb1e eyebrow">PUBLICADOS</span>
-                <div class="stat-number">@Model.PublishedContent</div>
-                <p class="small text-muted">Matérias e eventos ativos</p>
-            </div>
-
-            <div class="stat-card" style="border-left:4px solid var(--gold);">
-                <span class="view-0488757b eyebrow">EM REVISÃO</span>
-                <div class="view-0488757b stat-number">@Model.ContentInReview</div>
-                <p class="small text-muted">Aguardando conferência humana</p>
-            </div>
-
-            <div class="stat-card" style="border-left:4px solid var(--terracotta);">
-                <span class="view-cbb18f90 eyebrow">DESCOBERTA IA</span>
-                <div class="view-cbb18f90 stat-number">@Model.PendingCandidates</div>
-                <p class="small text-muted">Candidatos pendentes na fila</p>
-            </div>
-
-            <div class="stat-card" style="border-left:4px solid @(Model.FailingSources > 0 ? "#dc2626" : "var(--green-forest)");">
-                <span class="eyebrow" style="color:@(Model.FailingSources > 0 ? "#dc2626" : "var(--green-forest)");">FONTES COM FALHA</span>
-                <div class="stat-number" style="color:@(Model.FailingSources > 0 ? "#dc2626" : "var(--green-forest)");">@Model.FailingSources</div>
-                <p class="small text-muted">Exigem atenção ou ajuste de feed</p>
-            </div>
-        </div>
-
-        <!-- PAINEL MONITORAMENTO DE IA & CUSTOS -->
-        <div class="card" style="margin-bottom:30px;background:linear-gradient(145deg, #ffffff 0%, #f7faf7 100%);border-color:#c8ded0;">
-            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:16px;">
-                <span class="view-9a1adb1e eyebrow">🤖 ORQUESTRADOR MULTIPROVEDOR (GROQ, GEMINI & DEEPSEEK)</span>
-                <span class="badge badge-success">Configuração e execução em /admin/integracoes</span>
-            </div>
-
-            <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:20px;">
-                <div>
-                    <strong>Execuções (24h):</strong>
-                    <div style="font-size:1.6rem;font-weight:800;color:var(--green-forest);">@Model.AiRunsLast24h</div>
-                    <span class="small text-muted">Classificações e traduções</span>
-                </div>
-
-                <div>
-                    <strong>Falhas Transitórias (24h):</strong>
-                    <div style="font-size:1.6rem;font-weight:800;color:@(Model.AiFailuresLast24h > 0 ? "#dc2626" : "var(--green-forest)");">@Model.AiFailuresLast24h</div>
-                    <span class="small text-muted">Tratadas com fallback automático</span>
-                </div>
-
-                <div>
-                    <strong>Custo Registrado (30 dias):</strong>
-                    <div style="font-size:1.6rem;font-weight:800;color:var(--terracotta);">US$ @Model.AiCostUsdLast30d.ToString("F4")</div>
-                    <span class="small text-muted">Métrica real persistida em mb_ai_runs</span>
-                </div>
-            </div>
-
-            <p class="small text-muted" style="margin-top:16px;border-top:1px solid #e3ede5;padding-top:10px;">
-                * Os indicadores refletem o banco MySQL da aplicação; não garantem que integrações externas proprietárias estejam ativas sem chave cadastrada.
-            </p>
-        </div>
-
-        <!-- AÇÕES RÁPIDAS & LINKS DA EQUIPE EDITORIAL -->
-        <div class="grid" style="grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));">
-            <div class="card">
-                <span class="eyebrow">FLUXO EDITORIAL</span>
-                <h3>Revisão de Conteúdo</h3>
-                <p>Compare textos brutos coletados com as propostas preparadas pela IA e aprove ou rejeite publicações.</p>
-                <div class="view-ebf70f29">
-                    <a href="/editorial" class="button-link">Acessar mesa editorial →</a>
-                </div>
-            </div>
-
-            <div class="card">
-                <span class="eyebrow">INTERNACIONALIZAÇÃO</span>
-                <h3>Moderação de Traduções</h3>
-                <p>Verifique traduções automáticas para os 7 idiomas antes de exibição pública a turistas internacionais.</p>
-                <div class="view-ebf70f29">
-                    <a href="/admin/traducoes" class="button-link">Abrir fila de idiomas →</a>
-                </div>
-            </div>
-
-            <div class="card">
-                <span class="eyebrow">INFRAESTRUTURA</span>
-                <h3>Auditoria & Segurança</h3>
-                <p>Monitore acessos administrativos, sessões ativas com MFA TOTP e histórico de alterações em matérias.</p>
-                <div class="view-ebf70f29">
-                    <a href="/admin/auditoria" class="button-link">Ver logs de auditoria →</a>
-                </div>
-            </div>
-        </div>
-    </main>
-</div>
+<div class="admin-shell"><partial name="_AdminSidebar"/><main class="admin-content" id="conteudo-admin">
+    <header class="admin-header"><div><span class="eyebrow">MINHABELÉM / 360</span><h1>@Loc["DashboardTitle"]</h1><p class="small text-muted">@Loc["DashboardIntro"]</p></div>
+        <a class="button secondary" href="/admin/relatorios">@Loc["AdminReports"] ↗</a>
+    </header>
+    @if(Model.ContentInReview>0 && User.HasClaim("mb:permission",Permissions.ContentRead)){
+        <section class="notice dashboard-attention"><strong>@Model.ContentInReview · @Loc["DashboardReview"]</strong><p>@Loc["DashboardEditorialText"]</p><a href="/editorial/lotes?kind=content">@Loc["BatchTitle"] ↗</a></section>
+    }
+    @if(ViewData["RoutesConfigured"] is not true){<p class="notice">@Loc["RouteState_unconfigured"] @if(User.HasClaim("mb:permission",Permissions.SettingsManage)){<a href="/admin/integracoes">@Loc["AdminIntegrations"] ↗</a>}</p>}
+    <section class="admin-stats-grid" aria-label="@Loc["DashboardTitle"]">
+    @foreach(var metric in metrics){<article class="stat-card"><span class="eyebrow">@Loc[metric.Item1]</span><div class="stat-number">@metric.Item2</div></article>}
+    </section><p class="small text-muted dashboard-metric-note">@Loc["DashboardMetricNote"]</p>
+    <section class="card dashboard-ai"><h2>@Loc["DashboardAiTitle"]</h2><dl class="radar-operation-metrics">
+        <div><dt>@Loc["DashboardAiRuns"]</dt><dd>@Model.AiRunsLast24h</dd></div>
+        <div><dt>@Loc["DashboardAiFailures"]</dt><dd>@Model.AiFailuresLast24h</dd></div>
+        <div><dt>@Loc["DashboardAiCost"]</dt><dd>USD @Model.AiCostUsdLast30d.ToString("N4")</dd></div>
+        <div><dt>@Loc["DashboardRunFailures"]</dt><dd>@Model.IngestionRunsWithErrorsLast24h</dd></div>
+    </dl></section>
+    @if(ViewData["RadarStats"] is RadarDashboardStats radar){<partial name="_RadarOperations" model="radar"/>}
+    <section class="card dashboard-trend"><h2>@Loc["DashboardPublicationDays"]</h2>
+    @if(Model.PublishedByDay.Count==0){<p>@Loc["General_Empty"]</p>}
+    else{var maximum=Model.PublishedByDay.Max(x=>x.Count);<ol>@foreach(var day in Model.PublishedByDay){<li><time datetime="@day.Day.ToString("yyyy-MM-dd")">@day.Day.ToString("d")</time><span class="dashboard-bar" style="--bar-width:@((100m*day.Count/Math.Max(1,maximum)).ToString(System.Globalization.CultureInfo.InvariantCulture))%" aria-hidden="true"></span><strong>@day.Count</strong></li>}</ol>}
+    </section>
+    <section><h2>@Loc["DashboardYourTools"]</h2><nav class="dashboard-tools" aria-label="@Loc["AdminNavigation"]">
+    @foreach(var tool in tools){if(User.HasClaim("mb:permission",tool.Item1)){<a class="card" href="@tool.Item2"><span>@Loc[tool.Item3]</span><span aria-hidden="true">↗</span></a>}}
+    </nav></section>
+</main></div>

@@ -12,9 +12,11 @@
         <p class="notice" role="alert">@Loc["RadarFailures"]</p>
     }
     <p class="small text-muted">@Loc["RadarTelemetryNote"]</p>
+    @if(Model.ActiveSources==0){<p class="notice" role="status">@Loc["RadarNoAuthorizedSources"]</p>}
     <dl class="radar-operation-metrics">
         <div><dt>@Loc["RadarEnabled"]</dt><dd>@Model.EnabledSources</dd></div>
         <div><dt>@Loc["RadarApproved"]</dt><dd>@Model.ApprovedSources</dd></div>
+        <div><dt>@Loc["RadarOperational"]</dt><dd>@Model.ActiveSources</dd></div>
         <div><dt>@Loc["RadarConsulted"]</dt><dd>@Model.ConsultedSources</dd></div>
         <div><dt>@Loc["RadarPublished"]</dt><dd>@Model.PublishedItems</dd></div>
         <div><dt>@Loc["RadarAiCost"]</dt><dd>@Model.AiCostUsd.ToString("N6")</dd></div>
@@ -29,7 +31,7 @@
                 <tbody>
                 @foreach (var cycle in Model.RecentCycles)
                 {
-                    <tr><td>@PortalTime.Local(cycle.StartedAt).ToString("g")</td><td>@Loc["RadarCycle_" + cycle.Status]</td><td>@cycle.SourcesChecked / @cycle.SourcesFailed</td><td>@(cycle.SuccessRate is {} rate ? rate.ToString("N1") + "%" : "—")</td><td>@cycle.ItemsDiscovered / @cycle.EventsIdentified</td><td>@((cycle.DurationMs / 1000m).ToString("N1"))</td></tr>
+                    <tr><td>@PortalTime.Local(cycle.StartedAt).ToString("g")</td><td>@Loc["RadarCycle_" + cycle.Status] @if(cycle.SourcesChecked==0){<small class="small">@Loc["RadarEmptyCycle"]</small>}</td><td>@cycle.SourcesChecked / @cycle.SourcesFailed</td><td>@(cycle.SuccessRate is {} rate ? rate.ToString("N1") + "%" : "—")</td><td>@cycle.ItemsDiscovered / @cycle.EventsIdentified</td><td>@((cycle.DurationMs / 1000m).ToString("N1"))</td></tr>
                 }
                 </tbody>
             </table>

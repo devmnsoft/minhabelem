@@ -87,21 +87,29 @@ builder.Services.AddRateLimiter(o =>
 
 var app = builder.Build();
 app.UseForwardedHeaders();
+if (args.Contains("--audit-operations"))
+{
+    if (!app.Environment.IsDevelopment()) throw new InvalidOperationException("Diagnóstico exclusivo de Development local.");
+    Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(await MinhaBelem.Infrastructure.Background.OperationsDiagnostics.ReadLocalAsync(app.Services.GetRequiredService<MySqlConnector.MySqlDataSource>(),builder.Configuration,environment:app.Environment.EnvironmentName),new System.Text.Json.JsonSerializerOptions{WriteIndented=true}));
+    return;
+}
 if (args.Contains("--audit-auth"))
 {
     if (!app.Environment.IsDevelopment()) throw new InvalidOperationException("Diagnóstico exclusivo de Development local.");
     Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(await AuthenticationDiagnostics.ReadLocalAsync(app.Services.GetRequiredService<MySqlConnector.MySqlDataSource>(), environment: app.Environment.EnvironmentName), new System.Text.Json.JsonSerializerOptions { WriteIndented = true }));
     return;
 }
-if (Array.IndexOf(args, "--import-agenda") is var agendaArgument && agendaArgument >= 0)
+var stageAgenda=args.Contains("--stage-agenda");
+if (Array.IndexOf(args, stageAgenda?"--stage-agenda":"--import-agenda") is var agendaArgument && agendaArgument >= 0)
 {
+    if(stageAgenda&&args.Contains("--import-agenda"))throw new InvalidOperationException("Escolha revisão ou importação publicada, nunca os dois modos.");
     var connection = new MySqlConnector.MySqlConnectionStringBuilder(builder.Configuration.GetConnectionString("Default") ?? "");
     if (!app.Environment.IsDevelopment() || connection.Server is not ("localhost" or "127.0.0.1") || agendaArgument + 1 >= args.Length)
         throw new InvalidOperationException("Importação explícita exclusiva do banco local em Development.");
     var manifest = CuratedAgendaImporter.Parse(await File.ReadAllTextAsync(args[agendaArgument + 1]));
     using var scope = app.Services.CreateScope();
     var importer = new CuratedAgendaImporter(scope.ServiceProvider.GetRequiredService<MinhaBelem.Core.Abstractions.IContentRepository>());
-    var result = await importer.ImportAsync(manifest, default);
+    var result = await importer.ImportAsync(manifest, default, stageForReview:stageAgenda);
     Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(result));
     return;
 }
@@ -180,6 +188,10 @@ app.Use(async (ctx, next) =>
         var ci = new CultureInfo(cult);
         CultureInfo.CurrentCulture = ci;
         CultureInfo.CurrentUICulture = ci;
+        var preference=CookieRequestCultureProvider.MakeCookieValue(new RequestCulture(ci));
+        if(ctx.Request.Cookies[CookieRequestCultureProvider.DefaultCookieName]!=preference)
+            ctx.Response.Cookies.Append(CookieRequestCultureProvider.DefaultCookieName,preference,
+                new CookieOptions{Path="/",Expires=DateTimeOffset.UtcNow.AddYears(1),IsEssential=true,SameSite=SameSiteMode.Strict,Secure=true,HttpOnly=true});
     }
     await next();
 });
@@ -196,6 +208,7 @@ app.Use(async (ctx, next) =>
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
+app.UseWhen(ctx => HttpMethods.IsGet(ctx.Request.Method), branch => branch.UseStatusCodePagesWithReExecute("/Home/Status", "?code={0}"));
 app.UseRouting();
 
 app.UseRateLimiter();
@@ -211,8 +224,6 @@ app.Use(async (ctx, next) =>
     await next();
 });
 app.UseAuthorization();
-
-app.UseWhen(ctx => HttpMethods.IsGet(ctx.Request.Method), branch => branch.UseStatusCodePagesWithReExecute("/Home/Status", "?code={0}"));
 
 app.MapGet("/idioma/mudar", (string cultura, string? returnUrl, HttpContext ctx) =>
 {

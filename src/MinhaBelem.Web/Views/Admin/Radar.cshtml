@@ -22,8 +22,9 @@
             </span>
         </div>
         <p class="view-535ae485">
-            Robô autônomo com verificação a cada minuto e frequência configurável por fonte para fontes públicas autorizadas sobre Belém e o Pará (cultura, eventos, lazer, trânsito e serviços).
+            @Loc["RadarOverviewIntro"]
         </p>
+        <p class="small"><strong>@Loc[Model.ConfiguredEnabled?"RadarConfigurationEnabled":"RadarConfigurationPaused"]</strong> · @Loc["RadarConfiguredInterval"]: @Model.CheckIntervalMinutes</p>
     </div>
 
     <div class="view-8586d96c">

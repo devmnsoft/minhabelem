@@ -278,7 +278,7 @@ public sealed class DashboardRepository(MySqlDataSource dataSource) : IDashboard
               (SELECT COUNT(*) FROM mb_community_submissions WHERE status = 'Pending') AS Submissions,
               (SELECT COUNT(*) FROM mb_advertiser_campaigns WHERE active = 1) AS Campaigns,
               (SELECT COUNT(*) FROM mb_users WHERE enabled = 1) AS Users,
-              (SELECT COALESCE(SUM(status <> 'Success'), 0) FROM mb_ingestion_runs
+              (SELECT COALESCE(SUM(status IN ('Partial','Failed')), 0) FROM mb_ingestion_runs
                 WHERE started_at >= UTC_TIMESTAMP(6) - INTERVAL 1 DAY) AS LastRunFailed
             """, cancellationToken: ct));
 
@@ -320,7 +320,8 @@ public sealed class DashboardRepository(MySqlDataSource dataSource) : IDashboard
             PendingCandidates = candidates.Pending,
             DuplicateCandidates = candidates.Duplicate,
             ActiveSources = sources.Active,
-            FailingSources = sources.Failing + misc.LastRunFailed,
+            FailingSources = sources.Failing,
+            IngestionRunsWithErrorsLast24h = misc.LastRunFailed,
             PublishedPlaces = misc.Places,
             PendingSubmissions = misc.Submissions,
             ActiveAdvertisers = misc.Campaigns,

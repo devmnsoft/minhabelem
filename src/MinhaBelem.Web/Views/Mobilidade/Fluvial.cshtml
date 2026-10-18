@@ -1,3 +1,23 @@
 @model IReadOnlyList<MinhaBelem.Core.Entities.RiverRoute>
-@{ViewData["Title"]=Loc["RouteMode_boat"];}
-<section class="hero"><h1>@Loc["RouteMode_boat"]</h1><p>@Loc["RouteState_unavailable"]</p></section><main class="section"><div class="grid">@foreach(var route in Model){<article class="card"><h2>@route.Name</h2><p>@route.DeparturePort → @route.DestinationPort · @route.DestinationIsland</p><p>@(route.ConfirmedFare is {} fare?"BRL "+fare.ToString("F2"):Loc["RouteUnknown"].Value)</p><p>@(route.IsVerified?route.OperatingHours:Loc["RouteState_unavailable"].Value)</p>@if(route.IsVerified){<a href="@route.SourceUrl" target="_blank" rel="noopener noreferrer">@Loc["RouteSource"] ↗</a>}<a href="/como-chegar?destino=@Uri.EscapeDataString(route.DestinationPort)">@Loc["RouteTitle"]</a></article>}</div>@if(Model.Count==0){<p>@Loc["General_Empty"]</p>}<p class="notice">@Loc["RouteRealtimeUnavailable"]</p></main>
+@{ ViewData["Title"] = Loc["RouteMode_boat"]; }
+<section class="hero"><h1>@Loc["RouteMode_boat"]</h1><p>@Loc["RouteRealtimeUnavailable"]</p></section>
+<main class="section">
+    @if (!Model.Any(x => x.IsVerified)) { <p class="notice">@Loc["WaterNotConfirmed"]</p> }
+    <p><a href="https://seguranca.belem.pa.gov.br/" target="_blank" rel="noopener noreferrer">@Loc["WaterOfficialSource"] ↗</a></p>
+    <div class="grid">
+        @foreach (var route in Model)
+        {
+            <article class="card">
+                <h2>@route.Name</h2><p>@route.DeparturePort → @route.DestinationPort · @route.DestinationIsland</p>
+                <p>@(route.ConfirmedFare is { } fare ? "BRL " + fare.ToString("F2") : Loc["RouteUnknown"].Value)</p>
+                <p>@(route.IsVerified ? route.OperatingHours : Loc["RouteState_unavailable"].Value)</p>
+                @if (route.IsVerified)
+                {
+                    <p><a href="@route.SourceUrl" target="_blank" rel="noopener noreferrer">@Loc["RouteSource"] ↗</a> · @route.VerifiedAt?.ToString("d")</p>
+                }
+                <a href="/como-chegar?destino=@Uri.EscapeDataString(route.DestinationPort)&amp;modo=boat">@Loc["RouteTitle"]</a>
+            </article>
+        }
+    </div>
+    @if (Model.Count == 0) { <p>@Loc["General_Empty"]</p> }
+</main>

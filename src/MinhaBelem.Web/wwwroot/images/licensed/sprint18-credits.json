@@ -1,0 +1,120 @@
+{
+  "assets": [
+    {
+      "id": "sprint18-ver-o-peso",
+      "files": [
+        "sprint18-ver-o-peso-640.webp",
+        "sprint18-ver-o-peso-1280.webp"
+      ],
+      "title": "Belém Fishing port and Ver-o-peso 01.jpg",
+      "creator": "Cayambe",
+      "source": "https://commons.wikimedia.org/wiki/File:Bel%C3%A9m_Fishing_port_and_Ver-o-peso_01.jpg",
+      "sourceRevision": "https://commons.wikimedia.org/w/index.php?title=File:Bel%C3%A9m_Fishing_port_and_Ver-o-peso_01.jpg&oldid=1113397234",
+      "original": "https://upload.wikimedia.org/wikipedia/commons/a/af/Bel%C3%A9m_Fishing_port_and_Ver-o-peso_01.jpg",
+      "license": "CC BY-SA 3.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0/",
+      "capturedAt": "2009-08-04",
+      "verifiedAt": "2026-10-18",
+      "alt": "Porto de pesca e Mercado Ver-o-Peso, vistos do Forte do Castelo, em Belém.",
+      "changes": "EXIF orientation applied, resized proportionally to 640 and 1280 pixels wide and compressed as WebP; metadata removed. No crop, retouching, or generated content in the files.",
+      "attribution": "Cayambe / Wikimedia Commons / CC BY-SA 3.0. Redimensionada e convertida para WebP.",
+      "derivativeLicense": "CC BY-SA 3.0",
+      "endorsement": false,
+      "variants": [
+        {
+          "file": "sprint18-ver-o-peso-640.webp",
+          "width": 640,
+          "height": 464,
+          "bytes": 81126,
+          "sha256": "33a40302167dd53604db3c84a69c3f450d6122318287ce55e93cf49cbba57dfd"
+        },
+        {
+          "file": "sprint18-ver-o-peso-1280.webp",
+          "width": 1280,
+          "height": 927,
+          "bytes": 289036,
+          "sha256": "66583dbd33b40347bc0f071a7d9e0406c11f89f2db685e7672e743909f05989c"
+        }
+      ]
+    },
+    {
+      "id": "sprint18-guajara",
+      "files": [
+        "sprint18-guajara-640.webp",
+        "sprint18-guajara-1280.webp"
+      ],
+      "title": "Baia do Guajará.jpg",
+      "creator": "Ancalibor2019",
+      "source": "https://commons.wikimedia.org/wiki/File:Baia_do_Guajar%C3%A1.jpg",
+      "sourceRevision": "https://commons.wikimedia.org/w/index.php?title=File:Baia_do_Guajar%C3%A1.jpg&oldid=815385498",
+      "original": "https://upload.wikimedia.org/wikipedia/commons/3/3b/Baia_do_Guajar%C3%A1.jpg",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+      "capturedAt": "2019-03-14",
+      "verifiedAt": "2026-10-18",
+      "alt": "Baía do Guajará, em Belém do Pará.",
+      "changes": "EXIF orientation applied, resized proportionally to 640 and 1280 pixels wide and compressed as WebP; metadata removed. No crop, retouching, or generated content in the files.",
+      "attribution": "Ancalibor2019 / Wikimedia Commons / CC BY-SA 4.0. Redimensionada e convertida para WebP.",
+      "derivativeLicense": "CC BY-SA 4.0",
+      "endorsement": false,
+      "variants": [
+        {
+          "file": "sprint18-guajara-640.webp",
+          "width": 640,
+          "height": 360,
+          "bytes": 33900,
+          "sha256": "391230db59ff5641c337fc8c20ef27cc25e795f76d13df89785ab0d314644d6d"
+        },
+        {
+          "file": "sprint18-guajara-1280.webp",
+          "width": 1280,
+          "height": 720,
+          "bytes": 117554,
+          "sha256": "0b85b11b4bda5b3348161bd64b72e9bcae7645e9fabeca3895b915f1367f3b17"
+        }
+      ]
+    },
+    {
+      "id": "sprint18-tacaca",
+      "files": [
+        "sprint18-tacaca-640.webp",
+        "sprint18-tacaca-1280.webp"
+      ],
+      "title": "Tacacá soup at Tacacá do Renato, Belém, Brazil 04.jpg",
+      "creator": "Ridiculopathy",
+      "source": "https://commons.wikimedia.org/wiki/File:Tacac%C3%A1_soup_at_Tacac%C3%A1_do_Renato,_Bel%C3%A9m,_Brazil_04.jpg",
+      "sourceRevision": "https://commons.wikimedia.org/w/index.php?title=File:Tacac%C3%A1_soup_at_Tacac%C3%A1_do_Renato,_Bel%C3%A9m,_Brazil_04.jpg&oldid=1217891072",
+      "original": "https://upload.wikimedia.org/wikipedia/commons/a/af/Tacac%C3%A1_soup_at_Tacac%C3%A1_do_Renato,_Bel%C3%A9m,_Brazil_04.jpg",
+      "license": "CC0 1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "capturedAt": "2024-03-12",
+      "verifiedAt": "2026-10-18",
+      "alt": "Cuia de tacacá fotografada em Belém do Pará.",
+      "changes": "EXIF orientation applied, resized proportionally to 640 and 1280 pixels wide and compressed as WebP; metadata removed. No crop, retouching, or generated content in the files.",
+      "attribution": "Ridiculopathy / Wikimedia Commons / CC0 1.0. Redimensionada e convertida para WebP.",
+      "derivativeLicense": "CC0 1.0",
+      "endorsement": false,
+      "variants": [
+        {
+          "file": "sprint18-tacaca-640.webp",
+          "width": 640,
+          "height": 360,
+          "bytes": 19996,
+          "sha256": "86e92fb6bef1cf6210cda460c1e765011d70b0c0e1a8b87636f06dbdab3fbc71"
+        },
+        {
+          "file": "sprint18-tacaca-1280.webp",
+          "width": 1280,
+          "height": 720,
+          "bytes": 56690,
+          "sha256": "4469fce76d3b9239320c774250243044d13eb3ca401ca5d2935c22ac92ecde5a"
+        }
+      ]
+    }
+  ],
+  "usageNotes": [
+    "Display creator, source and license links with the photographs; preserve attribution on BY-SA versions and keep photographic adaptations under the corresponding license.",
+    "These historical photographs do not establish current operating conditions, prices, schedules, verified accessibility, partnerships or endorsement. Do not reuse the price in the original tacacá caption as current information.",
+    "The existing Estação das Docas photographs and credits.json are preserved."
+  ]
+}

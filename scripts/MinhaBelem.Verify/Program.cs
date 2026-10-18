@@ -14,6 +14,12 @@ try
     builder.ConnectionTimeout = 5;
     await using var db = new MySqlConnection(builder.ConnectionString);
     await db.OpenAsync();
+    if (args.Contains("--operations-audit"))
+    {
+        await using var data = new MySqlDataSourceBuilder(builder.ConnectionString).Build();
+        Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(await MinhaBelem.Infrastructure.Background.OperationsDiagnostics.ReadLocalAsync(data,config),new System.Text.Json.JsonSerializerOptions{WriteIndented=true}));
+        return 0;
+    }
     if (args.Contains("--auth-audit"))
     {
         await using var data = new MySqlDataSourceBuilder(builder.ConnectionString).Build();

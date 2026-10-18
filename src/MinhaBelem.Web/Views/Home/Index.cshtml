@@ -37,6 +37,7 @@
     </span>
 </section>
 <div class="city-ribbon"><span class="live-dot" aria-hidden="true"></span><strong>@Loc["CityNow"]</strong><span>@Loc["EditorialNote"]</span><a href="/agora">@Loc["ViewMore"] ↗</a></div>
+@if(!filtered){<partial name="_CityWindows" />}
 @if(ViewData["Campaigns"] is IReadOnlyList<AdvertiserCampaign> campaigns){<partial name="_SponsoredCampaigns" model="campaigns" />}
 <nav class="categories category-strip" aria-label="@Loc["AllCategories"]">
     <a href="/" aria-current="@(ViewData["Category"] == null ? "page" : null)">@Loc["AllCategories"]</a>
@@ -84,7 +85,7 @@
 @if (!filtered)
 {
     <section class="section agenda-feature" aria-labelledby="agenda-title">
-        <div class="agenda-intro"><span class="eyebrow">@Loc["NavAgenda"]</span><h2 id="agenda-title">@Loc["WeeklyAgenda"]</h2><p>@Loc["AgendaEmpty"]</p><a class="button" href="/agenda/semana">@Loc["ThisWeek"] ↗</a></div>
+        <div class="agenda-intro"><span class="eyebrow">@Loc["NavAgenda"]</span><h2 id="agenda-title">@Loc["WeeklyAgenda"]</h2><p>@Loc[events.Count==0?"AgendaEmpty":"AgendaExploreIntro"]</p><a class="button" href="/agenda/semana">@Loc["ThisWeek"] ↗</a></div>
         <div class="agenda-list">
             @foreach (var item in events)
             {
@@ -98,7 +99,7 @@
         @foreach (var route in itineraries.Take(4)) { <a href="/explore/roteiro/@route.Slug"><span>@route.Days.ToString("00")</span><strong>@route.GetTitle(culture.Name)</strong><span aria-hidden="true">↗</span></a> }
         @if (itineraries.Count == 0) { <p>@Loc["General_Empty"]</p> }
     </div></section>
-    <section class="section"><div class="sectionhead"><div><span class="eyebrow">AÇAÍ / TACACÁ / MANIOCA</span><h2>@Loc["GastronomyTitle"]</h2></div><a href="/guia?categoria=gastronomia">@Loc["WhereToEat"] ↗</a></div>
+    <section class="section"><div class="sectionhead"><div><span class="eyebrow">AÇAÍ / TACACÁ / MANIOCA</span><h2>@Loc["GastronomyTitle"]</h2></div><a href="/guia?categoria=restaurant">@Loc["WhereToEat"] ↗</a></div>
         <div class="grid">@foreach (var place in gastronomy) { <article class="card"><span class="eyebrow">@place.Neighborhood</span><h3><a href="/guia/@place.Id">@place.DisplayName</a></h3><p>@place.DisplayEditorialNote</p></article> }</div>
         @if (gastronomy.Count == 0) { <p class="empty-inline">@Loc["General_Empty"] · <a href="/guia">@Loc["NavGuide"] ↗</a></p> }
     </section>

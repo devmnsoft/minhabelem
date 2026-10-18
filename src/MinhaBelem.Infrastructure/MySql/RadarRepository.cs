@@ -142,7 +142,8 @@ public sealed class RadarRepository(MySqlDataSource data) : IRadarRepository
 
         if (rows > 0 && status == SourceEvaluationStatus.Approved)
         {
-            // Ao aprovar, promove para fonte de ingestão oficial
+            // Editorial evaluation does not grant permission for continuous collection.
+            // Register for explicit source authorization, preserving any existing source state.
             var source = await db.QuerySingleOrDefaultAsync<DiscoveredSource>(new CommandDefinition(
                 "SELECT source_name AS SourceName, url AS Url, feed_protocol_candidate AS FeedProtocolCandidate, category AS Category, municipality AS Municipality FROM mb_radar_discovered_sources WHERE id=@id",
                 new { id }, tx, cancellationToken: ct));
@@ -160,7 +161,7 @@ public sealed class RadarRepository(MySqlDataSource data) : IRadarRepository
 
                 await db.ExecuteAsync(new CommandDefinition("""
                     INSERT IGNORE INTO mb_ingestion_sources (name, feed_url, feed_url_hash, protocol, enabled, approved, license_note, created_at)
-                    VALUES (@SourceName, @Url, @hash, @protocol, TRUE, TRUE, 'Aprovada via MinhaBelém Radar', UTC_TIMESTAMP(6));
+                    VALUES (@SourceName, @Url, @hash, @protocol, FALSE, FALSE, 'Descoberta avaliada pela curadoria. Autorização de coleta contínua pendente; revisar termos, robots e limites antes de ativar.', UTC_TIMESTAMP(6));
                     """, new { source.SourceName, source.Url, hash, protocol }, tx, cancellationToken: ct));
             }
         }
@@ -406,7 +407,7 @@ public sealed class RadarRepository(MySqlDataSource data) : IRadarRepository
     {
         await using var db = await data.OpenConnectionAsync(ct);
         var rows = await db.ExecuteAsync(new CommandDefinition(
-            "UPDATE mb_ingestion_sources SET enabled=@enabled WHERE id=@sourceId",
+            "UPDATE mb_ingestion_sources SET enabled=@enabled WHERE id=@sourceId AND (@enabled=FALSE OR (approved=TRUE AND LENGTH(TRIM(COALESCE(license_note,'')))>0))",
             new { sourceId, enabled }, cancellationToken: ct));
         return rows > 0;
     }

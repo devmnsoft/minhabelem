@@ -67,9 +67,12 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/view-formats.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/components.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/amazonico.css" asp-append-version="true" />
 </head>
 <body class="culture-@currentCulture.ToLowerInvariant() @(Context.Request.Path.StartsWithSegments("/admin") || Context.Request.Path.StartsWithSegments("/editorial") ? "administration" : "portal")">
-    <a class="skip-link" href="#conteudo">@Loc["General_Back"]</a>
+    <a class="skip-link" href="#conteudo">@Loc["SkipToContent"]</a>
+    <div class="connection-notice" role="status" data-connection-status data-offline="@Loc["InterfaceOffline"]" data-online="@Loc["InterfaceBackOnline"]" hidden></div>
+    <div class="page-progress" aria-hidden="true"></div>
 
     <header class="header">
         <a class="brand" href="/">
@@ -116,26 +119,26 @@
         </div>
     </header>
 
-    @if (User.Identity?.IsAuthenticated == true)
+    @if (User.Identity?.IsAuthenticated == true && User.HasClaim("amr","mfa"))
     {
-        <nav class="admin-nav" aria-label="Administração">
-            <span class="admin-nav-title">⚙️ Admin:</span>
+        <nav class="admin-nav" aria-label="@Loc["AdminNavigation"]">
+            <span class="admin-nav-title">@Loc["Admin_Dashboard"]:</span>
             @foreach (var link in new[] {
                 ("dashboard.read", "/admin", Loc["Admin_Dashboard"].Value),
-                ("content.read", "/admin/conteudo", "Matérias"),
-                ("content.read", "/editorial", "Editorial"),
-                ("source.manage", "/admin/fontes", "Fontes"),
-                ("place.manage", "/admin/lugares", "Lugares"),
-                ("settings.manage", "/admin/mobilidade", "Mobilidade"),
-                ("advertiser.manage", "/admin/anunciantes", "Anunciantes"),
+                ("content.read", "/admin/conteudo", Loc["AdminContent"].Value),
+                ("content.read", "/editorial", Loc["AdminEditorial"].Value),
+                ("source.manage", "/admin/fontes", Loc["AdminSources"].Value),
+                ("place.manage", "/admin/lugares", Loc["AdminPlaces"].Value),
+                ("settings.manage", "/admin/mobilidade", Loc["NavMobility"].Value),
+                ("advertiser.manage", "/admin/anunciantes", Loc["NavPartners"].Value),
                 ("translation.manage", "/admin/idiomas", Loc["Admin_Languages"].Value),
                 ("translation.read", "/admin/traducoes", Loc["Admin_Translations"].Value),
-                ("submission.moderate", "/admin/colaboracoes", "Colaborações"),
-                ("dashboard.read", "/admin/relatorios", "Relatórios"),
-                ("user.manage", "/admin/usuarios", "Usuários"),
-                ("settings.manage", "/admin/integracoes", "Integrações"),
-                ("audit.read", "/admin/auditoria", "Auditoria"),
-                ("settings.manage", "/admin/configuracoes", "Configurações")
+                ("submission.moderate", "/admin/colaboracoes", Loc["AdminSubmissions"].Value),
+                ("dashboard.read", "/admin/relatorios", Loc["AdminReports"].Value),
+                ("user.manage", "/admin/usuarios", Loc["AdminUsers"].Value),
+                ("settings.manage", "/admin/integracoes", Loc["AdminIntegrations"].Value),
+                ("audit.read", "/admin/auditoria", Loc["AdminAudit"].Value),
+                ("settings.manage", "/admin/configuracoes", Loc["AdminSettings"].Value)
             })
             {
                 if (User.HasClaim("mb:permission", link.Item1))
@@ -143,7 +146,7 @@
                     <a href="@link.Item2">@link.Item3</a>
                 }
             }
-            <a href="/conta/sessoes">Sessões</a>
+            <a href="/conta/sessoes">@Loc["AdminSessions"]</a>
         </nav>
     }
 
