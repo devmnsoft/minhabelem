@@ -98,7 +98,7 @@ public sealed class TransitRepository(MySqlDataSource dataSource) : ITransitRepo
     {
         await using var db = await dataSource.OpenConnectionAsync(ct);
         var sql = @"INSERT INTO mb_transit_lines (code, name, origin, destination, fare, transit_type, operator_name, has_air_conditioning, has_wheelchair_lift, itinerary_summary,source_url,verified_at,valid_until,fare_valid_until)
-                    VALUES (@Code, @Name, @Origin, @Destination, @Fare, @TransitType, @OperatorName, @HasAirConditioning, @HasWheelchairLift, @ItinerarySummary)
+                      VALUES (@Code, @Name, @Origin, @Destination, @Fare, @TransitType, @OperatorName, @HasAirConditioning, @HasWheelchairLift, @ItinerarySummary, @SourceUrl, @VerifiedAt, @ValidUntil, @FareValidUntil)
                     ON DUPLICATE KEY UPDATE
                         name = VALUES(name),
                         origin = VALUES(origin),
@@ -109,7 +109,7 @@ public sealed class TransitRepository(MySqlDataSource dataSource) : ITransitRepo
                         has_air_conditioning = VALUES(has_air_conditioning),
                         has_wheelchair_lift = VALUES(has_wheelchair_lift),
                         itinerary_summary = VALUES(itinerary_summary),source_url=VALUES(source_url),verified_at=VALUES(verified_at),valid_until=VALUES(valid_until),fare_valid_until=VALUES(fare_valid_until);
-                    SELECT id  ,source_url AS SourceUrl,verified_at AS VerifiedAt,valid_until AS ValidUntil,fare_valid_until AS FareValidUntil FROM mb_transit_lines WHERE code = @Code;";
+                    SELECT id FROM mb_transit_lines WHERE code = @Code;";
         return await db.ExecuteScalarAsync<long>(new CommandDefinition(sql, line, cancellationToken: ct));
     }
 }

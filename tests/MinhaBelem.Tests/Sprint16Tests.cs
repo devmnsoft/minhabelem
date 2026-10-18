@@ -16,6 +16,14 @@ namespace MinhaBelem.Tests;
 [Collection("MySql")]
 public sealed class Sprint16Tests(PortalFixture fixture)
 {
+    [MySqlFact] public async Task TransitLineSavesEvidenceAndUpdatesItsFareValidity()
+    {
+        using var scope=fixture.Factory.Services.CreateScope();var transit=scope.ServiceProvider.GetRequiredService<ITransitRepository>();
+        var line=new TransitLine{Code="S16-"+Guid.NewGuid().ToString("N")[..8],Name="Linha descartável S16",Origin="Origem fixture",Destination="Destino fixture",Fare=2,SourceUrl="https://example.com/operator",VerifiedAt=DateTime.UtcNow.AddHours(-1),ValidUntil=DateTime.UtcNow.AddDays(2),FareValidUntil=DateTime.UtcNow.AddDays(1)};
+        var id=await transit.UpsertLineAsync(line,default);Assert.True(id>0);Assert.Equal(2,(await transit.GetLineByCodeAsync(line.Code,default))!.ConfirmedFare);
+        line.Fare=3;line.FareValidUntil=DateTime.UtcNow.AddMinutes(-1);Assert.Equal(id,await transit.UpsertLineAsync(line,default));
+        var updated=(await transit.GetLineByCodeAsync(line.Code,default))!;Assert.Equal(3,updated.Fare);Assert.Null(updated.ConfirmedFare);Assert.Equal(line.SourceUrl,updated.SourceUrl);
+    }
     [MySqlFact] public async Task GroupBudgetAndAvailableTimeRequireAFeasibleReturn()
     {
         var(client,actor)=await new OperationalTests(fixture).Login();using(client)using(var scope=fixture.Factory.Services.CreateScope())
@@ -84,6 +92,14 @@ public sealed class Sprint16Tests(PortalFixture fixture)
             var result=(await batches.GetAsync(id,actor,default))!;Assert.Equal(200,result.Items.Count);Assert.All(result.Items,x=>Assert.Equal("completed",x.Status));
             Assert.Contains((await batches.HistoryAsync(actor,default)),x=>x.Id==id);Assert.Empty(await batches.HistoryAsync(actor+99999,default));
             var progress=await client.GetAsync(location+"/progresso");Assert.Equal(HttpStatusCode.OK,progress.StatusCode);Assert.Contains("\"finished\":200",await progress.Content.ReadAsStringAsync());
+            if(Environment.GetEnvironmentVariable("MINHABELEM_VISUAL_SNAPSHOTS") is {Length:>0} output)
+            foreach(var culture in SupportedCultures.All)
+            {
+                client.DefaultRequestHeaders.AcceptLanguage.Clear();client.DefaultRequestHeaders.AcceptLanguage.ParseAdd(culture);
+                var response=await client.GetAsync(location);Assert.Equal(HttpStatusCode.OK,response.StatusCode);
+                var html=System.Text.RegularExpressions.Regex.Replace(await response.Content.ReadAsStringAsync(),"<input[^>]*name=\"__RequestVerificationToken\"[^>]*>","");
+                var directory=Path.Combine(output,culture);Directory.CreateDirectory(directory);await File.WriteAllTextAsync(Path.Combine(directory,"editorial-batch-detail.html"),html);
+            }
             var content=scope.ServiceProvider.GetRequiredService<IContentRepository>();var item=(await content.GetAsync(result.Items[0].TargetId,default))!;
             var principal=new ClaimsPrincipal(new ClaimsIdentity([new(ClaimTypes.NameIdentifier,actor.ToString()),new("amr","mfa"),new(PermissionClaimsPrincipalFactory.PermissionClaimType,Permissions.ContentWrite)],"test"));
             var priority=await batches.PreviewAsync(new(){Action="priority",Value="3",Reason="Prioridade editorial confirmada",Targets=[new(item.Id,"content",item.Revision)]},principal,default);await batches.ConfirmAsync(priority,principal,default);await batches.ProcessNextAsync(default);Assert.Equal(3,(await content.GetAsync(item.Id,default))!.EditorialPriority);
