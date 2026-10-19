@@ -1,0 +1,71 @@
+{
+  "capturedAtUtc": "2026-10-19T02:10:49.3138897Z",
+  "host": "localhost",
+  "port": 3308,
+  "database": "minhabelem",
+  "databaseReference": "10431675E03A",
+  "eventStatuses": [
+    {
+      "status": "InReview",
+      "count": 9
+    }
+  ],
+  "recentEvents": [
+    {
+      "id": 9,
+      "status": "InReview",
+      "revision": 1,
+      "requiresHumanApproval": true
+    },
+    {
+      "id": 8,
+      "status": "InReview",
+      "revision": 1,
+      "requiresHumanApproval": true
+    },
+    {
+      "id": 7,
+      "status": "InReview",
+      "revision": 1,
+      "requiresHumanApproval": true
+    },
+    {
+      "id": 6,
+      "status": "InReview",
+      "revision": 1,
+      "requiresHumanApproval": true
+    },
+    {
+      "id": 5,
+      "status": "InReview",
+      "revision": 1,
+      "requiresHumanApproval": true
+    },
+    {
+      "id": 4,
+      "status": "InReview",
+      "revision": 1,
+      "requiresHumanApproval": true
+    },
+    {
+      "id": 3,
+      "status": "InReview",
+      "revision": 1,
+      "requiresHumanApproval": true
+    },
+    {
+      "id": 2,
+      "status": "InReview",
+      "revision": 1,
+      "requiresHumanApproval": true
+    },
+    {
+      "id": 1,
+      "status": "InReview",
+      "revision": 1,
+      "requiresHumanApproval": true
+    }
+  ],
+  "batches": [],
+  "batchItemStatuses": []
+}

@@ -135,3 +135,17 @@ Os TRX locais e resultados sanitizados estão relacionados em [evolution-validat
 Permanecem pendentes: reconciliar o ambiente do acesso pessoal informado; decisão humana sobre publicação dos nove eventos; autorização documentada das fontes; instalação/monitoramento do Worker real e operação contínua; monitoramento real de cancelamentos/adiamentos; configuração protegida e homologação Google; catálogo atual ampliado de linhas/pontos/travessias com fontes vigentes; revisão individual restante de telas e traduções legadas. Não declarar a Sprint inteira concluída nem o acesso desse banco tecnicamente homologado enquanto a divergência de contas persistir.
 
 Após a suíte completa, o novo diagnóstico da instância em execução e os demais casos de evolução foram verificados novamente: **dez aprovados, zero falhas**, incluindo negação a anônimo/Moderator, autorização do SuperAdmin e retorno de somente cinco campos de metadados com `no-store`. Build final: zero avisos/erros. Confirmada ausência de schemas de teste remanescentes; o container descartável foi encerrado e removido. Código registrado em `4d989a7`.
+
+## Conferência do relato de publicação dos nove eventos
+
+Em 18/10/2026, o operador informou “Revisei e publiquei os nove eventos”. A auditoria posterior somente leitura da referência `10431675E03A` encontrou os nove IDs ainda `InReview`, revisão 1, aprovação humana requerida e **nenhum lote ou item de lote registrado**. Portanto não há lote confirmado a ser drenado pelo Worker nesse destino. Não foi executada publicação, reset ou alteração de contas para reconciliar o relato.
+
+O operador informou não saber a URL utilizada. O inventário do navegador conectado à sessão não disponibilizou abas ou navegadores; isso não prova ausência de navegador na máquina. A instância usada continua não identificada. O [snapshot editorial](evidencias/sprint18/editorial-after-operator-report.json) preserva somente metadados, sem conteúdo editorial, justificativas ou credenciais.
+
+Auditoria editorial local reproduzível, somente leitura:
+
+```powershell
+dotnet run --project scripts/MinhaBelem.Verify -c Release -- --editorial-audit
+```
+
+Para identificar a página utilizada, basta pressionar `Ctrl+L` no navegador e copiar o endereço. O comando `--import-agenda` é uma operação pontual e termina ao concluir; para servir o portal, iniciar `dotnet run --project src/MinhaBelem.Web -c Release` sem a opção de importação e abrir `https://localhost:53406/conta/login`. Não é necessário enviar senha, cookie ou código MFA.

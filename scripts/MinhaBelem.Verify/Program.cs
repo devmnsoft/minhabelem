@@ -14,6 +14,20 @@ try
     builder.ConnectionTimeout = 5;
     await using var db = new MySqlConnection(builder.ConnectionString);
     await db.OpenAsync();
+    if (args.Contains("--editorial-audit"))
+    {
+        var snapshot=new
+        {
+            capturedAtUtc=DateTime.UtcNow,host=builder.Server,port=builder.Port,database=builder.Database,
+            databaseReference=MinhaBelem.Infrastructure.Identity.AuthenticationDiagnostics.DatabaseReference(builder.ConnectionString),
+            eventStatuses=await db.QueryAsync("SELECT status,COUNT(*) AS count FROM mb_content_items WHERE kind='Event' GROUP BY status"),
+            recentEvents=await db.QueryAsync("SELECT id,status,revision,requires_human_approval AS requiresHumanApproval FROM mb_content_items WHERE kind='Event' ORDER BY id DESC LIMIT 50"),
+            batches=await db.QueryAsync("SELECT id,action,status,created_at AS createdAt FROM mb_editorial_batches ORDER BY created_at DESC LIMIT 20"),
+            batchItemStatuses=await db.QueryAsync("SELECT status,COUNT(*) AS count FROM mb_editorial_batch_items GROUP BY status")
+        };
+        Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(snapshot,new System.Text.Json.JsonSerializerOptions{WriteIndented=true}));
+        return 0;
+    }
     if (args.Contains("--operations-audit"))
     {
         await using var data = new MySqlDataSourceBuilder(builder.ConnectionString).Build();
