@@ -1,0 +1,13 @@
+@model (int Approved, int Pending, System.Collections.Generic.IReadOnlyList<MinhaBelem.Core.Abstractions.PublicPlacePhoto> ApprovedRows, System.Collections.Generic.IReadOnlyList<MinhaBelem.Core.Abstractions.PublicPlacePhoto> PendingRows)
+<section class="section">
+    <p class="eyebrow">@Loc["PlatformStatus"]</p>
+    <h1>@Loc["PlatformStatus"]</h1>
+    <p>@Loc["PlatformLead"]</p>
+    <dl class="guide-information">
+        <div><dt>@Loc["Upcoming_Belém_Events"]</dt><dd>@ViewData["Upcoming"]</dd></div>
+        <div><dt>@Loc["AdminSources"]</dt><dd>@ViewData["Sources"]</dd></div>
+        <div><dt>@Loc["PhotoArchiveTitle"]</dt><dd>@Model.Approved</dd></div>
+        <div><dt>@Loc["PendingStatus"]</dt><dd>@Model.Pending</dd></div>
+    </dl>
+    <p class="small"><a href="/api/v1/operacao">JSON</a> · <a href="/api/v1/agenda">@Loc["Nav_Agenda"]</a> · <a href="/widget/agenda">@Loc["WidgetAgenda"]</a></p>
+</section>

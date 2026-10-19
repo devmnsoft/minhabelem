@@ -130,6 +130,10 @@ public static class InfrastructureServiceCollectionExtensions
         services.AddScoped<ISourceChangeDetector, SourceChangeDetector>();
         services.AddScoped<IContentDeduplicationService, ContentDeduplicationService>();
         services.AddScoped<IPublicWebCrawler, PublicWebCrawler>();
+        services.Configure<PhotoScoutOptions>(configuration.GetSection("PhotoScout"));
+        services.AddScoped<IPlacePhotoScout, PlacePhotoScout>();
+        services.AddScoped<ILandmarkGuidePublisher, LandmarkGuidePublisher>();
+        services.AddScoped<IVisitRequests, VisitRequestRepository>();
 
         services.AddSingleton(sp => sp.GetRequiredService<IOptions<AiOptions>>().Value);
         services.AddScoped<AiRunLogger>();
@@ -163,6 +167,7 @@ public static class InfrastructureServiceCollectionExtensions
         services.AddSingleton<RadarWorker>();
         services.AddSingleton<IRadarWorker>(sp => sp.GetRequiredService<RadarWorker>());
         services.AddHostedService(sp => sp.GetRequiredService<RadarWorker>());
+        services.AddHostedService<PlacePhotoWorker>();
         }
 
         return services;

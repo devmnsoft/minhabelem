@@ -105,6 +105,7 @@ public sealed class PlaceQuery
     public double? Longitude { get; set; }
     public double? RadiusKm { get; set; }
     public bool PublishedOnly { get; set; } = true;
+    public bool LandmarkOnly { get; set; }
     public PlaceSort Sort { get; set; } = PlaceSort.Relevance;
     public int Page { get; set; } = 1;
     public int PageSize { get; set; } = 24;

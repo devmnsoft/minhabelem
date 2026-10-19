@@ -16,7 +16,8 @@ public sealed class PublicWebCrawler(
     ISourceChangeDetector changeDetector,
     IContentDeduplicationService deduplicationService,
     IDiscoveryRepository discoveryRepo,
-    IRadarRepository radarRepo) : IPublicWebCrawler
+    IRadarRepository radarRepo,
+    IPlacePhotoScout photos) : IPublicWebCrawler
 {
     public async Task<CrawlResult> CrawlAsync(IngestionSource source, CrawlerOptions? options, CancellationToken ct)
     {
@@ -248,6 +249,10 @@ public sealed class PublicWebCrawler(
                 result.ItemsDiscovered++;
             }
 
+            await RememberLicensedImageAsync(extractedContent.LeadImageUrl, extractedContent.LeadImageCredit, extractedContent.MetaTags, extractedContent.Title, currentUrl, ct);
+            foreach (var evItem in discoveredEvents)
+                await RememberLicensedImageAsync(evItem.MediaUrl, evItem.MediaCredit, extractedContent.MetaTags, evItem.Title, currentUrl, ct);
+
             // 8. Registro de Histórico de Coleta
             await radarRepo.RecordCrawlHistoryAsync(new CrawlHistoryEntry
             {
@@ -317,5 +322,19 @@ public sealed class PublicWebCrawler(
         sw.Stop();
         result.Duration = sw.Elapsed;
         return result;
+    }
+
+    private async Task RememberLicensedImageAsync(string? imageUrl, string? credit, IReadOnlyDictionary<string, string> meta, string? title, string pageUrl, CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(imageUrl)) return;
+        var license = meta.GetValueOrDefault("og:image:license") ?? meta.GetValueOrDefault("license") ?? meta.GetValueOrDefault("dcterms.license");
+        try
+        {
+            await photos.CapturePageImageAsync(new PageImageCapture(pageUrl, imageUrl, credit, license, title), ct);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            // A foto é complementar. Uma falha aqui não invalida a matéria já registrada.
+        }
     }
 }

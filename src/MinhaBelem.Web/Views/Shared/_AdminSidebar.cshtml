@@ -34,6 +34,12 @@
             <a href="/admin/lugares" class="@(currentPath.StartsWith("/admin/lugares") ? "active" : "")">
                 <span>📍</span> @Loc["AdminPlaces"]
             </a>
+            <a href="/admin/fotos" class="@(currentPath.StartsWith("/admin/fotos") ? "active" : "")">
+                <span>🖼️</span> Fotos dos locais
+            </a>
+            <a href="/admin/visitas" class="@(currentPath.StartsWith("/admin/visitas") ? "active" : "")">
+                <span>🗓️</span> @Loc["AdminVisits"]
+            </a>
         }
         @if (User.HasClaim("mb:permission", Permissions.SubmissionModerate))
         {

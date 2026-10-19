@@ -1,0 +1,14 @@
+{
+  "name": "MinhaBelém",
+  "short_name": "MinhaBelém",
+  "description": "Agenda, guia, mobilidade e fotos de Belém do Pará.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "lang": "pt-BR",
+  "background_color": "#f7f4ed",
+  "theme_color": "#123f36",
+  "icons": [
+    { "src": "/images/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}

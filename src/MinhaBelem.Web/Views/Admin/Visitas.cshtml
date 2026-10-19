@@ -1,0 +1,61 @@
+@model IReadOnlyList<MinhaBelem.Core.Abstractions.VisitRequest>
+@{
+    ViewData["Title"] = Loc["AdminVisits"].Value;
+}
+<div class="admin-shell">
+    <partial name="_AdminSidebar" />
+    <main class="admin-content">
+        <div class="admin-header">
+            <div>
+                <span class="eyebrow">GUIA</span>
+                <h1>@Loc["AdminVisits"]</h1>
+                <p class="small">@Loc["VisitRequestLead"]</p>
+            </div>
+        </div>
+        @if (TempData["VisitMessage"] is string message)
+        {
+            <p class="notice" role="status">@message</p>
+        }
+        @if (Model.Count == 0)
+        {
+            <p>@Loc["VisitRequestEmpty"]</p>
+        }
+        else
+        {
+            <table>
+                <thead>
+                    <tr>
+                        <th>@Loc["VisitRequestDate"]</th>
+                        <th>@Loc["Landmarks"]</th>
+                        <th>@Loc["VisitRequestName"]</th>
+                        <th>@Loc["VisitRequestEmail"]</th>
+                        <th>@Loc["VisitRequestPhone"]</th>
+                        <th>@Loc["VisitRequestParty"]</th>
+                        <th>@Loc["VisitRequestMessage"]</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var request in Model)
+                    {
+                        <tr>
+                            <td>@request.PreferredOn.ToString("yyyy-MM-dd")</td>
+                            <td><a href="/guia/@request.PlaceId">@request.PlaceName</a></td>
+                            <td>@request.ContactName</td>
+                            <td>@request.Email</td>
+                            <td>@request.Phone</td>
+                            <td>@request.PartySize</td>
+                            <td>@request.Message</td>
+                            <td>
+                                <form method="post" action="/admin/visitas/@request.Id/tratar">
+                                    @Html.AntiForgeryToken()
+                                    <button class="button secondary" type="submit">@Loc["VisitRequestMark"]</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </main>
+</div>

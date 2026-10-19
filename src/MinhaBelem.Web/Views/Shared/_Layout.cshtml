@@ -63,7 +63,10 @@
     <link rel="alternate" hreflang="x-default" href="@($"{Context.Request.Scheme}://{Context.Request.Host}/pt-BR")" />
 
     <link rel="icon" type="image/svg+xml" href="~/images/favicon.svg" />
+    <link rel="manifest" href="~/manifest.webmanifest" />
     <meta name="theme-color" content="#123f36" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/view-formats.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/components.css" asp-append-version="true" />
@@ -89,6 +92,7 @@
             <a href="/como-chegar">@Loc["RouteTitle"]</a>
             <a href="/guia-ia" class="nav-ai-highlight">✨ @Loc["TouristAssistantTitle"]</a>
             <a href="/meu-bairro">@Loc["NavNeighborhood"]</a>
+            <a href="/salvos">@Loc["SavedPlans"]</a>
             <a href="/parceiros">@Loc["NavPartners"]</a>
             <a href="/explore/glossario">@Loc["Glossary_Title"]</a>
             @if (User.Identity?.IsAuthenticated == true)
@@ -194,6 +198,8 @@
                 <h4>🏙️ @Loc["Nav_Guide"]</h4>
                 <nav aria-label="@Loc["Nav_Guide"]">
                     <a href="/guia">@Loc["Nav_Guide"]</a>
+                    <a href="/guia/acervo">@Loc["PhotoArchiveTitle"]</a>
+                    <a href="/salvos">@Loc["SavedPlans"]</a>
                     <a href="/agenda">@Loc["Nav_Agenda"]</a>
                     <a href="/?categoria=cultura">@Loc["Category_Culture"]</a>
                     <a href="/?categoria=gastronomia">@Loc["Category_Gastronomy"]</a>
@@ -207,7 +213,7 @@
                     <a href="/termos">@Loc["Nav_Terms"]</a>
                     <a href="#a11y" data-open-a11y>♿ @Loc["A11y_Panel_Title"]</a>
                     <a href="/sitemap.xml" target="_blank">Sitemap XML</a>
-                    <a href="/status">Status da Plataforma</a>
+                    <a href="/operacao">@Loc["PlatformStatus"]</a>
                 </nav>
                 <div class="footer-languages">
                     <span class="small">@Loc["Language_Selector_Title"]:</span>

@@ -70,7 +70,7 @@ public sealed class Sprint17Tests(PortalFixture fixture)
         source.Id = await ingestion.UpsertSourceAsync(source, default);
         await radar.RecordCrawlHistoryAsync(new() { SourceId = source.Id, Url = source.FeedUrl, StatusCode = 200, ETag = "\"fixture\"", ContentHash = "original-hash" }, default);
         var crawler = new PublicWebCrawler(new CachedClientFactory(), new AllowedRobots(), new HtmlContentExtractor(), new EventStructuredDataExtractor(),
-            new SourceChangeDetector(), scope.ServiceProvider.GetRequiredService<IContentDeduplicationService>(), scope.ServiceProvider.GetRequiredService<IDiscoveryRepository>(), radar);
+            new SourceChangeDetector(), scope.ServiceProvider.GetRequiredService<IContentDeduplicationService>(), scope.ServiceProvider.GetRequiredService<IDiscoveryRepository>(), radar, scope.ServiceProvider.GetRequiredService<IPlacePhotoScout>());
         var result = await crawler.CrawlAsync(source, new() { MaxPagesPerHost = 1 }, default);
         Assert.Empty(result.Errors); Assert.Equal(1, result.UrlsCrawled);
         var latest = await radar.GetLastCrawlForUrlAsync(source.FeedUrl, default);

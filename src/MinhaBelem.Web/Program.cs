@@ -162,6 +162,20 @@ if (args.Contains("--initialize-database"))
     await scope.ServiceProvider.GetRequiredService<SchemaMigrator>().ApplyAsync();
     return;
 }
+if (args.Contains("--scout-photos"))
+{
+    using var scope = app.Services.CreateScope();
+    var count = await scope.ServiceProvider.GetRequiredService<MinhaBelem.Core.Abstractions.IPlacePhotoScout>().ScoutNextAsync(8, CancellationToken.None);
+    Console.WriteLine("Fotos de licença aberta gravadas neste pedido: " + count);
+    return;
+}
+if (args.Contains("--publish-landmarks"))
+{
+    using var scope = app.Services.CreateScope();
+    var count = await scope.ServiceProvider.GetRequiredService<MinhaBelem.Core.Abstractions.ILandmarkGuidePublisher>().PublishAsync(CancellationToken.None);
+    Console.WriteLine("Marcos publicados neste pedido: " + count);
+    return;
+}
 if (args.Contains("--bootstrap-admin"))
 {
     using var scope = app.Services.CreateScope();
@@ -212,13 +226,17 @@ app.Use(async (ctx, next) =>
     ctx.Response.Headers["X-Content-Type-Options"] = "nosniff";
     ctx.Response.Headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
     ctx.Response.Headers["X-Frame-Options"] = "DENY";
-    ctx.Response.Headers["Content-Security-Policy"] = "default-src 'self'; script-src 'self' 'unsafe-inline' https://maps.googleapis.com https://maps.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https:; connect-src 'self' https:; frame-ancestors 'none'; form-action 'self'; base-uri 'self'";
+    var embed = ctx.Request.Path.StartsWithSegments("/widget");
+    ctx.Response.Headers["Content-Security-Policy"] = "default-src 'self'; script-src 'self' 'unsafe-inline' https://maps.googleapis.com https://maps.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https:; connect-src 'self' https:; frame-ancestors " + (embed ? "*" : "'none'") + "; form-action 'self'; base-uri 'self'";
+    if (embed) ctx.Response.Headers.Remove("X-Frame-Options");
     if (ctx.Request.Path.StartsWithSegments("/conta") || ctx.Request.Path.StartsWithSegments("/editorial") || ctx.Request.Path.StartsWithSegments("/admin")) ctx.Response.Headers.CacheControl = "no-store";
     await next();
 });
 
 app.UseHttpsRedirection();
-app.UseStaticFiles();
+var staticTypes = new Microsoft.AspNetCore.StaticFiles.FileExtensionContentTypeProvider();
+staticTypes.Mappings[".webmanifest"] = "application/manifest+json";
+app.UseStaticFiles(new StaticFileOptions { ContentTypeProvider = staticTypes });
 app.UseWhen(ctx => HttpMethods.IsGet(ctx.Request.Method), branch => branch.UseStatusCodePagesWithReExecute("/Home/Status", "?code={0}"));
 app.UseRouting();
 

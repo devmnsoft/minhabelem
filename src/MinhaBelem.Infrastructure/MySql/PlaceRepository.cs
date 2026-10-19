@@ -129,6 +129,7 @@ public sealed class PlaceRepository(MySqlDataSource dataSource) : IPlaceReposito
         var parameters = new DynamicParameters();
 
         if (query.PublishedOnly) clauses.Add("is_published = 1");
+        if (query.LandmarkOnly) clauses.Add("google_place_id LIKE 'mb-landmark:%'");
         clauses.Add("purge_after > UTC_TIMESTAMP(6)");
         if (!string.IsNullOrWhiteSpace(query.Category))
         {

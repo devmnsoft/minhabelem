@@ -1,0 +1,39 @@
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Agenda MinhaBelém</title>
+    <link rel="stylesheet" href="/css/amazonico.css" />
+    <style>
+        body { margin: 0; padding: 12px 14px 18px; }
+        a { color: #174a3c; }
+        ul { list-style: none; padding: 0; margin: 0; }
+        li { padding: 8px 0; border-bottom: 1px solid #d9ded4; }
+    </style>
+</head>
+<body>
+    <p class="eyebrow">MINHABELÉM</p>
+    <h1 style="font-size:1.3rem;margin:0 0 8px">Agenda verificada</h1>
+    <ul id="widget-agenda"></ul>
+    <p class="small"><a href="/" target="_blank" rel="noopener">Abrir o MinhaBelém</a></p>
+    <script>
+        fetch('/api/v1/agenda?dias=30').then(r => r.json()).then(rows => {
+            const list = document.getElementById('widget-agenda');
+            if (!rows.length) { list.innerHTML = '<li>Nenhuma sessão publicada nesta janela.</li>'; return; }
+            for (const row of rows.slice(0, 8)) {
+                const item = document.createElement('li');
+                const link = document.createElement('a');
+                link.href = row.url; link.target = '_blank'; link.rel = 'noopener';
+                link.textContent = row.title;
+                item.append(link);
+                if (row.place) item.append(document.createTextNode(' · ' + row.place));
+                list.append(item);
+            }
+        }).catch(() => { document.getElementById('widget-agenda').innerHTML = '<li>Agenda indisponível agora.</li>'; });
+    </script>
+</body>
+</html>

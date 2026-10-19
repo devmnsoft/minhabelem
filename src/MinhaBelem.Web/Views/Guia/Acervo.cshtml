@@ -1,0 +1,41 @@
+@model IReadOnlyList<MinhaBelem.Core.Abstractions.PublicPlacePhoto>
+@{
+    ViewData["Title"] = Loc["PhotoArchiveTitle"].Value;
+    ViewData["Description"] = Loc["PhotoArchiveLead"].Value;
+}
+<section class="section">
+    <p class="eyebrow">BELÉM E REGIÃO METROPOLITANA</p>
+    <h1>@Loc["PhotoArchiveTitle"]</h1>
+    <p>@Loc["PhotoArchiveLead"]</p>
+    @if (Model.Count == 0)
+    {
+        <div class="empty"><h2>@Loc["General_Empty"]</h2><p>@Loc["PhotoArchiveEmpty"]</p></div>
+    }
+    else
+    {
+        <div class="photo-grid">
+            @foreach (var photo in Model)
+            {
+                <figure>
+                    <img src="@photo.ThumbUrl" alt="@photo.PlaceName" width="640" height="360" loading="lazy" referrerpolicy="no-referrer" />
+                    <figcaption>
+                        <strong>@photo.PlaceName</strong>
+                        <span>@photo.Municipality</span>
+                        <span>@Loc["PhotoCredit"]: @photo.Credit</span>
+                        <span>
+                            @if (!string.IsNullOrWhiteSpace(photo.LicenseUrl))
+                            {
+                                <a href="@photo.LicenseUrl" target="_blank" rel="noopener noreferrer">@photo.LicenseName</a>
+                            }
+                            else
+                            {
+                                @photo.LicenseName
+                            }
+                            · <a href="@photo.PageUrl" target="_blank" rel="noopener noreferrer">Wikimedia Commons</a>
+                        </span>
+                    </figcaption>
+                </figure>
+            }
+        </div>
+    }
+</section>

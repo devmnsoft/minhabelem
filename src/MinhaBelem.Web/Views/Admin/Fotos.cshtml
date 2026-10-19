@@ -1,0 +1,29 @@
+@model (int Approved, int Pending, System.Collections.Generic.IReadOnlyList<MinhaBelem.Core.Abstractions.PublicPlacePhoto> ApprovedRows, System.Collections.Generic.IReadOnlyList<MinhaBelem.Core.Abstractions.PublicPlacePhoto> PendingRows)
+@{
+    ViewData["Title"] = "Fotos dos locais";
+}
+<div class="admin-shell">
+    <partial name="_AdminSidebar" />
+    <main class="admin-content">
+        <div class="admin-header">
+            <div>
+                <span class="eyebrow">ROBÔ DE FOTOS</span>
+                <h1>Fotos de locais com licença aberta</h1>
+                <p class="small">O robô consulta o Wikimedia Commons nos pontos da região metropolitana. Só entra no site foto com licença que permite reutilização. Imagem sem licença não é publicada. A foto não afirma horário, preço ou estado atual do lugar.</p>
+            </div>
+        </div>
+        @if (TempData["PhotoMessage"] is string message)
+        {
+            <p class="notice" role="status">@message</p>
+        }
+        <p>@Model.Approved aprovadas · @Model.Pending aguardando revisão de páginas com licença declarada.</p>
+        <form method="post" action="/admin/fotos/buscar">
+            @Html.AntiForgeryToken()
+            <button class="button" type="submit">Buscar fotos agora</button>
+        </form>
+        <h2>Aguardando revisão</h2>
+        <partial name="_PhotoReviewTable" model="Model.PendingRows" />
+        <h2>No ar</h2>
+        <partial name="_PhotoReviewTable" model="Model.ApprovedRows" />
+    </main>
+</div>

@@ -1567,3 +1567,121 @@ CREATE TABLE IF NOT EXISTS mb_commercial_inquiries (
  created_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
  KEY idx_commercial_pending(handled,id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- @migration sprint20_fotos_habitante
+CREATE TABLE IF NOT EXISTS mb_photo_targets (
+ target_key VARCHAR(80) PRIMARY KEY,
+ place_name VARCHAR(180) NOT NULL,
+ search_query VARCHAR(240) NOT NULL,
+ municipality VARCHAR(80) NOT NULL,
+ latitude DECIMAL(9,6) NOT NULL,
+ longitude DECIMAL(9,6) NOT NULL,
+ radius_m INT NOT NULL DEFAULT 400,
+ enabled TINYINT(1) NOT NULL DEFAULT 1,
+ last_scouted_at DATETIME(6) NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS mb_place_photo_proposals (
+ id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+ place_id BIGINT UNSIGNED NULL,
+ target_key VARCHAR(80) NOT NULL,
+ place_name VARCHAR(180) NOT NULL,
+ municipality VARCHAR(80) NOT NULL DEFAULT 'Belém',
+ image_url VARCHAR(2000) NOT NULL,
+ thumb_url VARCHAR(2000) NULL,
+ page_url VARCHAR(2000) NOT NULL,
+ credit VARCHAR(300) NOT NULL,
+ license_name VARCHAR(120) NOT NULL,
+ license_url VARCHAR(500) NULL,
+ mime_type VARCHAR(40) NULL,
+ width INT NULL,
+ height INT NULL,
+ latitude DECIMAL(9,6) NULL,
+ longitude DECIMAL(9,6) NULL,
+ image_hash CHAR(64) NOT NULL,
+ publishable TINYINT(1) NOT NULL DEFAULT 0,
+ status VARCHAR(20) NOT NULL DEFAULT 'Pending',
+ discovered_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+ reviewed_at DATETIME(6) NULL,
+ reviewed_by BIGINT UNSIGNED NULL,
+ UNIQUE KEY uq_place_photo_hash (image_hash),
+ KEY idx_place_photo_status (status, publishable, place_name),
+ KEY idx_place_photo_place (place_id),
+ FOREIGN KEY (place_id) REFERENCES mb_places(id) ON DELETE SET NULL,
+ FOREIGN KEY (reviewed_by) REFERENCES mb_users(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS mb_resident_saves (
+ device_key CHAR(64) NOT NULL,
+ kind VARCHAR(16) NOT NULL,
+ entity_id BIGINT UNSIGNED NOT NULL,
+ created_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+ PRIMARY KEY (device_key, kind, entity_id),
+ KEY idx_resident_entity (kind, entity_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+INSERT IGNORE INTO mb_photo_targets (target_key, place_name, search_query, municipality, latitude, longitude, radius_m) VALUES
+('ver-o-peso','Ver-o-Peso','Ver-o-Peso Belém Pará','Belém',-1.452200,-48.503400,400),
+('estacao-das-docas','Estação das Docas','Estação das Docas Belém','Belém',-1.448900,-48.498500,350),
+('theatro-da-paz','Theatro da Paz','Theatro da Paz Belém','Belém',-1.453500,-48.494400,250),
+('basilica-de-nazare','Basílica de Nazaré','Basílica de Nazaré Belém','Belém',-1.451300,-48.481700,300),
+('forte-do-castelo','Forte do Castelo','Forte do Presépio Belém','Belém',-1.454900,-48.505500,250),
+('mangal-das-garcas','Mangal das Garças','Mangal das Garças Belém','Belém',-1.457700,-48.504600,300),
+('mercado-de-sao-bras','Mercado de São Brás','Mercado de São Brás Belém','Belém',-1.454600,-48.469800,250),
+('bosque-rodrigues-alves','Bosque Rodrigues Alves','Bosque Rodrigues Alves Belém','Belém',-1.428600,-48.456700,500),
+('museu-goeldi','Museu Paraense Emílio Goeldi','Museu Goeldi Belém','Belém',-1.452800,-48.476500,300),
+('parque-da-residencia','Parque da Residência','Parque da Residência Belém','Belém',-1.455200,-48.478500,250),
+('hangar','Hangar Convenções e Feiras','Hangar Centro de Convenções Belém','Belém',-1.432200,-48.489800,400),
+('praca-batista-campos','Praça Batista Campos','Praça Batista Campos Belém','Belém',-1.456900,-48.485800,250),
+('casa-das-onze-janelas','Casa das Onze Janelas','Casa das Onze Janelas Belém','Belém',-1.455800,-48.506300,200),
+('porto-futuro','Porto Futuro','Porto Futuro Belém','Belém',-1.445000,-48.495500,350),
+('mangueirao','Estádio Olímpico do Pará','Mangueirão Belém','Belém',-1.381000,-48.444000,400),
+('ufpa','Universidade Federal do Pará','UFPA Belém Guamá','Belém',-1.474000,-48.457000,600),
+('icoaraci','Icoaraci','Icoaraci Belém orla','Belém',-1.303000,-48.483500,700),
+('mosqueiro','Mosqueiro','Mosqueiro Belém farol','Mosqueiro',-1.124500,-48.472000,800),
+('ilha-do-combu','Ilha do Combu','Ilha do Combu Belém','Belém',-1.501000,-48.458500,700),
+('cotijuba','Cotijuba','Cotijuba Belém','Belém',-1.250500,-48.545500,800),
+('ananindeua','Ananindeua','Ananindeua Pará centro','Ananindeua',-1.365000,-48.372000,700);
+
+-- @migration sprint21_lugares_canonicos
+SET @minhabelem_ddl = IF(EXISTS(SELECT 1 FROM information_schema.columns WHERE table_schema=DATABASE() AND table_name='mb_photo_targets' AND column_name='neighborhood'),'SELECT 1','ALTER TABLE mb_photo_targets ADD COLUMN neighborhood VARCHAR(120) NULL, ADD COLUMN address_line VARCHAR(240) NULL, ADD COLUMN primary_type VARCHAR(80) NULL');
+PREPARE minhabelem_stmt FROM @minhabelem_ddl; EXECUTE minhabelem_stmt; DEALLOCATE PREPARE minhabelem_stmt;
+
+UPDATE mb_photo_targets SET neighborhood='Campina', address_line='Boulevard Castilhos França, Campina, Belém — PA', primary_type='tourist_attraction' WHERE target_key='ver-o-peso';
+UPDATE mb_photo_targets SET neighborhood='Campina', address_line='Boulevard Castilhos França, Campina, Belém — PA', primary_type='tourist_attraction' WHERE target_key='estacao-das-docas';
+UPDATE mb_photo_targets SET neighborhood='Campina', address_line='Praça da República, Campina, Belém — PA', primary_type='performing_arts_theater' WHERE target_key='theatro-da-paz';
+UPDATE mb_photo_targets SET neighborhood='Nazaré', address_line='Praça Justo Chermont, Nazaré, Belém — PA', primary_type='church' WHERE target_key='basilica-de-nazare';
+UPDATE mb_photo_targets SET neighborhood='Cidade Velha', address_line='Praça Frei Caetano Brandão, Cidade Velha, Belém — PA', primary_type='tourist_attraction' WHERE target_key='forte-do-castelo';
+UPDATE mb_photo_targets SET neighborhood='Cidade Velha', address_line='Passagem Carneiro da Rocha, Cidade Velha, Belém — PA', primary_type='park' WHERE target_key='mangal-das-garcas';
+UPDATE mb_photo_targets SET neighborhood='São Brás', address_line='Praça Barão de Guajará, São Brás, Belém — PA', primary_type='tourist_attraction' WHERE target_key='mercado-de-sao-bras';
+UPDATE mb_photo_targets SET neighborhood='Marco', address_line='Avenida Almirante Barroso, Marco, Belém — PA', primary_type='park' WHERE target_key='bosque-rodrigues-alves';
+UPDATE mb_photo_targets SET neighborhood='São Brás', address_line='Avenida Governador Magalhães Barata, 376, São Brás, Belém — PA', primary_type='museum' WHERE target_key='museu-goeldi';
+UPDATE mb_photo_targets SET neighborhood='São Brás', address_line='Avenida Governador Magalhães Barata, São Brás, Belém — PA', primary_type='park' WHERE target_key='parque-da-residencia';
+UPDATE mb_photo_targets SET address_line='Avenida Doutor Freitas, Belém — PA', primary_type='tourist_attraction' WHERE target_key='hangar';
+UPDATE mb_photo_targets SET neighborhood='Batista Campos', address_line='Praça Batista Campos, Belém — PA', primary_type='park' WHERE target_key='praca-batista-campos';
+UPDATE mb_photo_targets SET neighborhood='Cidade Velha', address_line='Praça Frei Caetano Brandão, Cidade Velha, Belém — PA', primary_type='museum' WHERE target_key='casa-das-onze-janelas';
+UPDATE mb_photo_targets SET neighborhood='Campina', address_line='Orla de Campina, Belém — PA', primary_type='tourist_attraction' WHERE target_key='porto-futuro';
+UPDATE mb_photo_targets SET address_line='Avenida Almirante Barroso, Belém — PA', primary_type='stadium' WHERE target_key='mangueirao';
+UPDATE mb_photo_targets SET neighborhood='Guamá', address_line='Rua Augusto Corrêa, 01, Guamá, Belém — PA', primary_type='university' WHERE target_key='ufpa';
+UPDATE mb_photo_targets SET neighborhood='Icoaraci', address_line='Orla de Icoaraci, Belém — PA', primary_type='tourist_attraction' WHERE target_key='icoaraci';
+UPDATE mb_photo_targets SET address_line='Mosqueiro, Belém — PA', primary_type='tourist_attraction' WHERE target_key='mosqueiro';
+UPDATE mb_photo_targets SET address_line='Ilha do Combu, Belém — PA', primary_type='tourist_attraction' WHERE target_key='ilha-do-combu';
+UPDATE mb_photo_targets SET address_line='Ilha de Cotijuba, Belém — PA', primary_type='tourist_attraction' WHERE target_key='cotijuba';
+UPDATE mb_photo_targets SET address_line='Centro, Ananindeua — PA', primary_type='tourist_attraction' WHERE target_key='ananindeua';
+
+CREATE TABLE IF NOT EXISTS mb_visit_requests (
+ id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+ place_id BIGINT UNSIGNED NOT NULL,
+ contact_name VARCHAR(100) NOT NULL,
+ email VARCHAR(150) NOT NULL,
+ phone VARCHAR(30) NULL,
+ party_size INT NOT NULL,
+ preferred_on DATE NOT NULL,
+ message VARCHAR(1000) NULL,
+ created_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+ consented_at DATETIME(6) NOT NULL,
+ handled TINYINT(1) NOT NULL DEFAULT 0,
+ FOREIGN KEY (place_id) REFERENCES mb_places(id) ON DELETE CASCADE,
+ KEY idx_visit_pending (handled, id),
+ CHECK (party_size BETWEEN 1 AND 30)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

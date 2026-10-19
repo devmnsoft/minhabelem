@@ -1,0 +1,34 @@
+@model IReadOnlyList<MinhaBelem.Core.Abstractions.PublicPlacePhoto>
+@if (Model.Count == 0)
+{
+    <p class="small">Nenhuma foto nesta lista.</p>
+}
+else
+{
+    <div class="table-scroll">
+        <table>
+            <caption>Fotos de locais</caption>
+            <thead><tr><th>Local</th><th>Licença</th><th>Crédito</th><th></th></tr></thead>
+            <tbody>
+            @foreach (var photo in Model)
+            {
+                <tr>
+                    <td>@photo.PlaceName <span class="small">@photo.Municipality</span></td>
+                    <td>@photo.LicenseName</td>
+                    <td>@photo.Credit</td>
+                    <td>
+                        <form method="post" action="/admin/fotos/@photo.Id/revisar">
+                            @Html.AntiForgeryToken()
+                            @if (photo.Status != "Approved")
+                            {
+                                <button type="submit" name="aprovar" value="true">Publicar</button>
+                            }
+                            <button type="submit" name="aprovar" value="false">Retirar</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+}

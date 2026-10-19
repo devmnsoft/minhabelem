@@ -239,3 +239,46 @@ document.querySelectorAll('table').forEach(table => {
     });
   });
 })();
+
+(() => {
+  const storageKey = 'minhabelem.device';
+  function deviceKey() {
+    let key = localStorage.getItem(storageKey);
+    if (!/^[a-f0-9]{64}$/.test(key || '')) {
+      const bytes = new Uint8Array(32);
+      crypto.getRandomValues(bytes);
+      key = [...bytes].map(byte => byte.toString(16).padStart(2, '0')).join('');
+      localStorage.setItem(storageKey, key);
+    }
+    return key;
+  }
+  function savedIds() {
+    try {
+      const data = JSON.parse(localStorage.getItem('minhabelem.agenda.saved') || '[]');
+      return Array.isArray(data) ? data.filter(id => /^\d+$/.test(id)).slice(0, 200).map(Number) : [];
+    } catch { return []; }
+  }
+  window.minhaBelemSyncSaves = function () {
+    const ids = savedIds();
+    window.minhaBelemChanges = fetch('/api/v1/salvos', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ device: deviceKey(), events: ids })
+    }).then(response => response.ok ? response.json() : { changes: [] }).then(body => body.changes || []).catch(() => []);
+    return window.minhaBelemChanges;
+  };
+  document.querySelector('[data-near-me]')?.addEventListener('click', () => {
+    if (!navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(position => {
+      const url = new URL(location.href);
+      url.searchParams.set('lat', position.coords.latitude.toFixed(5));
+      url.searchParams.set('lng', position.coords.longitude.toFixed(5));
+      url.searchParams.set('raio', '3');
+      location.href = url.pathname + url.search;
+    });
+  });
+  if ('serviceWorker' in navigator && !location.pathname.startsWith('/admin') && !location.pathname.startsWith('/conta') && !location.pathname.startsWith('/editorial')) {
+    navigator.serviceWorker.register('/sw.js').catch(() => {});
+  }
+  if (savedIds().length) window.minhaBelemSyncSaves();
+})();

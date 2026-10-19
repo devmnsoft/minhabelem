@@ -1,0 +1,12 @@
+@{
+    ViewData["Title"] = Loc["SavedPlans"].Value;
+}
+<section class="section">
+    <p class="eyebrow">@Loc["AgendaYourPlans"]</p>
+    <h1>@Loc["SavedPlans"]</h1>
+    <p>@Loc["SavedLead"]</p>
+    <div id="saved-list" class="stack"></div>
+    <p id="saved-empty" class="empty" hidden>@Loc["SavedEmpty"]</p>
+    <p id="saved-alerts" class="notice" role="status" hidden></p>
+</section>
+<script src="~/js/saved.js" asp-append-version="true" defer></script>

@@ -1,0 +1,33 @@
+namespace MinhaBelem.Web.Resources;
+
+public static class Sprint20Translations
+{
+    public static void Register(Dictionary<string, Dictionary<string, string>> catalogs)
+    {
+        var rows = new Dictionary<string, string[]>
+        {
+            ["PhotoArchiveTitle"] = ["Acervo fotográfico", "Photo archive", "Archives photographiques", "Archivo fotográfico", "Фотоархив", "影像档案", "写真アーカイブ"],
+            ["PhotoArchiveLead"] = ["Fotografias com licença aberta de lugares de Belém e da região metropolitana. Elas não informam horário, preço nem a condição de hoje.", "Openly licensed photographs of places in Belém and the metro area. They do not state hours, prices or today's conditions.", "Photographies sous licence ouverte de lieux de Belém et de sa métropole. Elles n'indiquent ni horaire, ni prix, ni l'état du jour.", "Fotografías con licencia abierta de lugares de Belém y su área metropolitana. No informan horario, precio ni el estado de hoy.", "Фотографии открытых лицензий мест Белена и агломерации. Они не сообщают часы, цены или сегодняшнее состояние.", "贝伦及都市圈地点的开放许可照片。这些照片不表示开放时间、票价或今日状况。", "ベレンと都市圏のオープンライセンス写真です。営業時間、料金、本日の状況は示しません。"],
+            ["PhotoArchiveEmpty"] = ["O robô ainda não publicou fotos neste ambiente. A busca no Wikimedia Commons roda quando o serviço está ligado e o banco já recebeu a atualização.", "The robot has not published photos in this environment yet. The Wikimedia Commons search runs when the service is on and the database update is applied.", "Le robot n'a pas encore publié de photos dans cet environnement. La recherche Wikimedia Commons fonctionne lorsque le service est actif et la base mise à jour.", "El robot aún no publicó fotos en este entorno. La búsqueda en Wikimedia Commons corre con el servicio activo y la base actualizada.", "Робот ещё не опубликовал фото в этой среде. Поиск по Wikimedia Commons идёт, когда служба включена и база обновлена.", "此环境尚未发布照片。数据库完成更新且服务开启后，才会检索维基共享资源。", "この環境にはまだ写真が公開されていません。データベース更新後、サービス稼働中にウィキメディア・コモンズを検索します。"],
+            ["PhotoCredit"] = ["Crédito", "Credit", "Crédit", "Crédito", "Автор", "署名", "クレジット"],
+            ["PhotoNotCurrent"] = ["A fotografia tem licença aberta e crédito visível. Ela não comprova se o local está aberto agora.", "The photograph has an open license and a visible credit. It does not prove the place is open now.", "La photographie a une licence ouverte et un crédit visible. Elle ne prouve pas que le lieu est ouvert maintenant.", "La fotografía tiene licencia abierta y crédito visible. No prueba que el lugar esté abierto ahora.", "У фотографии открытая лицензия и указан автор. Она не доказывает, что место открыто сейчас.", "照片为开放许可并标明作者。它不能证明该地点此刻正在开放。", "写真はオープンライセンスでクレジットを表示しています。現在開いていることの証明にはなりません。"],
+            ["NearMe"] = ["Perto de mim", "Near me", "Près de moi", "Cerca de mí", "Рядом со мной", "我附近", "現在地の近く"],
+            ["NearMeResult"] = ["Lugares publicados com coordenada, num raio de até 3 km. Sem coordenada no cadastro, o lugar não entra nesta lista.", "Published places with coordinates, within about 3 km. A place without coordinates stays out of this list.", "Lieux publiés avec coordonnées, dans un rayon d'environ 3 km. Sans coordonnées, le lieu n'entre pas dans cette liste.", "Lugares publicados con coordenada, en un radio de unos 3 km. Sin coordenada, el lugar no entra en esta lista.", "Опубликованные места с координатами в радиусе около 3 км. Без координат место не попадает в список.", "约 3 公里内、已发布且带坐标的地点。没有坐标的地点不会出现在这张表上。", "座標のある公開スポットを約3km以内で表示します。座標がない場所はこの一覧に出ません。"],
+            ["SavedPlans"] = ["Meus planos", "My plans", "Mes sorties", "Mis planes", "Мои планы", "我的计划", "マイプラン"],
+            ["SavedLead"] = ["Os eventos marcados com a estrela na agenda ficam neste aparelho. Se a situação deixar de ser publicada, o aviso aparece aqui. Nenhum nome é pedido.", "Events starred in the agenda stay on this device. If one is no longer published, the notice shows up here. No name is asked.", "Les événements marqués d'une étoile restent sur cet appareil. S'ils ne sont plus publiés, l'avis apparaît ici. Aucun nom n'est demandé.", "Los eventos marcados con la estrella quedan en este aparato. Si dejan de estar publicados, el aviso aparece aquí. No se pide ningún nombre.", "Отмеченные в афише события остаются на этом устройстве. Если публикация снята, предупреждение появится здесь. Имя не спрашивается.", "在日程里标星的活动保存在这台设备上。若不再发布，会在这里提示。不收集姓名。", "星印を付けたイベントはこの端末に残ります。公開でなくなった場合はここに表示します。氏名は聞きません。"],
+            ["SavedEmpty"] = ["Nenhum plano salvo neste aparelho. Na agenda, use a estrela do evento.", "No plans saved on this device. Use the star on an event in the agenda.", "Aucune sortie enregistrée sur cet appareil. Utilisez l'étoile dans l'agenda.", "Ningún plan guardado en este aparato. Use la estrella en la agenda.", "На этом устройстве нет сохранённых планов. Поставьте звезду в афише.", "这台设备还没有保存的计划。请在日程中为活动加星。", "この端末に保存された予定はありません。日程の星印を使ってください。"],
+            ["PlatformStatus"] = ["Situação da plataforma", "Platform status", "État de la plateforme", "Estado de la plataforma", "Состояние платформы", "平台状态", "プラットフォームの状態"],
+            ["PlatformLead"] = ["Estes números são desta instância. Fonte operacional significa cadastro autorizado para coleta. Foto aprovada não substitui a confirmação de visita.", "These figures belong to this instance. An operational source is a feed cleared for collection. An approved photo does not replace a visit confirmation.", "Ces chiffres concernent cette instance. Une source opérationnelle est un flux autorisé pour la collecte. Une photo approuvée ne remplace pas la confirmation de visite.", "Estas cifras son de esta instancia. Una fuente operativa es un canal autorizado para la recolección. Una foto aprobada no sustituye la confirmación de la visita.", "Эти числа относятся к этому экземпляру. Рабочий источник — это разрешённый канал сбора. Одобренное фото не заменяет подтверждение визита.", "这些数字属于本实例。可运营来源是已获授权的采集渠道。已通过的照片不能代替到访确认。", "この数字はこのインスタンスのものです。運用中の情報源は収集が許可されたものです。承認済みの写真は訪問確認の代わりになりません。"],
+            ["WidgetAgenda"] = ["Agenda para incorporar", "Embeddable agenda", "Agenda à intégrer", "Agenda para insertar", "Встраиваемая афиша", "可嵌入的日程", "埋め込み用日程"]
+        };
+        var cultures = new[] { "pt-BR", "en", "fr", "es", "ru", "zh-Hans", "ja" };
+        foreach (var (key, translations) in rows)
+        {
+            for (var i = 0; i < cultures.Length; i++)
+            {
+                if (!catalogs.ContainsKey(cultures[i])) catalogs[cultures[i]] = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                catalogs[cultures[i]][key] = translations[i];
+            }
+        }
+    }
+}

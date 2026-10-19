@@ -1,19 +1,31 @@
 @using System.Globalization
 @using MinhaBelem.Core.Abstractions
 @using MinhaBelem.Core.Security
+@using MinhaBelem.Core.Services
 @using MinhaBelem.Web.Models
 @inject IConfiguration Configuration
+@inject MinhaBelem.Core.Abstractions.IPlacePhotoScout PlacePhotos
 @model MinhaBelem.Core.Entities.Place
 @{
     ViewData["Title"] = Model.DisplayName;
     var live = ViewData["Live"] is true;
+    var own = ViewData["OwnLandmark"] is true || LandmarkGuide.IsOwn(Model.GooglePlaceId);
     var schedule = ViewData["VisitSchedule"] as VisitSchedule ?? new(null,[]);
     var assessment = ViewData["VisitAssessment"] as VisitAssessment ?? new("unknown","unavailable","");
     var now = DateTime.UtcNow;
     var confirmed = schedule.Info is {} evidence && evidence.ConfirmedAt <= now && evidence.ValidUntil > now && SafeUrl.Validate(evidence.SourceUrl).IsValid;
-    var mapUrl = "https://www.google.com/maps/search/?api=1&query="+Uri.EscapeDataString(Model.DisplayName+", Belém")+
-        (string.IsNullOrWhiteSpace(Model.GooglePlaceId)?"":"&query_place_id="+Uri.EscapeDataString(Model.GooglePlaceId));
-    var canMap = live && Model.Latitude is >=-90 and <=90 && Model.Longitude is >=-180 and <=180 && Configuration["Maps:BrowserKey"] is {Length:>0};
+    var hasPoint = Model.Latitude is >= -90 and <= 90 && Model.Longitude is >= -180 and <= 180;
+    var mapUrl = own && hasPoint
+        ? LandmarkGuide.MapLink(Model.Latitude!.Value, Model.Longitude!.Value)
+        : "https://www.google.com/maps/search/?api=1&query=" + Uri.EscapeDataString(Model.DisplayName + ", Belém")
+            + (string.IsNullOrWhiteSpace(Model.GooglePlaceId) ? "" : "&query_place_id=" + Uri.EscapeDataString(Model.GooglePlaceId));
+    var canMap = hasPoint && (own || live) && Configuration["Maps:BrowserKey"] is { Length: > 0 };
+    var placeLine = string.IsNullOrWhiteSpace(Model.Neighborhood) ? Model.Municipality
+        : string.IsNullOrWhiteSpace(Model.Municipality) ? Model.Neighborhood
+        : Model.Neighborhood + " · " + Model.Municipality;
+}
+@{
+    var licensedPhotos = await PlacePhotos.ApprovedAsync(Model.Id, Model.Name, Context.RequestAborted);
 }
 <header class="section guide-heading">
     <div><span class="eyebrow">@Loc["Nav_Guide"] · BELÉM DO PARÁ</span><h1>@Model.DisplayName</h1><p class="lead">@Model.DisplayEditorialNote</p></div>
@@ -21,6 +33,19 @@
 </header>
 <article class="section guide-place-layout">
     <div>
+        @if (licensedPhotos.Count > 0)
+        {
+            <div class="photo-grid">
+                @foreach (var licensed in licensedPhotos.Take(6))
+                {
+                    <figure>
+                        <img src="@licensed.ThumbUrl" alt="@Model.DisplayName" width="640" height="360" loading="lazy" referrerpolicy="no-referrer" />
+                        <figcaption>@licensed.Credit · @licensed.LicenseName · <a href="@licensed.PageUrl" rel="noopener noreferrer" target="_blank">Commons</a></figcaption>
+                    </figure>
+                }
+            </div>
+            <p class="small">@Loc["PhotoNotCurrent"]</p>
+        }
         @if(live && ViewData["Photo"] is string photo)
         {
             <figure class="guide-visual"><img src="@photo" alt="@Model.DisplayName" loading="lazy" referrerpolicy="no-referrer"/>
@@ -41,6 +66,20 @@
             @if(Model.OpeningHours.Count>0){<section class="card"><h2>@Loc["GuideHours"]</h2><ul>@foreach(var hours in Model.OpeningHours){<li>@hours.Label</li>}</ul></section>}
             <p class="small attribution"><img src="/images/google-maps-attribution.svg" alt="Google Maps" width="100" height="18"/> @Loc["GuideProviderNote"]</p>
         }
+        else if (own)
+        {
+            <dl class="guide-information">
+                @if (!string.IsNullOrWhiteSpace(Model.FormattedAddress))
+                {
+                    <div><dt>@Loc["GuideAddress"]</dt><dd>@Model.FormattedAddress</dd></div>
+                }
+                @if (!string.IsNullOrWhiteSpace(Model.Neighborhood) || !string.IsNullOrWhiteSpace(Model.Municipality))
+                {
+                    <div><dt>@Loc["Neighborhood"]</dt><dd>@placeLine</dd></div>
+                }
+            </dl>
+            <p class="notice" role="status">@Loc["LandmarkUnverified"]</p>
+        }
         else{<p class="notice" role="status">@Loc["GuideUnavailable"]</p>}
         <section class="card"><h2>@Loc["RouteMap"]</h2>
             @if(canMap)
@@ -59,6 +98,22 @@
             <p>@info.PriceConditions</p><p class="small"><a href="@info.SourceUrl" target="_blank" rel="noopener noreferrer">@Loc["RouteSource"] ↗</a><br/>@PortalTime.Local(info.ConfirmedAt).ToString("d") → @PortalTime.Local(info.ValidUntil).ToString("d")</p>
         }
         else{<p>@Loc["RouteUnknown"] · @Loc["NoVerifiedPrice"]</p>}
+        @if (TempData["VisitRequest"] is string visitNote)
+        {
+            <p class="notice" role="status">@visitNote</p>
+        }
+        <form asp-action="Visita" asp-route-id="@Model.Id" method="post" class="visit-request">
+            <h3>@Loc["VisitRequestTitle"]</h3>
+            <p class="small">@Loc["VisitRequestLead"]</p>
+            <label>@Loc["VisitRequestName"]<input name="nome" maxlength="100" required autocomplete="name" /></label>
+            <label>@Loc["VisitRequestEmail"]<input name="email" type="email" maxlength="150" required autocomplete="email" /></label>
+            <label>@Loc["VisitRequestPhone"]<input name="telefone" maxlength="30" autocomplete="tel" /></label>
+            <label>@Loc["VisitRequestParty"]<input name="pessoas" type="number" min="1" max="30" value="1" required /></label>
+            <label>@Loc["VisitRequestDate"]<input name="data" type="date" required min="@DateOnly.FromDateTime(DateTime.UtcNow.AddHours(-3)).ToString("yyyy-MM-dd")" max="@DateOnly.FromDateTime(DateTime.UtcNow.AddHours(-3)).AddDays(180).ToString("yyyy-MM-dd")" /></label>
+            <label>@Loc["VisitRequestMessage"]<textarea name="recado" maxlength="1000" rows="3"></textarea></label>
+            <label class="checkbox-label"><input type="checkbox" name="consentimento" value="true" required /><span>@Loc["VisitRequestConsent"] (<a href="/privacidade">@Loc["Nav_Privacy"]</a>)</span></label>
+            <button type="submit">@Loc["VisitRequestSubmit"]</button>
+        </form>
         <a class="button" href="/como-chegar?placeId=@Model.Id">@Loc["RouteTitle"] ↗</a>
         @if(SafeUrl.Validate(Model.WebsiteUri).IsValid && live){<a class="button secondary" href="@Model.WebsiteUri" target="_blank" rel="noopener noreferrer">@Loc["GuideWebsite"] ↗</a>}
         <a class="button secondary" href="/guia">← @Loc["Nav_Guide"]</a><p class="small">@Loc["RouteNoCrowding"]</p>

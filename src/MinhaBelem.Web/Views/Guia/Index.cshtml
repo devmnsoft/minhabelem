@@ -42,8 +42,22 @@
                 }
             </select>
         </label>
+        <label class="checkbox-label">
+            <input type="checkbox" name="marco" value="true" @(ViewData["Landmarks"] is true ? "checked" : null) />
+            @Loc["Landmarks"]
+        </label>
         <button type="submit">@Loc["Search_Button"]</button>
+        <button type="button" class="button secondary" data-near-me>@Loc["NearMe"]</button>
+        <a class="button secondary" href="/guia/acervo">@Loc["PhotoArchiveTitle"]</a>
     </form>
+    @if (ViewData["Landmarks"] is true)
+    {
+        <p class="notice" role="status">@Loc["LandmarkLead"]</p>
+    }
+    @if (ViewData["Near"] is true)
+    {
+        <p class="notice" role="status">@Loc["NearMeResult"]</p>
+    }
 
     @if (Model.Count == 0)
     {
@@ -55,9 +69,17 @@
     else
     {
         <div class="grid">
+            @{
+                var covers = ViewData["Covers"] as IReadOnlyDictionary<long, MinhaBelem.Core.Abstractions.PublicPlacePhoto>;
+            }
             @foreach (var place in Model)
             {
                 <article class="card place-card">
+                    @if (covers is not null && covers.TryGetValue(place.Id, out var cover))
+                    {
+                        <img class="place-cover" src="@cover.ThumbUrl" alt="@place.DisplayName" width="640" height="360" loading="lazy" referrerpolicy="no-referrer" />
+                        <p class="small">@cover.Credit · @cover.LicenseName</p>
+                    }
                     <span class="eyebrow">@place.PrimaryType</span>
                     <h2><a asp-action="Detalhe" asp-route-id="@place.Id">@place.DisplayName</a></h2>
                     <p>@place.DisplayEditorialNote</p>
