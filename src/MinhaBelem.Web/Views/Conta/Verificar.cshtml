@@ -1,2 +1,77 @@
-<section class="section article"><h1>Confirme sua identidade</h1><p>Digite os seis números do aplicativo autenticador ou use um código de recuperação.</p><div asp-validation-summary="All" role="alert"></div>
-<form method="post" asp-action="Verificar"><label for="code">Código</label><input id="code" name="code" autocomplete="one-time-code" maxlength="30" required /><label><input type="checkbox" name="recovery" value="true" /> Estou usando um código de recuperação</label><button type="submit">Verificar</button></form></section>
+@{
+    ViewData["Title"] = "Confirmação de Segurança (MFA) — MinhaBelém";
+}
+
+<section class="section account-section" aria-labelledby="verify-heading">
+    <div class="card account-card">
+        <span class="eyebrow">SEGUNDO FATOR DE AUTENTICAÇÃO</span>
+        <h1 id="verify-heading">Confirme sua identidade</h1>
+        <p class="login-intro">Digite os 6 dígitos gerados pelo seu aplicativo autenticador ou utilize um código de recuperação descartável.</p>
+
+        @if (!ViewData.ModelState.IsValid && ViewData.ModelState.ErrorCount > 0)
+        {
+            <div asp-validation-summary="All" class="notice error-notice" role="alert" aria-live="assertive" tabindex="-1" id="verify-error-summary">
+            </div>
+        }
+
+        <form method="post" asp-action="Verificar" id="verify-form">
+            @Html.AntiForgeryToken()
+
+            <div class="form-group">
+                <label for="code" id="code-label">
+                    Código de Segurança *
+                </label>
+                <input id="code"
+                       name="code"
+                       autocomplete="one-time-code"
+                       inputmode="numeric"
+                       maxlength="30"
+                       required
+                       aria-required="true"
+                       aria-describedby="code-help"
+                       placeholder="000000"
+                       class="form-control"
+                       style="font-size:1.3rem;letter-spacing:0.15em;text-align:center;" />
+                <span id="code-help" class="small text-muted" style="display:block;margin-top:6px;">
+                    Abra o Google Authenticator, Microsoft Authenticator ou similar para ver o código de 6 dígitos.
+                </span>
+            </div>
+
+            <div class="form-group" style="margin-top:14px;">
+                <label class="checkbox-label" for="recovery-toggle" style="display:flex;align-items:center;gap:10px;cursor:pointer;font-weight:500;">
+                    <input type="checkbox"
+                           id="recovery-toggle"
+                           name="recovery"
+                           value="true"
+                           style="width:20px;height:20px;" />
+                    <span>Estou usando um código de recuperação reserva</span>
+                </label>
+            </div>
+
+            <div class="form-actions" style="margin-top:20px;">
+                <button type="submit" class="button" id="verify-submit-btn">
+                    <span>Validar e Entrar</span>
+                    <span aria-hidden="true">↗</span>
+                </button>
+            </div>
+
+            <div style="margin-top:18px;text-align:center;">
+                <a href="/conta/login" class="button-link" style="font-size:0.88rem;">← Voltar ao início do login</a>
+            </div>
+        </form>
+    </div>
+</section>
+
+@section Scripts {
+<script>
+(function() {
+    var errorSummary = document.getElementById('verify-error-summary');
+    if (errorSummary) {
+        errorSummary.focus();
+    } else {
+        var codeInput = document.getElementById('code');
+        if (codeInput) codeInput.focus();
+    }
+})();
+</script>
+}

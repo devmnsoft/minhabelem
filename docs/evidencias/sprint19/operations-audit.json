@@ -1,0 +1,132 @@
+﻿{
+  "capturedAtUtc": "2026-10-19T11:38:26.0236405Z",
+  "host": "localhost",
+  "port": 3308,
+  "database": "minhabelem",
+  "environment": "not_supplied",
+  "databaseReference": "10431675E03A",
+  "radarEnabled": false,
+  "checkIntervalMinutes": 1,
+  "sources": [
+    {
+      "id": 1,
+      "name": "Theatro da Paz \u2014 consulta factual pontual",
+      "enabled": false,
+      "approved": false,
+      "protocol": "JsonLd",
+      "hasLicenseNote": 1,
+      "lastCheckedAt": null,
+      "frequencyMinutes": 1440,
+      "dailyRequestLimit": 1
+    },
+    {
+      "id": 2,
+      "name": "SECULT Par\u00E1",
+      "enabled": false,
+      "approved": false,
+      "protocol": "WebDiscovery",
+      "hasLicenseNote": 1,
+      "lastCheckedAt": null,
+      "frequencyMinutes": 1440,
+      "dailyRequestLimit": 1
+    },
+    {
+      "id": 3,
+      "name": "FUMBEL \u2014 institucional municipal",
+      "enabled": false,
+      "approved": false,
+      "protocol": "WebDiscovery",
+      "hasLicenseNote": 1,
+      "lastCheckedAt": null,
+      "frequencyMinutes": 1440,
+      "dailyRequestLimit": 1
+    },
+    {
+      "id": 4,
+      "name": "Funda\u00E7\u00E3o Cultural do Par\u00E1 \u2014 Agenda",
+      "enabled": false,
+      "approved": false,
+      "protocol": "WebDiscovery",
+      "hasLicenseNote": 1,
+      "lastCheckedAt": null,
+      "frequencyMinutes": 1440,
+      "dailyRequestLimit": 1
+    },
+    {
+      "id": 5,
+      "name": "SEGBEL \u2014 Servi\u00E7os SEMOB",
+      "enabled": false,
+      "approved": false,
+      "protocol": "WebDiscovery",
+      "hasLicenseNote": 1,
+      "lastCheckedAt": null,
+      "frequencyMinutes": 1440,
+      "dailyRequestLimit": 1
+    },
+    {
+      "id": 6,
+      "name": "SEGBEL \u2014 Integra Bel\u00E9m",
+      "enabled": false,
+      "approved": false,
+      "protocol": "WebDiscovery",
+      "hasLicenseNote": 1,
+      "lastCheckedAt": null,
+      "frequencyMinutes": 1440,
+      "dailyRequestLimit": 1
+    },
+    {
+      "id": 7,
+      "name": "Esta\u00E7\u00E3o das Docas",
+      "enabled": false,
+      "approved": false,
+      "protocol": "WebDiscovery",
+      "hasLicenseNote": 1,
+      "lastCheckedAt": null,
+      "frequencyMinutes": 1440,
+      "dailyRequestLimit": 1
+    },
+    {
+      "id": 8,
+      "name": "Mangal das Gar\u00E7as",
+      "enabled": false,
+      "approved": false,
+      "protocol": "WebDiscovery",
+      "hasLicenseNote": 1,
+      "lastCheckedAt": null,
+      "frequencyMinutes": 1440,
+      "dailyRequestLimit": 1
+    },
+    {
+      "id": 9,
+      "name": "Museu Paraense Em\u00EDlio Goeldi",
+      "enabled": false,
+      "approved": false,
+      "protocol": "WebDiscovery",
+      "hasLicenseNote": 1,
+      "lastCheckedAt": null,
+      "frequencyMinutes": 1440,
+      "dailyRequestLimit": 1
+    }
+  ],
+  "operationalSources": 0,
+  "heartbeat": {
+    "lastHeartbeatAt": "2026-10-18T20:44:45.157722",
+    "lastCycleStartedAt": "2026-10-18T20:44:15.06157",
+    "lastCycleFinishedAt": "2026-10-18T20:44:15.126693",
+    "totalCycles": 49
+  },
+  "persistedCycles": 36,
+  "consultedPages": 0,
+  "publishedEvents": 9,
+  "futureEvents": 9,
+  "pendingCandidates": 1,
+  "routes": {
+    "enabled": false,
+    "serverKeyConfigured": false,
+    "browserKeyConfigured": false,
+    "dailyLimit": 0,
+    "providerRequestPerformed": false
+  },
+  "workerInstallationVerified": false,
+  "continuousCollectionProven": false
+}

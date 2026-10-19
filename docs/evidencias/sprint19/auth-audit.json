@@ -1,0 +1,239 @@
+﻿{
+  "host": "localhost",
+  "port": 3308,
+  "database": "minhabelem",
+  "environment": "not_supplied",
+  "databaseReference": "10431675E03A",
+  "version": "10.11.7-MariaDB",
+  "accounts": [
+    {
+      "email": "superadmin@minhabelem.com.br",
+      "exists": true,
+      "expectedRole": "SuperAdmin",
+      "enabled": true,
+      "mustChangePassword": true,
+      "lockedOut": false,
+      "twoFactorEnabled": false,
+      "status": "password_change_required",
+      "hasPasswordHash": 1,
+      "hasSecurityStamp": 1,
+      "hasConcurrencyStamp": 1,
+      "normalizedEmailMatches": 1,
+      "failedAttempts": 0,
+      "activeSessions": 0,
+      "roles": [
+        "SuperAdmin"
+      ],
+      "permissions": [
+        "advertiser.manage",
+        "ai.run",
+        "audit.read",
+        "candidate.read",
+        "candidate.review",
+        "content.delete",
+        "content.publish",
+        "content.read",
+        "content.write",
+        "dashboard.read",
+        "place.manage",
+        "settings.manage",
+        "source.manage",
+        "submission.moderate",
+        "translation.manage",
+        "translation.read",
+        "user.manage"
+      ],
+      "expectedRolePresent": true,
+      "missingDefaultPermissions": [],
+      "recentAttempts": []
+    },
+    {
+      "email": "editor.teste@minhabelem.com.br",
+      "exists": true,
+      "expectedRole": "Editor",
+      "enabled": true,
+      "mustChangePassword": true,
+      "lockedOut": false,
+      "twoFactorEnabled": false,
+      "status": "password_change_required",
+      "hasPasswordHash": 1,
+      "hasSecurityStamp": 1,
+      "hasConcurrencyStamp": 1,
+      "normalizedEmailMatches": 1,
+      "failedAttempts": 0,
+      "activeSessions": 0,
+      "roles": [
+        "Editor"
+      ],
+      "permissions": [
+        "ai.run",
+        "candidate.read",
+        "candidate.review",
+        "content.publish",
+        "content.read",
+        "content.write",
+        "dashboard.read",
+        "place.manage",
+        "source.manage",
+        "submission.moderate",
+        "translation.manage",
+        "translation.read"
+      ],
+      "expectedRolePresent": true,
+      "missingDefaultPermissions": [],
+      "recentAttempts": []
+    },
+    {
+      "email": "moderador.teste@minhabelem.com.br",
+      "exists": true,
+      "expectedRole": "Moderator",
+      "enabled": true,
+      "mustChangePassword": true,
+      "lockedOut": false,
+      "twoFactorEnabled": false,
+      "status": "password_change_required",
+      "hasPasswordHash": 1,
+      "hasSecurityStamp": 1,
+      "hasConcurrencyStamp": 1,
+      "normalizedEmailMatches": 1,
+      "failedAttempts": 0,
+      "activeSessions": 0,
+      "roles": [
+        "Moderator"
+      ],
+      "permissions": [
+        "ai.run",
+        "candidate.read",
+        "candidate.review",
+        "content.read",
+        "dashboard.read",
+        "place.manage",
+        "submission.moderate",
+        "translation.read"
+      ],
+      "expectedRolePresent": true,
+      "missingDefaultPermissions": [],
+      "recentAttempts": []
+    }
+  ]
+}
+Comparação somente leitura com appsettings (sem User Secrets):
+{
+  "host": "localhost",
+  "port": 3308,
+  "database": "minhabelem",
+  "environment": "not_supplied",
+  "databaseReference": "10431675E03A",
+  "version": "10.11.7-MariaDB",
+  "accounts": [
+    {
+      "email": "superadmin@minhabelem.com.br",
+      "exists": true,
+      "expectedRole": "SuperAdmin",
+      "enabled": true,
+      "mustChangePassword": true,
+      "lockedOut": false,
+      "twoFactorEnabled": false,
+      "status": "password_change_required",
+      "hasPasswordHash": 1,
+      "hasSecurityStamp": 1,
+      "hasConcurrencyStamp": 1,
+      "normalizedEmailMatches": 1,
+      "failedAttempts": 0,
+      "activeSessions": 0,
+      "roles": [
+        "SuperAdmin"
+      ],
+      "permissions": [
+        "advertiser.manage",
+        "ai.run",
+        "audit.read",
+        "candidate.read",
+        "candidate.review",
+        "content.delete",
+        "content.publish",
+        "content.read",
+        "content.write",
+        "dashboard.read",
+        "place.manage",
+        "settings.manage",
+        "source.manage",
+        "submission.moderate",
+        "translation.manage",
+        "translation.read",
+        "user.manage"
+      ],
+      "expectedRolePresent": true,
+      "missingDefaultPermissions": [],
+      "recentAttempts": []
+    },
+    {
+      "email": "editor.teste@minhabelem.com.br",
+      "exists": true,
+      "expectedRole": "Editor",
+      "enabled": true,
+      "mustChangePassword": true,
+      "lockedOut": false,
+      "twoFactorEnabled": false,
+      "status": "password_change_required",
+      "hasPasswordHash": 1,
+      "hasSecurityStamp": 1,
+      "hasConcurrencyStamp": 1,
+      "normalizedEmailMatches": 1,
+      "failedAttempts": 0,
+      "activeSessions": 0,
+      "roles": [
+        "Editor"
+      ],
+      "permissions": [
+        "ai.run",
+        "candidate.read",
+        "candidate.review",
+        "content.publish",
+        "content.read",
+        "content.write",
+        "dashboard.read",
+        "place.manage",
+        "source.manage",
+        "submission.moderate",
+        "translation.manage",
+        "translation.read"
+      ],
+      "expectedRolePresent": true,
+      "missingDefaultPermissions": [],
+      "recentAttempts": []
+    },
+    {
+      "email": "moderador.teste@minhabelem.com.br",
+      "exists": true,
+      "expectedRole": "Moderator",
+      "enabled": true,
+      "mustChangePassword": true,
+      "lockedOut": false,
+      "twoFactorEnabled": false,
+      "status": "password_change_required",
+      "hasPasswordHash": 1,
+      "hasSecurityStamp": 1,
+      "hasConcurrencyStamp": 1,
+      "normalizedEmailMatches": 1,
+      "failedAttempts": 0,
+      "activeSessions": 0,
+      "roles": [
+        "Moderator"
+      ],
+      "permissions": [
+        "ai.run",
+        "candidate.read",
+        "candidate.review",
+        "content.read",
+        "dashboard.read",
+        "place.manage",
+        "submission.moderate",
+        "translation.read"
+      ],
+      "expectedRolePresent": true,
+      "missingDefaultPermissions": [],
+      "recentAttempts": []
+    }
+  ]
+}

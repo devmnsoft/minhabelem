@@ -1,2 +1,74 @@
 @model string[]
-<section class="section article"><h1>Guarde seus códigos de recuperação</h1><p>Estes códigos são mostrados uma vez. Cada um permite um acesso caso você perca o autenticador. Guarde-os fora deste dispositivo.</p><ul>@foreach(var code in Model){<li><code>@code</code></li>}</ul><p>O MFA está ativo. Entre novamente com sua senha e autenticador.</p><a href="/conta/login">Entrar novamente</a></section>
+
+@{
+    ViewData["Title"] = "Códigos de Recuperação MFA — MinhaBelém";
+}
+
+<section class="section account-section" style="max-width:680px;" aria-labelledby="recovery-title">
+    <div class="card account-card">
+        <span class="eyebrow" style="color:var(--terracotta,#a84520);">SEGURANÇA ESSENCIAL</span>
+        <h1 id="recovery-title">Guarde seus códigos de recuperação</h1>
+
+        <div class="notice" role="alert" style="background:#fff3e0;border-color:#ffb74d;color:#e65100;margin:16px 0;">
+            <strong>Atenção:</strong> Estes códigos são exibidos apenas uma vez! Cada código permite um único acesso de emergência caso você perca o seu dispositivo autenticador.
+        </div>
+
+        <p class="small text-muted">
+            Copie ou imprima estes códigos e guarde-os em um local seguro, fora deste dispositivo.
+        </p>
+
+        <p id="recovery-copy-status" class="sr-only" role="status" aria-live="polite"></p>
+
+        <div style="background:var(--creme-dark,#f4eee2);padding:20px;border-radius:var(--radius-sm,8px);border:1px solid var(--border,#d4ded5);margin:20px 0;">
+            <ul style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;list-style:none;padding:0;margin:0;" aria-label="Lista de códigos de recuperação de uso único">
+                @foreach (var code in Model)
+                {
+                    <li style="padding:8px 12px;background:#fff;border-radius:6px;border:1px solid #ccc;text-align:center;">
+                        <code style="font-size:1.1rem;font-weight:700;letter-spacing:0.08em;color:#111;">@code</code>
+                    </li>
+                }
+            </ul>
+
+            <div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap;">
+                <button type="button" id="copy-all-codes" class="button secondary small" aria-label="@Loc["Copy_Recovery_Codes"]">
+                    📋 @Loc["Copy_Recovery_Codes"]
+                </button>
+                <button type="button" onclick="window.print()" class="button outline small" aria-label="Imprimir códigos">
+                    🖨️ Imprimir
+                </button>
+            </div>
+        </div>
+
+        <div class="notice" role="status" style="background:#e8f5e9;border-color:#a5d6a7;color:#1b5e20;">
+            ✓ O MFA foi ativado com sucesso em sua conta. Para continuar, entre novamente utilizando sua senha e o novo código gerado pelo aplicativo autenticador.
+        </div>
+
+        <div style="margin-top:24px;">
+            <a href="/conta/login" class="button" style="display:inline-block;">Entrar novamente com autenticador ↗</a>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+<script>
+(function() {
+    var copyBtn = document.getElementById('copy-all-codes');
+    var statusEl = document.getElementById('recovery-copy-status');
+    var codes = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model));
+    var copySuccessMsg = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Loc["Copy_Success"].Value));
+
+    if (copyBtn) {
+        copyBtn.addEventListener('click', function() {
+            var text = "MinhaBelém — Códigos de Recuperação MFA:\n" + codes.join("\n");
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(text).then(function() {
+                    if (statusEl) statusEl.textContent = copySuccessMsg;
+                    copyBtn.textContent = '✓ ' + copySuccessMsg;
+                    setTimeout(function() { copyBtn.textContent = '📋 ' + @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Loc["Copy_Recovery_Codes"].Value)); }, 3000);
+                });
+            }
+        });
+    }
+})();
+</script>
+}

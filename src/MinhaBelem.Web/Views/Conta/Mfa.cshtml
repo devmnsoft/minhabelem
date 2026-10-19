@@ -4,18 +4,28 @@
     ViewData["Title"] = "Autenticação em Duas Etapas (MFA) — MinhaBelém";
 }
 
-<section class="section" style="max-width:580px;margin:50px auto 80px;">
-    <div class="card" style="padding:36px;border-top:6px solid var(--gold);box-shadow:var(--shadow-md);">
-        <span class="view-0488757b eyebrow">SEGURANÇA DA CONTA</span>
-        <h1 style="font-size:1.85rem;margin:6px 0 16px;">Autenticação em Duas Etapas (TOTP)</h1>
+<section class="section account-section" style="max-width:680px;" aria-labelledby="mfa-title">
+    <div class="card account-card">
+        <span class="eyebrow">SEGURANÇA DA CONTA</span>
+        <h1 id="mfa-title">Autenticação em Duas Etapas (TOTP)</h1>
+
+        @if (TempData["Notice"] is string notice)
+        {
+            <div class="notice" role="status" aria-live="polite">
+                <span>ℹ️ @notice</span>
+            </div>
+        }
+
+        <p id="copy-status" class="sr-only" role="status" aria-live="polite"></p>
 
         @if (Model.Enabled)
         {
-            <div class="notice" role="status">
+            <div class="notice" role="status" style="background:#e8f5e9;border-color:#a5d6a7;color:#1b5e20;">
                 <span>✓ <strong>Autenticador Ativo:</strong> Sua conta está protegida com TOTP de segundo fator.</span>
             </div>
-            <div class="view-910f53fb">
+            <div style="margin-top:24px;display:flex;gap:12px;flex-wrap:wrap;">
                 <a href="/editorial" class="button">Acessar Central Editorial →</a>
+                <a href="/admin" class="button secondary">Painel Geral →</a>
             </div>
         }
         else if (Model.Secret is null)
@@ -23,34 +33,93 @@
             <p>
                 Para acessar as áreas administrativas e editoriais do MinhaBelém, é obrigatório vincular sua conta a um aplicativo autenticador como Google Authenticator, Microsoft Authenticator ou 1Password.
             </p>
-            <form method="post" asp-action="IniciarMfa" class="view-910f53fb">
+            <div class="notice" role="note" style="margin:16px 0;">
+                <p class="small" style="margin:0;">
+                    🛡️ O segundo fator garante que, mesmo que alguém descubra sua senha, não conseguirá acessar seus privilégios editoriais sem o seu dispositivo pessoal.
+                </p>
+            </div>
+            <form method="post" asp-action="IniciarMfa" style="margin-top:20px;">
                 @Html.AntiForgeryToken()
-                <button type="submit" class="button">Configurar Aplicativo Autenticador</button>
+                <button type="submit" class="button">Configurar Aplicativo Autenticador ↗</button>
             </form>
         }
         else
         {
-            <p class="view-7564ec60 small text-muted">
-                No seu aplicativo autenticador, adicione uma nova conta via chave de configuração manual ou utilize o link direto.
+            <p class="small text-muted" style="margin-bottom:16px;">
+                Adicione uma nova conta no seu aplicativo autenticador digitando a chave secreta abaixo ou utilizando o link direto:
             </p>
 
-            <div style="background:var(--creme);padding:18px;border-radius:var(--radius-sm);border:1px solid var(--border);margin-bottom:20px;">
-                <div style="font-size:0.9rem;margin-bottom:6px;"><strong>Conta:</strong> MinhaBelém Redação</div>
-                <div style="font-size:0.9rem;margin-bottom:12px;"><strong>Chave Secreta:</strong> <code>@Model.Secret</code></div>
-                <a href="@Model.Uri" class="button-link">📲 Abrir diretamente no aplicativo</a>
+            <div style="background:var(--creme-dark,#f4eee2);padding:20px;border-radius:var(--radius-sm,8px);border:1px solid var(--border,#d4ded5);margin-bottom:24px;">
+                <div style="font-size:0.92rem;margin-bottom:8px;"><strong>Conta:</strong> MinhaBelém Redação</div>
+                <div style="font-size:0.92rem;margin-bottom:12px;display:flex;align-items:center;flex-wrap:wrap;gap:8px;">
+                    <strong>Chave Secreta:</strong>
+                    <code id="secret-key" style="background:#fff;padding:4px 8px;border-radius:4px;border:1px solid #ccc;font-weight:700;font-size:1.05rem;letter-spacing:0.05em;">@Model.Secret</code>
+                    <button type="button" id="copy-secret-btn" class="button secondary small" style="padding:4px 10px;font-size:0.8rem;" aria-label="@Loc["Copy_Secret"]">
+                        📋 @Loc["Copy_Secret"]
+                    </button>
+                </div>
+                @if (!string.IsNullOrWhiteSpace(Model.Uri))
+                {
+                    <a href="@Model.Uri" class="button-link" style="display:inline-block;font-size:0.9rem;">📲 Abrir diretamente no aplicativo autenticador</a>
+                }
             </div>
 
-            <form method="post" asp-action="ConfirmarMfa">
+            <form method="post" asp-action="ConfirmarMfa" id="confirm-mfa-form">
                 @Html.AntiForgeryToken()
-                <label for="code">
-                    Código de 6 dígitos gerado pelo aplicativo *
-                    <input id="code" name="code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required placeholder="000000" style="font-size:1.4rem;letter-spacing:0.2em;text-align:center;" />
-                </label>
+                <div class="form-group">
+                    <label for="code" id="mfa-code-label">
+                        Código de 6 dígitos gerado pelo aplicativo *
+                    </label>
+                    <input id="code"
+                           name="code"
+                           inputmode="numeric"
+                           autocomplete="one-time-code"
+                           pattern="[0-9]{6}"
+                           maxlength="6"
+                           required
+                           aria-required="true"
+                           aria-describedby="mfa-code-help"
+                           placeholder="000000"
+                           class="form-control"
+                           style="font-size:1.4rem;letter-spacing:0.2em;text-align:center;max-width:240px;margin:8px 0;" />
+                    <span id="mfa-code-help" class="small text-muted" style="display:block;">
+                        Digite os 6 números gerados no seu aplicativo para confirmar o pareamento.
+                    </span>
+                </div>
 
-                <div class="view-910f53fb">
-                    <button type="submit" class="view-9ccc4ca9">Validar Código e Obter Códigos de Recuperação</button>
+                <div style="margin-top:20px;">
+                    <button type="submit" class="button" id="confirm-mfa-btn">
+                        Validar Código e Obter Códigos de Recuperação ↗
+                    </button>
                 </div>
             </form>
         }
     </div>
 </section>
+
+@section Scripts {
+<script>
+(function() {
+    var copyBtn = document.getElementById('copy-secret-btn');
+    var secretCode = document.getElementById('secret-key');
+    var statusEl = document.getElementById('copy-status');
+    var copySuccessMsg = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Loc["Copy_Success"].Value));
+
+    if (copyBtn && secretCode) {
+        copyBtn.addEventListener('click', function() {
+            var text = secretCode.textContent.trim();
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(text).then(function() {
+                    if (statusEl) statusEl.textContent = copySuccessMsg;
+                    copyBtn.textContent = '✓ ' + copySuccessMsg;
+                    setTimeout(function() { copyBtn.textContent = '📋 ' + @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Loc["Copy_Secret"].Value)); }, 3000);
+                });
+            }
+        });
+    }
+
+    var codeInput = document.getElementById('code');
+    if (codeInput) codeInput.focus();
+})();
+</script>
+}

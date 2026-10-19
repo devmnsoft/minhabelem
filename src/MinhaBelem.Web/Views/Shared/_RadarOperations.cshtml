@@ -1,37 +1,128 @@
 @model MinhaBelem.Core.Entities.RadarDashboardStats
 @using MinhaBelem.Core.Entities
 @using MinhaBelem.Web.Models
+@{
+    var hb = Model.Heartbeat;
+    var isRecent = hb != null && (DateTime.UtcNow - hb.LastHeartbeatAt).TotalMinutes <= 3;
+    var serviceIsActive = isRecent && (hb?.Status == WorkerStatus.Active || hb?.Status == WorkerStatus.Running || hb?.IsRunning == true);
+}
 <section class="card radar-operations" aria-labelledby="radar-operations-title">
-    <h2 id="radar-operations-title">@Loc["RadarOperations"]</h2>
-    @if (Model.Heartbeat is null || Model.Heartbeat.Status is WorkerStatus.Off or WorkerStatus.Delayed)
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:16px;">
+        <h2 id="radar-operations-title" style="margin:0;">🧭 @Loc["RadarOperations"]</h2>
+        <span class="badge" style="background:@(serviceIsActive ? "#e8f5e9" : "#fff3e0");color:@(serviceIsActive ? "#1b5e20" : "#b78103");border:1px solid @(serviceIsActive ? "#a5d6a7" : "#ffe082");font-size:0.85rem;padding:6px 14px;border-radius:20px;font-weight:700;">
+            ● @(serviceIsActive ? Loc["Radar_Real_Status_Active"].Value : Loc["Radar_Real_Status_Inactive"].Value)
+        </span>
+    </div>
+
+    @if (!serviceIsActive)
     {
-        <p class="notice" role="alert">@Loc["RadarNoHeartbeat"]</p>
+        <div class="notice" role="alert" style="background:#fff8e1;border-color:#ffe082;color:#795548;margin-bottom:16px;">
+            <strong>Aviso de Operação:</strong> @Loc["RadarOverviewIntro"]
+        </div>
     }
+
     @if (Model.Heartbeat?.ConsecutiveErrors >= 3 || Model.Heartbeat?.Status == WorkerStatus.Error)
     {
-        <p class="notice" role="alert">@Loc["RadarFailures"]</p>
+        <div class="notice error-notice" role="alert" style="margin-bottom:16px;">
+            ⚠️ @Loc["RadarFailures"]
+        </div>
     }
-    <p class="small text-muted">@Loc["RadarTelemetryNote"]</p>
-    @if(Model.ActiveSources==0){<p class="notice" role="status">@Loc["RadarNoAuthorizedSources"]</p>}
-    <dl class="radar-operation-metrics">
-        <div><dt>@Loc["RadarEnabled"]</dt><dd>@Model.EnabledSources</dd></div>
-        <div><dt>@Loc["RadarApproved"]</dt><dd>@Model.ApprovedSources</dd></div>
-        <div><dt>@Loc["RadarOperational"]</dt><dd>@Model.ActiveSources</dd></div>
-        <div><dt>@Loc["RadarConsulted"]</dt><dd>@Model.ConsultedSources</dd></div>
-        <div><dt>@Loc["RadarPublished"]</dt><dd>@Model.PublishedItems</dd></div>
-        <div><dt>@Loc["RadarAiCost"]</dt><dd>@Model.AiCostUsd.ToString("N6")</dd></div>
+
+    <dl class="radar-operation-metrics" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;">
+        <div>
+            <dt>@Loc["Radar_Service_Status"]</dt>
+            <dd style="font-size:1.15rem;font-weight:700;color:@(serviceIsActive ? "#2e7d32" : "#c62828");">
+                @(serviceIsActive ? "Ativo (1 min)" : "Pausado / Inativo")
+            </dd>
+        </div>
+        <div>
+            <dt>@Loc["RadarEnabled"]</dt>
+            <dd>@Model.EnabledSources</dd>
+        </div>
+        <div>
+            <dt>@Loc["RadarApproved"]</dt>
+            <dd>@Model.ApprovedSources</dd>
+        </div>
+        <div>
+            <dt>@Loc["RadarOperational"]</dt>
+            <dd>@Model.ActiveSources</dd>
+        </div>
+        <div>
+            <dt>@Loc["RadarConsulted"]</dt>
+            <dd>@Model.ConsultedSources</dd>
+        </div>
+        <div>
+            <dt>Eventos Detectados</dt>
+            <dd style="color:var(--terracotta,#c85a32);">@Model.UpcomingEventsCount</dd>
+        </div>
+        <div>
+            <dt>Candidatos em Revisão</dt>
+            <dd style="color:#d97706;">@Model.PendingReviewCount</dd>
+        </div>
+        <div>
+            <dt>@Loc["RadarPublished"]</dt>
+            <dd style="color:#1b5e20;">@Model.PublishedItems</dd>
+        </div>
+        <div>
+            <dt>Última Consulta</dt>
+            <dd style="font-size:1.05rem;font-weight:700;">
+                @(Model.LastCrawlAt.HasValue ? PortalTime.Local(Model.LastCrawlAt.Value).ToString("HH:mm:ss") : "Aguardando")
+            </dd>
+        </div>
+        <div>
+            <dt>Próxima Verificação</dt>
+            <dd style="font-size:1.05rem;font-weight:700;color:#0284c7;">
+                @(Model.NextCrawlDueAt.HasValue ? PortalTime.Local(Model.NextCrawlDueAt.Value).ToString("HH:mm:ss") : "A cada 1 minuto")
+            </dd>
+        </div>
+        <div>
+            <dt>Falhas / Erros</dt>
+            <dd style="color:@(Model.CrawlErrorsCount > 0 ? "#c62828" : "#2e7d32");">@Model.CrawlErrorsCount</dd>
+        </div>
+        <div>
+            <dt>@Loc["RadarAiCost"]</dt>
+            <dd style="font-size:1.05rem;">$@Model.AiCostUsd.ToString("N4")</dd>
+        </div>
     </dl>
-    <h3>@Loc["RadarCycles"]</h3>
-    @if (Model.RecentCycles.Count == 0) { <p>@Loc["RadarNoCycles"]</p> }
+
+    <h3 style="margin-top:24px;">@Loc["RadarCycles"]</h3>
+    @if (Model.RecentCycles.Count == 0)
+    {
+        <p class="small text-muted">@Loc["RadarNoCycles"]</p>
+    }
     else
     {
-        <div class="table-scroll">
+        <div class="table-scroll" tabindex="0" role="region" aria-label="Histórico de ciclos do Radar">
             <table class="table">
-                <thead><tr><th scope="col">@Loc["RadarStarted"]</th><th scope="col">@Loc["RadarCycleStatus"]</th><th scope="col">@Loc["RadarChecked"]</th><th scope="col">@Loc["RadarSuccessRate"]</th><th scope="col">@Loc["RadarItems"]</th><th scope="col">@Loc["RadarDuration"]</th></tr></thead>
+                <thead>
+                    <tr>
+                        <th scope="col">@Loc["RadarStarted"]</th>
+                        <th scope="col">@Loc["RadarCycleStatus"]</th>
+                        <th scope="col">@Loc["RadarChecked"]</th>
+                        <th scope="col">@Loc["RadarSuccessRate"]</th>
+                        <th scope="col">@Loc["RadarItems"]</th>
+                        <th scope="col">@Loc["RadarDuration"]</th>
+                    </tr>
+                </thead>
                 <tbody>
                 @foreach (var cycle in Model.RecentCycles)
                 {
-                    <tr><td>@PortalTime.Local(cycle.StartedAt).ToString("g")</td><td>@Loc["RadarCycle_" + cycle.Status] @if(cycle.SourcesChecked==0){<small class="small">@Loc["RadarEmptyCycle"]</small>}</td><td>@cycle.SourcesChecked / @cycle.SourcesFailed</td><td>@(cycle.SuccessRate is {} rate ? rate.ToString("N1") + "%" : "—")</td><td>@cycle.ItemsDiscovered / @cycle.EventsIdentified</td><td>@((cycle.DurationMs / 1000m).ToString("N1"))</td></tr>
+                    <tr>
+                        <td>@PortalTime.Local(cycle.StartedAt).ToString("dd/MM/yyyy HH:mm:ss")</td>
+                        <td>
+                            <span class="badge" style="font-size:0.75rem;">
+                                @Loc["RadarCycle_" + cycle.Status]
+                            </span>
+                            @if (cycle.SourcesChecked == 0)
+                            {
+                                <small class="small text-muted" style="display:block;">@Loc["RadarEmptyCycle"]</small>
+                            }
+                        </td>
+                        <td>@cycle.SourcesChecked / @cycle.SourcesFailed</td>
+                        <td>@(cycle.SuccessRate is {} rate ? rate.ToString("N1") + "%" : "—")</td>
+                        <td>@cycle.ItemsDiscovered matérias / @cycle.EventsIdentified eventos</td>
+                        <td>@((cycle.DurationMs / 1000m).ToString("N1"))s</td>
+                    </tr>
                 }
                 </tbody>
             </table>

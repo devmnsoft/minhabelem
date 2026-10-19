@@ -83,7 +83,7 @@ public sealed class HomeController(
                 {
                     OnlyUpcomingEvents = true,
                     Sort = ContentSort.Upcoming,
-                    PageSize = 4,
+                    PageSize = 6,
                     Culture = currentCulture
                 }, ct);
 

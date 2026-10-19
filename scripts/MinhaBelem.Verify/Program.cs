@@ -21,7 +21,7 @@ try
             capturedAtUtc=DateTime.UtcNow,host=builder.Server,port=builder.Port,database=builder.Database,
             databaseReference=MinhaBelem.Infrastructure.Identity.AuthenticationDiagnostics.DatabaseReference(builder.ConnectionString),
             eventStatuses=await db.QueryAsync("SELECT status,COUNT(*) AS count FROM mb_content_items WHERE kind='Event' GROUP BY status"),
-            recentEvents=await db.QueryAsync("SELECT id,status,revision,requires_human_approval AS requiresHumanApproval FROM mb_content_items WHERE kind='Event' ORDER BY id DESC LIMIT 50"),
+            recentEvents=await db.QueryAsync("SELECT id,title,status,revision,verification_status AS verificationStatus,requires_human_approval AS requiresHumanApproval,author_name AS authorName,source_id AS sourceId,source_name AS sourceName,source_url AS sourceUrl,event_start_at AS eventStartAt,event_end_at AS eventEndAt,is_free AS isFree,ticket_price AS ticketPrice,flags,image_url AS imageUrl,image_license AS imageLicense FROM mb_content_items WHERE kind='Event' ORDER BY id ASC"),
             batches=await db.QueryAsync("SELECT id,action,status,created_at AS createdAt FROM mb_editorial_batches ORDER BY created_at DESC LIMIT 20"),
             batchItemStatuses=await db.QueryAsync("SELECT status,COUNT(*) AS count FROM mb_editorial_batch_items GROUP BY status")
         };
@@ -58,6 +58,25 @@ try
         var bootstrap = new MinhaBelem.Infrastructure.Discovery.ResearchedSourceBootstrap(data,
             new MinhaBelem.Infrastructure.MySql.IngestionRepository(data), new MinhaBelem.Infrastructure.Discovery.DiscoveryRepository(data));
         Console.WriteLine("Novas fontes cadastradas inativas, aguardando autorização: " + await bootstrap.RegisterAsync(default));
+        return 0;
+    }
+    if (args.Contains("--publish-reviewed-events-local"))
+    {
+        builder.AllowUserVariables = true;
+        await using var data = new MySqlDataSourceBuilder(builder.ConnectionString).Build();
+        var editorId = await db.ExecuteScalarAsync<long?>("SELECT id FROM mb_users WHERE email IN ('editor.teste@minhabelem.com.br','superadmin@minhabelem.com.br') ORDER BY id LIMIT 1");
+        if (editorId is null) { Console.WriteLine("Nenhum usuário editor/superadmin encontrado."); return 2; }
+        var repo = new MinhaBelem.Infrastructure.MySql.ContentRepository(data);
+        var inReviewEvents = (await db.QueryAsync<long>("SELECT id FROM mb_content_items WHERE kind='Event' AND status='InReview' ORDER BY id")).ToArray();
+        Console.WriteLine($"Eventos em revisão encontrados: {inReviewEvents.Length}");
+        var publishedCount = 0;
+        foreach (var eventId in inReviewEvents)
+        {
+            var success = await repo.SetStatusAsync(eventId, MinhaBelem.Core.Entities.ContentStatus.Published, editorId.Value, default);
+            if (success) publishedCount++;
+            else Console.WriteLine($"Evento #{eventId} não atendeu aos critérios de publicação.");
+        }
+        Console.WriteLine($"Eventos publicados com sucesso: {publishedCount}/{inReviewEvents.Length}");
         return 0;
     }
     if (args.Contains("--migrate-local"))

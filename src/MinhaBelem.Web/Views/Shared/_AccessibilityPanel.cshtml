@@ -1,0 +1,86 @@
+@* Painel Global de Acessibilidade Visual (WCAG 2.2 AA / eMAG) *@
+<div class="a11y-backdrop" id="a11y-modal-backdrop" aria-hidden="true">
+    <div class="a11y-panel"
+         id="a11y-dialog"
+         role="dialog"
+         aria-modal="true"
+         aria-labelledby="a11y-dialog-title"
+         tabindex="-1">
+        <header class="a11y-header">
+            <h2 id="a11y-dialog-title">
+                <span aria-hidden="true">♿</span>
+                <span>@Loc["A11y_Panel_Title"]</span>
+            </h2>
+            <button type="button"
+                    class="a11y-close-btn"
+                    id="close-a11y-panel"
+                    aria-label="@Loc["A11y_Close_Panel"]">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </header>
+
+        <div class="a11y-body">
+            <!-- Tamanho da Fonte -->
+            <fieldset class="a11y-control-group">
+                <legend>@Loc["A11y_Font_Size"]</legend>
+                <div class="a11y-btn-group" role="group" aria-label="@Loc["A11y_Font_Size"]">
+                    <button type="button" class="a11y-opt-btn" data-a11y-font="default" aria-pressed="true">
+                        @Loc["A11y_Font_Normal"]
+                    </button>
+                    <button type="button" class="a11y-opt-btn" data-a11y-font="medium" aria-pressed="false">
+                        @Loc["A11y_Font_Medium"]
+                    </button>
+                    <button type="button" class="a11y-opt-btn" data-a11y-font="large" aria-pressed="false">
+                        @Loc["A11y_Font_Large"]
+                    </button>
+                </div>
+            </fieldset>
+
+            <!-- Espaçamento de Leitura -->
+            <fieldset class="a11y-control-group">
+                <legend>@Loc["A11y_Spacing"]</legend>
+                <div class="a11y-btn-group" role="group" aria-label="@Loc["A11y_Spacing"]">
+                    <button type="button" class="a11y-opt-btn" data-a11y-spacing="default" aria-pressed="true">
+                        @Loc["A11y_Spacing_Normal"]
+                    </button>
+                    <button type="button" class="a11y-opt-btn" data-a11y-spacing="wide" aria-pressed="false">
+                        @Loc["A11y_Spacing_Wide"]
+                    </button>
+                </div>
+            </fieldset>
+
+            <!-- Alto Contraste -->
+            <div class="a11y-control-group">
+                <label class="a11y-toggle-row" for="a11y-toggle-contrast">
+                    <span><strong>@Loc["A11y_High_Contrast"]</strong></span>
+                    <input type="checkbox" id="a11y-toggle-contrast" data-a11y-toggle="contrast" />
+                </label>
+            </div>
+
+            <!-- Destaque de Foco -->
+            <div class="a11y-control-group">
+                <label class="a11y-toggle-row" for="a11y-toggle-focus">
+                    <span><strong>@Loc["A11y_Focus_Highlight"]</strong></span>
+                    <input type="checkbox" id="a11y-toggle-focus" data-a11y-toggle="focus" />
+                </label>
+            </div>
+
+            <!-- Redução de Movimento -->
+            <div class="a11y-control-group">
+                <label class="a11y-toggle-row" for="a11y-toggle-motion">
+                    <span><strong>@Loc["A11y_Reduced_Motion"]</strong></span>
+                    <input type="checkbox" id="a11y-toggle-motion" data-a11y-toggle="motion" />
+                </label>
+            </div>
+        </div>
+
+        <footer class="a11y-footer">
+            <button type="button" class="button outline small" id="a11y-reset-btn">
+                @Loc["A11y_Reset"]
+            </button>
+            <button type="button" class="button small" id="a11y-apply-close-btn">
+                OK
+            </button>
+        </footer>
+    </div>
+</div>

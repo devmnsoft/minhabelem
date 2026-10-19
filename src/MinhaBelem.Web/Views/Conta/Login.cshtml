@@ -1,3 +1,140 @@
 @model MinhaBelem.Web.Models.LoginInput
-@{ ViewData["Title"] = Loc["LoginTitle"].Value; }
-<section class="section account-section"><div class="card account-card"><span class="eyebrow">@Loc["AccountPortal"]</span><h1>@Loc["LoginTitle"]</h1><p>@Loc["LoginDescription"]</p><div asp-validation-summary="All" class="notice error-notice" role="alert"></div><form method="post" asp-action="Login"><label asp-for="Email">@Loc["EmailLabel"]<input asp-for="Email" autocomplete="username" type="email" required /></label><label asp-for="Password">@Loc["PasswordLabel"]<input asp-for="Password" autocomplete="current-password" type="password" required /></label><button type="submit">@Loc["NavLogin"] ↗</button></form></div></section>
+@{
+    ViewData["Title"] = Loc["LoginTitle"].Value;
+}
+
+<section class="section account-section" aria-labelledby="login-heading">
+    <div class="card account-card">
+        <span class="eyebrow" id="login-badge">@Loc["AccountPortal"]</span>
+        <h1 id="login-heading">@Loc["LoginTitle"]</h1>
+        <p class="login-intro">@Loc["LoginDescription"]</p>
+
+        @if (!ViewData.ModelState.IsValid && ViewData.ModelState.ErrorCount > 0)
+        {
+            <div asp-validation-summary="All" class="notice error-notice" role="alert" aria-live="assertive" tabindex="-1" id="login-error-summary">
+            </div>
+        }
+
+        <div id="caps-lock-warning" class="notice caps-lock-notice" role="status" aria-live="polite" hidden>
+            <span aria-hidden="true">⚠️</span> @Loc["CapsLock_Warning"]
+        </div>
+
+        <form method="post" asp-action="Login" novalidate id="login-form">
+            @Html.AntiForgeryToken()
+
+            <div class="form-group">
+                <label asp-for="Email" id="email-label">
+                    @Loc["EmailLabel"]
+                    <span class="required-indicator" aria-hidden="true">*</span>
+                </label>
+                <input asp-for="Email"
+                       id="login-email"
+                       autocomplete="username"
+                       type="email"
+                       inputmode="email"
+                       required
+                       aria-required="true"
+                       aria-describedby="email-help @(ViewData.ModelState["Email"]?.Errors.Count > 0 ? "email-error" : "")"
+                       class="form-control" />
+                <span id="email-help" class="sr-only">Digite seu e-mail cadastrado na plataforma</span>
+                <span asp-validation-for="Email" class="field-validation-error" id="email-error" role="alert"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Password" id="password-label">
+                    @Loc["PasswordLabel"]
+                    <span class="required-indicator" aria-hidden="true">*</span>
+                </label>
+                <div class="password-wrapper">
+                    <input asp-for="Password"
+                           id="login-password"
+                           autocomplete="current-password"
+                           type="password"
+                           required
+                           aria-required="true"
+                           aria-describedby="password-help @(ViewData.ModelState["Password"]?.Errors.Count > 0 ? "password-error" : "")"
+                           class="form-control" />
+                    <button type="button"
+                            class="password-toggle-btn"
+                            id="toggle-password"
+                            aria-label="@Loc["Password_Show"]"
+                            aria-pressed="false"
+                            title="@Loc["Password_Show"]">
+                        <span class="toggle-icon" aria-hidden="true">👁️</span>
+                        <span class="toggle-text sr-only">@Loc["Password_Show"]</span>
+                    </button>
+                </div>
+                <span id="password-help" class="sr-only">Digite sua senha cadastrada</span>
+                <span asp-validation-for="Password" class="field-validation-error" id="password-error" role="alert"></span>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="button" id="login-submit-btn">
+                    <span>@Loc["NavLogin"]</span>
+                    <span aria-hidden="true">↗</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</section>
+
+@section Scripts {
+<script>
+(function() {
+    // 1. Alternância de visibilidade da senha
+    var toggleBtn = document.getElementById('toggle-password');
+    var passwordInput = document.getElementById('login-password');
+    var showLabel = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Loc["Password_Show"].Value));
+    var hideLabel = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Loc["Password_Hide"].Value));
+
+    if (toggleBtn && passwordInput) {
+        toggleBtn.addEventListener('click', function() {
+            var isPassword = passwordInput.getAttribute('type') === 'password';
+            passwordInput.setAttribute('type', isPassword ? 'text' : 'password');
+            toggleBtn.setAttribute('aria-pressed', String(isPassword));
+            var currentLabel = isPassword ? hideLabel : showLabel;
+            toggleBtn.setAttribute('aria-label', currentLabel);
+            toggleBtn.setAttribute('title', currentLabel);
+            var icon = toggleBtn.querySelector('.toggle-icon');
+            if (icon) icon.textContent = isPassword ? '🙈' : '👁️';
+            var text = toggleBtn.querySelector('.toggle-text');
+            if (text) text.textContent = currentLabel;
+            passwordInput.focus();
+        });
+    }
+
+    // 2. Detecção de Caps Lock acessível
+    var capsWarning = document.getElementById('caps-lock-warning');
+    if (capsWarning && passwordInput) {
+        passwordInput.addEventListener('keyup', function(e) {
+            if (e.getModifierState && e.getModifierState('CapsLock')) {
+                capsWarning.hidden = false;
+            } else {
+                capsWarning.hidden = true;
+            }
+        });
+        passwordInput.addEventListener('keydown', function(e) {
+            if (e.getModifierState && e.getModifierState('CapsLock')) {
+                capsWarning.hidden = false;
+            } else {
+                capsWarning.hidden = true;
+            }
+        });
+        passwordInput.addEventListener('blur', function() {
+            capsWarning.hidden = true;
+        });
+    }
+
+    // 3. Foco acessível no primeiro erro ou primeiro campo
+    var errorSummary = document.getElementById('login-error-summary');
+    if (errorSummary) {
+        errorSummary.focus();
+    } else {
+        var emailInput = document.getElementById('login-email');
+        if (emailInput && !emailInput.value) {
+            emailInput.focus();
+        }
+    }
+})();
+</script>
+}

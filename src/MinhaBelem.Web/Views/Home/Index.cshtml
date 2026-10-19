@@ -84,16 +84,106 @@
 }
 @if (!filtered)
 {
-    <section class="section agenda-feature" aria-labelledby="agenda-title">
-        <div class="agenda-intro"><span class="eyebrow">@Loc["NavAgenda"]</span><h2 id="agenda-title">@Loc["WeeklyAgenda"]</h2><p>@Loc[events.Count==0?"AgendaEmpty":"AgendaExploreIntro"]</p><a class="button" href="/agenda/semana">@Loc["ThisWeek"] ↗</a></div>
-        <div class="agenda-list">
-            @foreach (var item in events)
-            {
-                <article class="event-row"><div class="event-date">@if (item.EventStartAt is { } start) { <strong>@PortalTime.Local(start).ToString("dd", culture)</strong><span>@PortalTime.Local(start).ToString("MMM", culture)</span> }</div><div><span class="eyebrow">@item.Neighborhood</span><h3><a asp-action="Detalhe" asp-route-id="@item.Id">@item.DisplayTitle</a></h3><p>@item.Address</p></div></article>
-            }
-            @if (events.Count == 0) { <div class="empty"><svg class="empty-art" aria-hidden="true"><use href="/images/icons.svg#calendar" /></svg><h3>@Loc["General_Empty"]</h3></div> }
-            <nav class="agenda-links"><a href="/agenda">@Loc["UpcomingEvents"] ↗</a><a href="/cinema-teatro">@Loc["CinemaTheater"] ↗</a><a href="/programacao-infantil">@Loc["ChildrenProgram"] ↗</a></nav>
+    <section class="section home-events-highlight" aria-labelledby="home-events-title">
+        <div class="sectionhead">
+            <div>
+                <span class="eyebrow">AGENDA CULTURAL & FESTIVA</span>
+                <h2 id="home-events-title">@Loc["Upcoming_Belém_Events"]</h2>
+                <p class="section-subtitle" style="color:var(--text-muted,#59675f);margin-top:6px;max-width:65ch;">
+                    @Loc["Upcoming_Belém_Events_Subtitle"]
+                </p>
+            </div>
+            <div style="display:flex;gap:10px;align-items:center;">
+                <a class="button secondary" href="/agenda">@Loc["NavAgenda"] ↗</a>
+                <a class="button" href="/agenda/semana">@Loc["ThisWeek"] ↗</a>
+            </div>
         </div>
+
+        @if (events.Count == 0)
+        {
+            <div class="empty" style="text-align:center;padding:48px 24px;">
+                <svg class="empty-art" aria-hidden="true" style="width:64px;height:64px;margin-bottom:16px;"><use href="/images/icons.svg#calendar" /></svg>
+                <h3>@Loc["General_Empty"]</h3>
+                <p style="max-width:45ch;margin:8px auto 20px;color:var(--text-muted,#59675f);">@Loc["AgendaEmpty"]</p>
+                <a class="button secondary" href="/agenda">@Loc["AgendaAll"] ↗</a>
+            </div>
+        }
+        else
+        {
+            <div class="events-spotlight-grid">
+                @foreach (var item in events)
+                {
+                    var localStart = item.EventStartAt.HasValue ? PortalTime.Local(item.EventStartAt.Value) : (DateTime?)null;
+                    var topicSlug = MinhaBelem.Infrastructure.MySql.CuratedAgendaImporter.AgendaSubjects.Contains(item.Subject ?? "") ? "AgendaTopic_" + item.Subject : "Category_" + MinhaBelem.Core.Taxonomy.Taxonomy.Info(item.Category).Slug;
+                    var artSvg = item.Subject switch { "corrida" => "sport", "musica" or "humor" => "music", "infantil" => "family", "congressos" or "feiras" => "city", _ => "stage" };
+                    var hasCustomImg = !string.IsNullOrWhiteSpace(item.ImageUrl) && !string.IsNullOrWhiteSpace(item.ImageCredit) && !item.ImageUrl.StartsWith("/images/agenda/", StringComparison.Ordinal);
+                    var imgUrl = hasCustomImg ? item.ImageUrl : $"/images/agenda/{artSvg}.svg";
+                    var isFree = item.IsFree;
+                    var priceText = isFree ? Loc["Event_Confirmed_Free"].Value : (!string.IsNullOrWhiteSpace(item.TicketPriceText) ? item.TicketPriceText : Loc["Event_Check_Price"].Value);
+
+                    <article class="event-spotlight-card" aria-labelledby="event-title-@item.Id">
+                        <div class="event-spotlight-header">
+                            <img src="@imgUrl" alt="" width="480" height="270" loading="lazy" decoding="async" />
+                            @if (localStart.HasValue)
+                            {
+                                <div class="event-date-badge" aria-hidden="true">
+                                    <strong>@localStart.Value.ToString("dd")</strong>
+                                    <span>@localStart.Value.ToString("MMM", culture)</span>
+                                </div>
+                            }
+                            <span class="event-price-tag @(isFree ? "is-free" : "")">
+                                @(isFree ? "✓ " + Loc["FreeEvents"].Value : priceText)
+                            </span>
+                        </div>
+
+                        <div class="event-spotlight-body">
+                            <span class="event-category-label">
+                                <span aria-hidden="true">🏷️</span> @Loc[topicSlug]
+                            </span>
+
+                            <h3 class="event-spotlight-title" id="event-title-@item.Id">
+                                <a asp-action="Detalhe" asp-route-id="@item.Id">@item.DisplayTitle</a>
+                            </h3>
+
+                            <div class="event-spotlight-meta">
+                                @if (localStart.HasValue)
+                                {
+                                    <div class="event-meta-item">
+                                        <span aria-hidden="true">🕒</span>
+                                        <time datetime="@item.EventStartAt?.ToString("O")">
+                                            @localStart.Value.ToString("dddd, dd 'de' MMMM", culture) · @(AgendaPage.DateOnlyEvent(item) ? Loc["AgendaUnknownTime"].Value : localStart.Value.ToString("HH:mm"))
+                                        </time>
+                                    </div>
+                                }
+                                <div class="event-meta-item">
+                                    <span aria-hidden="true">📍</span>
+                                    <span>@(item.EventDetails?.Location ?? item.Address ?? item.Neighborhood ?? "Belém do Pará")</span>
+                                </div>
+                            </div>
+
+                            <p style="font-size:0.88rem;color:var(--text-secondary,#42554b);line-height:1.5;margin:0 0 16px;flex:1;">
+                                @(item.DisplaySummary.Length > 150 ? item.DisplaySummary[..147] + "..." : item.DisplaySummary)
+                            </p>
+
+                            <div class="event-spotlight-actions">
+                                <span class="event-source-credit" title="@Loc["Event_Official_Source"]">
+                                    🏛️ @item.SourceName
+                                </span>
+                                <a asp-action="Detalhe" asp-route-id="@item.Id" class="button-link" style="font-weight:700;font-size:0.86rem;" aria-label="@Loc["Event_Details_Link"]: @item.DisplayTitle">
+                                    @Loc["ViewMore"] ↗
+                                </a>
+                            </div>
+                        </div>
+                    </article>
+                }
+            </div>
+            <nav class="agenda-links" style="display:flex;gap:14px;flex-wrap:wrap;margin-top:24px;justify-content:center;">
+                <a href="/agenda" class="quick-pill">@Loc["UpcomingEvents"] ↗</a>
+                <a href="/cinema-teatro" class="quick-pill">@Loc["CinemaTheater"] ↗</a>
+                <a href="/programacao-infantil" class="quick-pill">@Loc["ChildrenProgram"] ↗</a>
+                <a href="/eventos-gratuitos" class="quick-pill">@Loc["FreeEvents"] ↗</a>
+            </nav>
+        }
     </section>
     <section class="section discovery-feature"><div><span class="eyebrow">@Loc["NavExplore"]</span><h2>@Loc["Explore_Hero_Title"]</h2><p>@Loc["Explore_Hero_Subtitle"]</p><a class="button-link" href="/explore">@Loc["WhatToVisit"] ↗</a></div><div class="route-list">
         @foreach (var route in itineraries.Take(4)) { <a href="/explore/roteiro/@route.Slug"><span>@route.Days.ToString("00")</span><strong>@route.GetTitle(culture.Name)</strong><span aria-hidden="true">↗</span></a> }
