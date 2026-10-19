@@ -126,6 +126,223 @@
     border-radius: var(--radius-full);
   }
 
+  /* Dropdown "Mais" na Navegação Desktop */
+  .nav-dropdown {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .nav-dropdown-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 8px 12px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: background-color var(--transition-fast), color var(--transition-fast);
+  }
+
+  .nav-dropdown-btn:hover,
+  .nav-dropdown:focus-within .nav-dropdown-btn,
+  .nav-dropdown-btn[aria-expanded="true"] {
+    background-color: var(--color-green-surface);
+    color: var(--color-green-forest);
+  }
+
+  .nav-dropdown-menu {
+    position: absolute;
+    top: calc(100% + 4px);
+    right: 0;
+    min-width: 240px;
+    background: var(--color-cream-card);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-lg);
+    padding: var(--space-2) 0;
+    display: none;
+    flex-direction: column;
+    z-index: 1010;
+  }
+
+  .nav-dropdown:hover .nav-dropdown-menu,
+  .nav-dropdown:focus-within .nav-dropdown-menu,
+  .nav-dropdown.is-open .nav-dropdown-menu {
+    display: flex;
+  }
+
+  .nav-dropdown-menu a {
+    padding: 9px 16px;
+    font-size: 0.88rem;
+    color: var(--color-text-primary);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-radius: 0;
+  }
+
+  .nav-dropdown-menu a:hover {
+    background-color: var(--color-green-surface);
+    color: var(--color-green-forest);
+  }
+
+  [data-theme="dark"] .nav-dropdown-menu {
+    background: #142a24;
+    border-color: var(--color-border);
+  }
+
+  /* Barra de Navegação Rápida Mobile (5 abas prioritárias) */
+  .mobile-tab-bar {
+    display: none;
+  }
+
+  @media (max-width: 768px) {
+    .mobile-tab-bar {
+      display: flex;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 56px;
+      background: rgba(255, 253, 248, 0.98);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-top: 1px solid var(--color-border);
+      z-index: 990;
+      align-items: center;
+      justify-content: space-around;
+      padding: 0 var(--space-2);
+    }
+
+    [data-theme="dark"] .mobile-tab-bar {
+      background: rgba(14, 28, 24, 0.98);
+    }
+
+    .mobile-tab-bar a,
+    .mobile-tab-bar button {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      color: var(--color-text-muted);
+      font-size: 0.72rem;
+      font-weight: 600;
+      text-decoration: none;
+      background: transparent;
+      border: none;
+      padding: 4px;
+      min-width: 48px;
+      min-height: 48px;
+      cursor: pointer;
+    }
+
+    .mobile-tab-bar a .tab-icon,
+    .mobile-tab-bar button .tab-icon {
+      font-size: 1.15rem;
+      line-height: 1;
+    }
+
+    .mobile-tab-bar a.active,
+    .mobile-tab-bar a:hover,
+    .mobile-tab-bar button:hover {
+      color: var(--color-green-forest);
+    }
+
+    [data-theme="dark"] .mobile-tab-bar a.active,
+    [data-theme="dark"] .mobile-tab-bar a:hover {
+      color: #4ade80;
+    }
+
+    body {
+      padding-bottom: 60px;
+    }
+  }
+
+  /* Cartão de Destaque da Mobilidade na Home */
+  .home-mobility-highlight {
+    padding-top: var(--space-4);
+  }
+
+  .mobility-banner-card {
+    background: linear-gradient(135deg, var(--color-cream-card) 0%, var(--color-green-surface) 100%);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: clamp(20px, 3.5vw, 36px);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .mobility-banner-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: var(--space-4);
+    margin-bottom: var(--space-6);
+    flex-wrap: wrap;
+  }
+
+  .mobility-banner-header h2 {
+    font-size: clamp(1.4rem, 2.5vw, 2rem);
+    margin: var(--space-1) 0 var(--space-2);
+  }
+
+  .mobility-banner-header p {
+    font-size: 0.95rem;
+    color: var(--color-text-secondary);
+    max-width: 60ch;
+    margin: 0;
+  }
+
+  .mobility-quick-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: var(--space-4);
+  }
+
+  .mobility-quick-action {
+    display: flex;
+    flex-direction: column;
+    padding: var(--space-4);
+    background: var(--color-cream-card);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    text-decoration: none;
+    transition: transform var(--transition-fast), border-color var(--transition-fast), box-shadow var(--transition-fast);
+  }
+
+  .mobility-quick-action:hover {
+    transform: translateY(-2px);
+    border-color: var(--color-green-mid);
+    box-shadow: var(--shadow-md);
+  }
+
+  .mobility-quick-action .action-icon {
+    font-size: 1.8rem;
+    margin-bottom: var(--space-2);
+  }
+
+  .mobility-quick-action strong {
+    font-size: 1rem;
+    color: var(--color-green-deep);
+    margin-bottom: var(--space-1);
+  }
+
+  [data-theme="dark"] .mobility-quick-action strong {
+    color: var(--color-text-primary);
+  }
+
+  .mobility-quick-action span {
+    font-size: 0.82rem;
+    color: var(--color-text-muted);
+    line-height: 1.4;
+  }
+
   /* Ferramentas do Header (Tema, A11y, Idioma) */
   .header-tools {
     display: flex;

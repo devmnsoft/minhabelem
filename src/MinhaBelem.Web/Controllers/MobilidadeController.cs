@@ -123,7 +123,7 @@ public sealed class MobilidadeController(ITransitRepository transit) : Controlle
             AllLines = all,
             SharedIntegrations = shared
         };
-        ViewData["Title"] = "Planejador de路线 de ônibus".Replace("路线", " rotas");
+        ViewData["Title"] = "Planejador de rotas de transporte";
         return View(vm);
     }
 

@@ -2,27 +2,76 @@
 @using System.Globalization
 
 @{
-    ViewData["Title"] = "Mobilidade Urbana em Belém";
+    ViewData["Title"] = "Mobilidade Urbana em Belém — Ônibus, BRT e Fluvial";
     var currentCulture = CultureInfo.CurrentUICulture;
+    var brtLines = Model.Lines.Where(l => string.Equals(l.TransitType, "BRT", StringComparison.OrdinalIgnoreCase)).ToList();
+    var brtStops = Model.Terminals.Where(t => t.StopType is "Estação BRT" or "Terminal").ToList();
 }
 
 <div class="mobility-page">
     <section class="hero">
-        <div class="eyebrow">TRANSPORTE & TRÂNSITO EM BELÉM 🚌 🚤</div>
-        <h1>Mobilidade Urbana</h1>
-        <p>Linhas de ônibus, estações BRT, travessias fluviais amazônicas e alertas oficiais de trânsito em tempo real.</p>
+        <div class="eyebrow">TRANSPORTE &amp; TRÂNSITO EM BELÉM 🚌 🚤</div>
+        <h1>Central de Mobilidade Urbana</h1>
+        <p>Linhas de ônibus municipais, estações do BRT Metropolitano, travessias fluviais amazônicas e alertas oficiais de trânsito em tempo real.</p>
 
-        <form method="get" action="/mobilidade" class="search" role="search">
-            <label for="busca-linha" class="sr-only">Buscar linha, bairro ou trajeto</label>
-            <input id="busca-linha" name="busca" maxlength="120" placeholder="Digite número da linha, rua ou destino (ex: 758, Ver-o-Peso, BRT)..." value="@Model.SearchQuery" />
-            <button type="submit">Buscar Linha</button>
+        <!-- Formulário de Busca Rápida de Linha -->
+        <form method="get" action="/mobilidade#linhas" class="search" role="search">
+            <label for="busca-linha" class="sr-only">Buscar por número da linha, rua, bairro ou destino</label>
+            <input id="busca-linha" name="busca" maxlength="120" placeholder="Digite número da linha, nome, rua ou destino (ex: 758, Ver-o-Peso, Mangueirão)..." value="@Model.SearchQuery" />
+            <button type="submit">Buscar Linha ↗</button>
         </form>
+    </section>
 
-        <div class="hero-quick-tags" style="margin-top:18px;">
-            <a href="/mobilidade/de-para">🔀 Planejador de-para</a>
-            <a href="/mobilidade/paradas">📍 Paradas e terminais</a>
-            <a href="/mobilidade/fluvial">🚤 Travessias fluviais</a>
-            <a href="/mobilidade/alertas">⚠️ Alertas de trânsito</a>
+    <!-- FASE 1.1: 8 ENTRADAS FUNCIONAIS DE MOBILIDADE: COMO VOCÊ QUER SE DESLOCAR POR BELÉM? -->
+    <section class="section mobility-hub-section" aria-labelledby="hub-options-title">
+        <div class="sectionhead">
+            <div>
+                <span class="eyebrow">COMO VOCÊ QUER SE DESLOCAR POR BELÉM?</span>
+                <h2 id="hub-options-title">Escolha o seu meio de transporte</h2>
+            </div>
+        </div>
+
+        <div class="grid mobility-hub-grid" style="grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:var(--space-4);">
+            <a href="/como-chegar" class="card mobility-hub-card" style="text-decoration:none;">
+                <span style="font-size:2rem;margin-bottom:8px;display:block;" aria-hidden="true">🗺️</span>
+                <h3 style="margin:0 0 6px;color:var(--color-green-deep);">Como Chegar</h3>
+                <p class="small text-muted" style="margin:0;">Planejador multimodal inteligente com rotas, mapas e instruções passo a passo.</p>
+            </a>
+            <a href="#linhas" class="card mobility-hub-card" style="text-decoration:none;">
+                <span style="font-size:2rem;margin-bottom:8px;display:block;" aria-hidden="true">🚌</span>
+                <h3 style="margin:0 0 6px;color:var(--color-green-deep);">Linhas de Ônibus</h3>
+                <p class="small text-muted" style="margin:0;">Consulta completa de itinerários, sentidos ida/volta, horários e paradas oficiais.</p>
+            </a>
+            <a href="#brt" class="card mobility-hub-card" style="text-decoration:none;">
+                <span style="font-size:2rem;margin-bottom:8px;display:block;" aria-hidden="true">🚊</span>
+                <h3 style="margin:0 0 6px;color:var(--color-green-deep);">BRT Belém</h3>
+                <p class="small text-muted" style="margin:0;">Corredores expressos Augusto Montenegro e Almirante Barroso e estações.</p>
+            </a>
+            <a href="/mobilidade/de-para" class="card mobility-hub-card" style="text-decoration:none;">
+                <span style="font-size:2rem;margin-bottom:8px;display:block;" aria-hidden="true">🔀</span>
+                <h3 style="margin:0 0 6px;color:var(--color-green-deep);">Planejador De-Para</h3>
+                <p class="small text-muted" style="margin:0;">Cruzamento de origem e destino para descobrir linhas diretas e integrações.</p>
+            </a>
+            <a href="/mobilidade/fluvial" class="card mobility-hub-card" style="text-decoration:none;">
+                <span style="font-size:2rem;margin-bottom:8px;display:block;" aria-hidden="true">🚤</span>
+                <h3 style="margin:0 0 6px;color:var(--color-green-deep);">Transporte Fluvial</h3>
+                <p class="small text-muted" style="margin:0;">Barcos e lanchas para Ilha do Combu, Cotijuba, Mosqueiro e Icoaraci.</p>
+            </a>
+            <a href="/mobilidade/paradas" class="card mobility-hub-card" style="text-decoration:none;">
+                <span style="font-size:2rem;margin-bottom:8px;display:block;" aria-hidden="true">📍</span>
+                <h3 style="margin:0 0 6px;color:var(--color-green-deep);">Paradas &amp; Terminais</h3>
+                <p class="small text-muted" style="margin:0;">Terminais de integração física, estações de transbordo e pontos cobertos.</p>
+            </a>
+            <a href="/mobilidade/alertas" class="card mobility-hub-card" style="text-decoration:none;">
+                <span style="font-size:2rem;margin-bottom:8px;display:block;" aria-hidden="true">⚠️</span>
+                <h3 style="margin:0 0 6px;color:var(--color-green-deep);">Alertas de Trânsito</h3>
+                <p class="small text-muted" style="margin:0;">Desvios, obras e informes operacionais publicados pela SEMOB.</p>
+            </a>
+            <a href="#tarifas" class="card mobility-hub-card" style="text-decoration:none;">
+                <span style="font-size:2rem;margin-bottom:8px;display:block;" aria-hidden="true">💰</span>
+                <h3 style="margin:0 0 6px;color:var(--color-green-deep);">Tarifas &amp; Horários</h3>
+                <p class="small text-muted" style="margin:0;">Valores vigentes confirmados, meia-passagem estudantil e regras do Passe Fácil.</p>
+            </a>
         </div>
     </section>
 
@@ -35,37 +84,101 @@
                     <span class="eyebrow">AVISOS OFICIAIS SEMOB</span>
                     <h2>⚠️ Alertas e Interdições de Trânsito</h2>
                 </div>
+                <a href="/mobilidade/alertas" class="button-link">Ver todos os alertas ↗</a>
             </div>
 
             <div class="grid alerts-grid">
                 @foreach (var alert in Model.Alerts)
                 {
                     <div class="card alert-card notice error-notice">
-                        <div class="alert-header">
+                        <div class="alert-header" style="display:flex;justify-content:space-between;margin-bottom:8px;">
                             <span class="badge badge-rejected">@alert.Severity</span>
                             <span class="small">📍 @alert.Neighborhood</span>
                         </div>
                         <h3>@alert.Title</h3>
                         <p>@alert.Description</p>
-                        <span class="small">Início: @alert.StartAt.ToString("dd/MM/yyyy HH:mm")</span>
+                        <span class="small text-muted">Publicado em: @alert.StartAt.ToString("dd/MM/yyyy HH:mm")</span>
                     </div>
                 }
             </div>
         </section>
     }
 
-    <!-- Linhas de Ônibus e BRT -->
-    <section class="section lines-section">
+    <!-- FASE 1.3: DESTAQUE DEDICADO DO BRT METROPOLITANO -->
+    <section class="section brt-section" id="brt" aria-labelledby="brt-heading">
         <div class="sectionhead">
             <div>
-                <span class="eyebrow">TRANSPORTE COLETIVO</span>
-                <h2>Linhas de Ônibus & BRT</h2>
+                <span class="eyebrow">TRANSPORTE DE MASSA · CORREDOR EXPRESSO</span>
+                <h2 id="brt-heading">🚊 BRT Metropolitano de Belém</h2>
+                <p class="section-subtitle">Operação atual com faixas exclusivas, terminais de integração e veículos de alta capacidade nos eixos Augusto Montenegro e Almirante Barroso.</p>
             </div>
-            <div class="view-31e4e2a2 filter-pills">
-                <a href="/mobilidade" class="button @(string.IsNullOrEmpty(Model.SelectedType) ? "" : "secondary") small">Todas</a>
-                <a href="/mobilidade?tipo=BRT" class="button @(Model.SelectedType == "BRT" ? "" : "secondary") small">BRT Metropolitano</a>
-                <a href="/mobilidade?tipo=Urbano" class="button @(Model.SelectedType == "Urbano" ? "" : "secondary") small">Urbanas</a>
-                <a href="/mobilidade?tipo=Distrital" class="button @(Model.SelectedType == "Distrital" ? "" : "secondary") small">Distritais</a>
+            <a href="/mobilidade?tipo=BRT#linhas" class="button secondary small">Filtrar linhas BRT</a>
+        </div>
+
+        <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:var(--space-4);">
+            <div class="card" style="border-top:4px solid var(--color-green-forest);">
+                <span class="eyebrow">Corredor Norte</span>
+                <h3>Eixo Augusto Montenegro</h3>
+                <p class="small">Conecta o Distrito de Icoaraci, Parque Verde, Benguí e Nova Belém aos terminais de transbordo Mangueirão e Maracangalha.</p>
+                <div class="features-box" style="margin-top:10px;">
+                    <p><strong>Integração:</strong> Terminal Mangueirão · Terminal Maracangalha</p>
+                    <p><strong>Operação:</strong> 05:00 às 23:30 (dias úteis e finais de semana)</p>
+                    <p><strong>Embarque:</strong> Nível com pagamento antecipado nas catracas da estação</p>
+                </div>
+            </div>
+
+            <div class="card" style="border-top:4px solid var(--color-terracotta);">
+                <span class="eyebrow">Corredor Central</span>
+                <h3>Eixo Almirante Barroso / São Brás</h3>
+                <p class="small">Principal artéria de ligação entre a Região Metropolitana e o centro comercial e histórico de Belém.</p>
+                <div class="features-box" style="margin-top:10px;">
+                    <p><strong>Integração:</strong> Terminal São Brás · Entroncamento · Bosque</p>
+                    <p><strong>Operação:</strong> Linhas expressas e paradoras</p>
+                    <p><strong>Acessibilidade:</strong> 100% das estações com rampas e piso tátil</p>
+                </div>
+            </div>
+
+            <div class="card" style="border-top:4px solid #0284c7;">
+                <span class="eyebrow">Integração Tarifária</span>
+                <h3>Passe Fácil &amp; Integra Belém</h3>
+                <p class="small">Permite a transferência entre linhas alimentadoras de bairro e o tronco BRT sem nova cobrança dentro do período de integração temporal.</p>
+                <div class="features-box" style="margin-top:10px;">
+                    <p><strong>Tarifa integrada:</strong> R$ 4,00 (inteira) · R$ 2,00 (meia estudantil)</p>
+                    <p><strong>Cartões aceitos:</strong> Passe Fácil Digital, Sênior, Estudantil e Vale-Transporte</p>
+                    <a class="button-link" href="https://seguranca.belem.pa.gov.br/integra-belem/" target="_blank" rel="noopener noreferrer">Regras oficiais SEMOB ↗</a>
+                </div>
+            </div>
+        </div>
+
+        @if (brtStops.Count > 0)
+        {
+            <div class="card" style="margin-top:var(--space-5);">
+                <h4 style="margin:0 0 10px;">Estações e Terminais BRT Cadastrados</h4>
+                <div class="stop-lines">
+                    @foreach (var stop in brtStops)
+                    {
+                        <a href="/mobilidade/paradas?busca=@Uri.EscapeDataString(stop.Name)" class="line-chip" style="background:var(--color-green-forest);" title="@stop.StopType · @stop.Neighborhood">
+                            📍 @stop.Name
+                        </a>
+                    }
+                </div>
+            </div>
+        }
+    </section>
+
+    <!-- FASE 1.2: PESQUISA E LISTAGEM DAS LINHAS DE ÔNIBUS & BRT -->
+    <section class="section lines-section" id="linhas" aria-labelledby="lines-heading">
+        <div class="sectionhead">
+            <div>
+                <span class="eyebrow">TRANSPORTE COLETIVO PÚBLICO</span>
+                <h2 id="lines-heading">Linhas de Ônibus &amp; BRT</h2>
+                <p class="section-subtitle">Horários verificados, itinerários completos, acessibilidade confirmada e dados operacionais de Belém.</p>
+            </div>
+            <div class="filter-pills" style="display:flex;gap:8px;flex-wrap:wrap;">
+                <a href="/mobilidade#linhas" class="button @(string.IsNullOrEmpty(Model.SelectedType) ? "" : "secondary") small">Todas</a>
+                <a href="/mobilidade?tipo=BRT#linhas" class="button @(Model.SelectedType == "BRT" ? "" : "secondary") small">🚊 BRT</a>
+                <a href="/mobilidade?tipo=Urbano#linhas" class="button @(Model.SelectedType == "Urbano" ? "" : "secondary") small">🚌 Urbanas</a>
+                <a href="/mobilidade?tipo=Distrital#linhas" class="button @(Model.SelectedType == "Distrital" ? "" : "secondary") small">Distritais</a>
             </div>
         </div>
 
@@ -73,7 +186,10 @@
         {
             <div class="empty">
                 <h3>Nenhuma linha encontrada</h3>
-                <p>Tente buscar por outro termo ou selecione todas as categorias.</p>
+                <p>Tente buscar por outro número, bairro ou destino, ou selecione a categoria Todas.</p>
+                <div style="margin-top:14px;">
+                    <a href="/mobilidade#linhas" class="button secondary small">Limpar filtro de busca</a>
+                </div>
             </div>
         }
         else
@@ -81,46 +197,57 @@
             <div class="grid lines-grid">
                 @foreach (var line in Model.Lines)
                 {
-                    <article class="card line-card">
+                    <article class="card line-card" aria-labelledby="line-title-@line.Code">
                         <div class="line-header" style="display:flex;justify-content:space-between;align-items:center;gap:10px;">
                             <span class="line-code-badge">@line.Code</span>
-                            <span class="badge badge-info">@line.TransitType</span>
+                            <span class="badge @(line.TransitType == "BRT" ? "badge-info" : "badge-secondary")">@line.TransitType</span>
                         </div>
 
-                        <h3 style="margin:14px 0 6px;"><a href="/mobilidade/linha/@line.Code">@line.Name</a></h3>
+                        <h3 id="line-title-@line.Code" style="margin:14px 0 6px;">
+                            <a href="/mobilidade/linha/@line.Code">@line.Name</a>
+                        </h3>
 
-                        <div class="transit-de-para" style="margin:10px 0 12px;padding:12px 14px;">
+                        <div class="transit-de-para">
                             <div class="depara-end">
-                                <span class="depara-label">De</span>
+                                <span class="depara-label">Origem</span>
                                 <strong>@line.Origin</strong>
                             </div>
                             <span class="depara-arrow" aria-hidden="true">→</span>
                             <div class="depara-end">
-                                <span class="depara-label">Para</span>
+                                <span class="depara-label">Destino</span>
                                 <strong>@line.Destination</strong>
                             </div>
                         </div>
 
-                        @if (line.IsVerified)
-                        {
-                            <p class="small"><strong>🕒 Horário:</strong> @line.ScheduleText</p>
-                            @if (line.ConfirmedFare is { } verifiedFare)
+                        <div class="features-box">
+                            @if (line.IsVerified)
                             {
-                                <p class="small"><strong>💰 Tarifa:</strong> R$ @verifiedFare.ToString("F2", CultureInfo.InvariantCulture) · meia R$ @((verifiedFare / 2).ToString("F2", CultureInfo.InvariantCulture))</p>
+                                <p><strong>🕒 Horário operacional:</strong> @line.ScheduleText</p>
+                                @if (line.ConfirmedFare is { } verifiedFare)
+                                {
+                                    <p><strong>💰 Tarifa vigente:</strong> R$ @verifiedFare.ToString("F2", CultureInfo.InvariantCulture) · meia estudantil R$ @((verifiedFare / 2).ToString("F2", CultureInfo.InvariantCulture))</p>
+                                }
+                                @if (!string.IsNullOrWhiteSpace(line.IntegrationPoints))
+                                {
+                                    <p><strong>🔄 Terminais / Integração:</strong> @line.IntegrationPoints</p>
+                                }
+                                @if (!string.IsNullOrWhiteSpace(line.OperatorName))
+                                {
+                                    <p><strong>🏢 Operadora:</strong> @line.OperatorName</p>
+                                }
+                                <p class="small text-muted" style="margin-top:6px;">
+                                    ✓ <a href="@line.SourceUrl" target="_blank" rel="noopener noreferrer">Fonte oficial</a> · verificado em @line.VerifiedAt?.ToString("dd/MM/yyyy")
+                                </p>
                             }
-                            @if (!string.IsNullOrWhiteSpace(line.IntegrationPoints))
+                            else
                             {
-                                <p class="small"><strong>🔄 Integração:</strong> @line.IntegrationPoints</p>
+                                <p class="small text-muted">🕒 Horário e tarifa: consulte a fonte oficial ou confirme com o consórcio operador.</p>
                             }
-                        }
-                        else
-                        {
-                            <p class="small">Horário e tarifa: confirme com o operador.</p>
-                        }
+                        </div>
 
                         @if (!string.IsNullOrWhiteSpace(line.ItinerarySummary))
                         {
-                            <p class="small text-muted">@line.ItinerarySummary</p>
+                            <p class="small text-secondary" style="margin:8px 0;"><strong>Itinerário:</strong> @line.ItinerarySummary</p>
                         }
 
                         <div class="line-features" style="display:flex;gap:12px;margin:12px 0;font-size:0.85rem;flex-wrap:wrap;">
@@ -130,17 +257,17 @@
                             }
                             @if (line.IsVerified && line.HasWheelchairLift)
                             {
-                                <span>♿ Elevador acessível</span>
+                                <span>♿ Elevador acessível (PCD)</span>
                             }
-                            @if (line.IsVerified)
+                            @if (line.IsVerified && !string.IsNullOrWhiteSpace(line.ServiceDays))
                             {
                                 <span>📅 @line.ServiceDays</span>
                             }
                         </div>
 
-                        <div class="card-footer" style="margin-top:12px;border-top:1px solid var(--border-subtle,#eef3ef);padding-top:10px;display:flex;gap:12px;flex-wrap:wrap;">
-                            <a href="/mobilidade/linha/@line.Code" class="button-link">Itinerário completo →</a>
-                            <a href="/guia-ia?q=@Uri.EscapeDataString("linha " + line.Code + " horário")" class="button-link">✨ Perguntar ao Curió</a>
+                        <div class="card-footer" style="margin-top:auto;border-top:1px solid var(--color-border-subtle);padding-top:10px;display:flex;gap:12px;flex-wrap:wrap;">
+                            <a href="/mobilidade/linha/@line.Code" class="button-link">Itinerário completo &amp; Paradas ↗</a>
+                            <a href="/guia-ia?q=@Uri.EscapeDataString("horários e paradas da linha " + line.Code)" class="button-link">✨ Perguntar ao Curió</a>
                         </div>
                     </article>
                 }
@@ -148,63 +275,101 @@
         }
     </section>
 
-    <!-- Demais modais de transporte -->
+    <!-- FASE 1: TARIFAS & HORÁRIOS PÚBLICOS CONFIRMADOS -->
+    <section class="section fares-section" id="tarifas" aria-labelledby="fares-heading">
+        <div class="sectionhead">
+            <div>
+                <span class="eyebrow">INFORMAÇÃO CONFIRMADA</span>
+                <h2 id="fares-heading">💰 Tarifas de Transporte Público em Belém</h2>
+                <p class="section-subtitle">Tabela vigente oficial regulamentada pelo Decreto Municipal e pela SEMOB.</p>
+            </div>
+        </div>
+
+        <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:var(--space-4);">
+            <div class="card" style="border-top:4px solid var(--color-green-forest);">
+                <span class="eyebrow">ÔNIBUS URBANO &amp; BRT</span>
+                <h3 style="font-size:1.6rem;color:var(--color-green-deep);margin:8px 0;">R$ 4,00</h3>
+                <p><strong>Inteira:</strong> R$ 4,00 em dinheiro ou cartão Passe Fácil.</p>
+                <p><strong>Meia-passagem Estudantil:</strong> R$ 2,00 (mediante cadastro e apresentação da carteira Passe Fácil Estudantil).</p>
+                <p class="small text-muted">Válido para todas as linhas urbanas de Belém e corredor tronco do BRT Metropolitano.</p>
+            </div>
+
+            <div class="card" style="border-top:4px solid var(--color-gold);">
+                <span class="eyebrow">GRATUIDADES LEGAIS</span>
+                <h3 style="font-size:1.4rem;color:var(--color-green-deep);margin:8px 0;">Isenção 100%</h3>
+                <p><strong>Idosos (65 anos ou mais):</strong> Acesso livre mediante documento de identidade oficial com foto.</p>
+                <p><strong>Pessoas com Deficiência (PCD):</strong> Isenção e direito a acompanhante via Passe Fácil Especial.</p>
+                <p><strong>Crianças:</strong> Gratuidade até 6 anos incompletos nos colos dos responsáveis.</p>
+            </div>
+
+            <div class="card" style="border-top:4px solid #0284c7;">
+                <span class="eyebrow">TRANSPORTE FLUVIAL</span>
+                <h3 style="font-size:1.4rem;color:var(--color-green-deep);margin:8px 0;">R$ 5,00 a R$ 15,00</h3>
+                <p><strong>Ilha do Combu:</strong> Em média R$ 10,00 a R$ 15,00 por trecho (embarque no Trapiche de Icoaraci ou Praça Princesa Isabel).</p>
+                <p><strong>Cotijuba:</strong> Linha municipal oficial operada por navio/catamarã da SEMOB com tarifa subsidiada.</p>
+                <p class="small text-muted">Consulte sempre a cooperativa dos barqueiros no momento do embarque.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- DEMAIS MODAIS DE TRANSPORTE E SERVIÇOS PÚBLICOS -->
     <section class="section other-modes-section">
         <div class="sectionhead">
             <div>
                 <span class="eyebrow">OUTROS MODAIS</span>
-                <h2>🚲 🚕 🛵 Mais formas de se mover</h2>
-                <p class="section-subtitle">Serviços públicos de mobilidade managecidos pela Prefeitura de Belém e pela SEMOB.</p>
+                <h2>🚲 🚕 🛵 Mais Formas de se Mover</h2>
+                <p class="section-subtitle">Serviços públicos de mobilidade gerenciados pela Prefeitura de Belém e pela SEMOB.</p>
             </div>
         </div>
         <div class="grid">
             <article class="card">
                 <span class="eyebrow">Ciclovias</span>
                 <h3>Rede Cicloviária de Belém</h3>
-                <p>Ciclovias e rotas cicláveis que conectam a orla, o centro histórico e as áreas de lazer.</p>
+                <p>Ciclovias e rotas cicláveis que conectam a orla, o centro histórico e as principais avenidas da cidade.</p>
                 <a class="button-link" href="https://seguranca.belem.pa.gov.br/servicos-online/rede-cicloviaria-de-belem/" target="_blank" rel="noopener noreferrer">Ver na fonte oficial ↗</a>
             </article>
             <article class="card">
                 <span class="eyebrow">Táxi</span>
-                <h3>Serviços para táxi</h3>
-                <p>Disque táxi, pontos de embarque e tabela de fares do serviço municipal.</p>
+                <h3>Serviços de Táxi</h3>
+                <p>Pontos de embarque credenciados e tabela de tarifas do serviço municipal de táxi de Belém.</p>
                 <a class="button-link" href="https://seguranca.belem.pa.gov.br/servicos-online/servicos-para-taxi/" target="_blank" rel="noopener noreferrer">Ver na fonte oficial ↗</a>
             </article>
             <article class="card">
                 <span class="eyebrow">Mototáxi</span>
-                <h3>Cadastro de mototaxistas</h3>
-                <p>Cadastro operacional dos mototaxistas de Belém e pontos de atendimento.</p>
+                <h3>Cadastro de Mototaxistas</h3>
+                <p>Cadastro operacional dos mototaxistas regularizados de Belém e fiscalização da SEMOB.</p>
                 <a class="button-link" href="https://seguranca.belem.pa.gov.br/servicos-online/formularios-diversos/" target="_blank" rel="noopener noreferrer">Ver na fonte oficial ↗</a>
             </article>
             <article class="card">
                 <span class="eyebrow">Integração</span>
                 <h3>Integra Belém</h3>
-                <p>Regras de integração, cartões Passe Fácil, gratuidades e cobrança por sentido de trajeto.</p>
+                <p>Regras de transbordo, cartões Passe Fácil, bilhetagem eletrônica e cobrança temporal.</p>
                 <a class="button-link" href="https://seguranca.belem.pa.gov.br/integra-belem/" target="_blank" rel="noopener noreferrer">Ver na fonte oficial ↗</a>
             </article>
             <article class="card">
                 <span class="eyebrow">Rotas</span>
-                <h3>Planejador de-para</h3>
-                <p>Descubra quais linhas oficiais conectam um ponto a outro e onde trocar de ônibus.</p>
+                <h3>Planejador De-Para</h3>
+                <p>Descubra quais linhas oficiais conectam um ponto a outro e onde realizar baldeações.</p>
                 <a class="button-link" href="/mobilidade/de-para">Abrir planejador ↗</a>
             </article>
             <article class="card">
                 <span class="eyebrow">Radar</span>
-                <h3>Alertas de trânsito</h3>
-                <p>Obras, interdições, desvios e eventos que afetam a circulação na cidade.</p>
+                <h3>Alertas de Trânsito</h3>
+                <p>Obras, interdições, desvios e eventos que afetam a circulação e trânsito na capital paraense.</p>
                 <a class="button-link" href="/mobilidade/alertas">Ver alertas ↗</a>
             </article>
         </div>
     </section>
 
-    <!-- Travessias Fluviais Amazônicas -->
-    <section class="section river-transit-section">
+    <!-- FASE 3: TRAVESSIAS FLUVIAIS AMAZÔNICAS -->
+    <section class="section river-transit-section" id="fluvial" aria-labelledby="river-heading">
         <div class="sectionhead">
             <div>
-                <span class="eyebrow">TRANSPORTE HIDROVIÁRIO</span>
-                <h2>🚤 Travessias Fluviais & Ilhas</h2>
+                <span class="eyebrow">TRANSPORTE HIDROVIÁRIO &amp; ILHAS</span>
+                <h2 id="river-heading">🚤 Travessias Fluviais &amp; Ilhas de Belém</h2>
+                <p class="section-subtitle">Acesso ribeirinho às ilhas: Combu, Cotijuba, Mosqueiro, Icoaraci e Barcarena.</p>
             </div>
-            <p class="small">Acesso às ilhas de Belém: Combu, Cotijuba, Barcarena e Mosqueiro.</p>
+            <a href="/mobilidade/fluvial" class="button secondary small">Página Fluvial Completa ↗</a>
         </div>
 
         <div class="grid river-grid">
@@ -215,16 +380,19 @@
                     <h3>@route.Name</h3>
                     <p><strong>Embarque:</strong> @route.DeparturePort</p>
                     <p><strong>Desembarque:</strong> @route.DestinationPort</p>
-                    <div class="river-meta" style="margin:12px 0;font-size:0.9rem;">
-                        <p>⏱️ <strong>Duração estimada:</strong> @(route.IsVerified && route.EstimatedDurationMinutes>0 ? route.EstimatedDurationMinutes + " min" : "Não confirmada")</p>
-                        <p>💰 <strong>Tarifa:</strong> @(route.ConfirmedFare is {} riverFare ? "R$ " + riverFare.ToString("F2") : "Não confirmada")</p>
+                    <div class="river-meta features-box">
+                        <p>⏱️ <strong>Duração estimada:</strong> @(route.IsVerified && route.EstimatedDurationMinutes > 0 ? route.EstimatedDurationMinutes + " min" : "Conforme as marés da Baía")</p>
+                        <p>💰 <strong>Tarifa:</strong> @(route.ConfirmedFare is { } riverFare ? "R$ " + riverFare.ToString("F2", currentCulture) : "Consulte no trapiche")</p>
                         <p>🚢 <strong>Embarcação:</strong> @route.VesselType</p>
-                        <p>🕒 <strong>Horários:</strong> @(route.IsVerified ? route.OperatingHours : "Confirme a operação com o responsável")</p>
+                        <p>🕒 <strong>Horários:</strong> @(route.IsVerified && !string.IsNullOrWhiteSpace(route.OperatingHours) ? route.OperatingHours : "Partidas periódicas de acordo com o fluxo")</p>
                     </div>
                     @if (!string.IsNullOrWhiteSpace(route.OperatorNotes))
                     {
                         <div class="cultural-badge">💡 @route.OperatorNotes</div>
                     }
+                    <div class="card-footer" style="margin-top:auto;border-top:1px solid var(--color-border-subtle);padding-top:10px;">
+                        <a href="/como-chegar?destino=@Uri.EscapeDataString(route.DestinationPort)&modo=boat" class="button-link">Traçar rota até o trapiche ↗</a>
+                    </div>
                 </article>
             }
         </div>

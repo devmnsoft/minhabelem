@@ -45,6 +45,7 @@
             <h3>Escolha a origem e o destino</h3>
             <p>O planejador usa as linhas e os terminais publicados pela SEGBEL/SEMOB, com horário, tarifa e pontos de integração de cada linha.</p>
             <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:18px;">
+                <a class="button small" href="/como-chegar">🗺️ Planejador multimodal Como Chegar</a>
                 <a class="button secondary small" href="/mobilidade">Ver todas as linhas</a>
                 <a class="button secondary small" href="/mobilidade/paradas">Paradas e terminais</a>
                 <a class="button secondary small" href="/guia-ia">Perguntar ao Curió IA</a>
@@ -55,8 +56,9 @@
     {
         <div class="empty" style="margin-top:28px;">
             <h3>Nenhuma linha direta encontrada</h3>
-            <p>Não encontramos linha publicada que conecte <strong>@Model.Origin</strong> a <strong>@Model.Destination</strong>. Tente o nome do bairro, do terminal ou do ponto de referência mais próximo.</p>
+            <p>Não encontramos linha direta publicada que conecte <strong>@Model.Origin</strong> a <strong>@Model.Destination</strong>. Experimente usar o Planejador Como Chegar para calcular baldeações, trechos a pé ou de barco.</p>
             <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:18px;">
+                <a class="button small" href="/como-chegar?origem=@Uri.EscapeDataString(Model.Origin ?? "")&destino=@Uri.EscapeDataString(Model.Destination ?? "")">🗺️ Calcular no Como Chegar (Multimodal) ↗</a>
                 <a class="button secondary small" href="/mobilidade">Ver todas as linhas</a>
                 <a class="button secondary small" href="/mobilidade/paradas">Paradas e terminais</a>
             </div>
@@ -69,7 +71,10 @@
                 <span class="eyebrow">RESULTADO</span>
                 <h2>@Model.DirectLines.Count linha(s) para @Model.Origin ⇄ @Model.Destination</h2>
             </div>
-            <a class="button-link" href="/mobilidade">Todas as linhas ↗</a>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                <a class="button small" href="/como-chegar?origem=@Uri.EscapeDataString(Model.Origin ?? "")&destino=@Uri.EscapeDataString(Model.Destination ?? "")">🗺️ Ver mapa no Como Chegar ↗</a>
+                <a class="button secondary small" href="/mobilidade">Todas as linhas</a>
+            </div>
         </div>
 
         @if (Model.SharedIntegrations.Count > 0)

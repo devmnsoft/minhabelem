@@ -91,13 +91,139 @@
             <a class="button secondary" href="@mapUrl" target="_blank" rel="noopener noreferrer">@Loc["RouteOpenMaps"] ↗</a>
         </section>
     </div>
-    <aside class="card guide-visit-card"><span class="eyebrow">@Loc["RouteVisit"]</span><h2>@Loc["VisitState_"+assessment.State]</h2>
-        @if(confirmed && schedule.Info is {} info)
-        {
-            @if(info.EntryPrice is {} price){<p><strong>@Loc["RouteEntry"]: BRL @price.ToString("N2")</strong></p>}
-            <p>@info.PriceConditions</p><p class="small"><a href="@info.SourceUrl" target="_blank" rel="noopener noreferrer">@Loc["RouteSource"] ↗</a><br/>@PortalTime.Local(info.ConfirmedAt).ToString("d") → @PortalTime.Local(info.ValidUntil).ToString("d")</p>
-        }
-        else{<p>@Loc["RouteUnknown"] · @Loc["NoVerifiedPrice"]</p>}
+    <aside class="card guide-visit-card" aria-labelledby="visit-card-heading">
+        <span class="eyebrow">@Loc["RouteVisit"] · BELÉM 360</span>
+        <h2 id="visit-card-heading" style="margin:6px 0 12px;">@Loc["VisitState_" + assessment.State]</h2>
+
+        <!-- FASE 4: Componente de Recomendação de Visitação -->
+        <div class="features-box" style="margin-bottom:16px;">
+            <h4 style="display:flex;align-items:center;gap:6px;margin:0 0 6px;">
+                <span>💡</span> <strong>Melhor período para visitação</strong>
+            </h4>
+            <p class="small" style="line-height:1.6;margin:0 0 8px;">
+                @(string.IsNullOrWhiteSpace(assessment.Reason) ? "Visita sugerida no período de funcionamento oficial do local." : assessment.Reason)
+            </p>
+            @if (assessment.NextChangeUtc.HasValue)
+            {
+                <p class="small text-muted" style="margin:0 0 6px;">
+                    🕒 Próxima mudança de horário prevista para às @PortalTime.Local(assessment.NextChangeUtc.Value).ToString("HH:mm").
+                </p>
+            }
+            <p class="small text-muted" style="font-size:0.78rem;margin:0;">
+                ℹ️ @Loc["RouteNoCrowding"]
+            </p>
+        </div>
+
+        <!-- FASE 4: Quadro de Horários por Dia e Exceções -->
+        <div class="card" style="padding:14px;margin-bottom:16px;background:var(--color-cream);">
+            <h4 style="margin:0 0 8px;font-size:0.95rem;">📅 Horários de Funcionamento</h4>
+            @if (schedule.Hours.Count > 0)
+            {
+                var regularHours = schedule.Hours.Where(h => h.SpecialDate is null).OrderBy(h => (h.Weekday + 6) % 7).ToList();
+                var specialHours = schedule.Hours.Where(h => h.SpecialDate is not null).ToList();
+                var daysNames = new[] { "Domingo", "Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado" };
+
+                <ul style="list-style:none;padding:0;margin:0;font-size:0.88rem;display:grid;gap:6px;">
+                    @foreach (var h in regularHours)
+                    {
+                        var dayName = daysNames[Math.Clamp(h.Weekday, 0, 6)];
+                        <li style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid var(--color-border-subtle);">
+                            <strong>@dayName:</strong>
+                            <span>
+                                @if (h.IsClosed) { <span class="badge badge-secondary" style="font-size:0.75rem;">Fechado</span> }
+                                else if (h.Is24h) { <span>Aberto 24 horas</span> }
+                                else if (h.OpenMinute.HasValue && h.CloseMinute.HasValue)
+                                {
+                                    <span>@(h.OpenMinute.Value / 60):@((h.OpenMinute.Value % 60).ToString("00")) às @(h.CloseMinute.Value / 60):@((h.CloseMinute.Value % 60).ToString("00"))</span>
+                                }
+                                else { <span>Horário a confirmar</span> }
+                            </span>
+                        </li>
+                    }
+                </ul>
+
+                @if (schedule.Info?.LastEntryMinutes is { } lastEntry)
+                {
+                    <p class="small text-muted" style="margin-top:8px;">
+                        ⚠️ <strong>Última entrada:</strong> até às @(lastEntry / 60):@((lastEntry % 60).ToString("00")).
+                    </p>
+                }
+
+                @if (specialHours.Count > 0)
+                {
+                    <div style="margin-top:10px;padding-top:8px;border-top:1px solid var(--color-border-subtle);">
+                        <strong style="font-size:0.8rem;text-transform:uppercase;color:var(--color-text-muted);">Feriados &amp; Datas Especiais:</strong>
+                        <ul style="list-style:none;padding:0;margin:4px 0 0;font-size:0.82rem;">
+                            @foreach (var sh in specialHours)
+                            {
+                                <li>@sh.SpecialDate?.ToString("dd/MM"): @(sh.IsClosed ? "Fechado" : "Horário especial")</li>
+                            }
+                        </ul>
+                    </div>
+                }
+            }
+            else if (Model.OpeningHours.Count > 0)
+            {
+                <ul style="list-style:none;padding:0;margin:0;font-size:0.88rem;display:grid;gap:4px;">
+                    @foreach (var h in Model.OpeningHours)
+                    {
+                        <li style="padding:2px 0;">@h.Label</li>
+                    }
+                </ul>
+            }
+            else
+            {
+                <p class="small text-muted" style="margin:0;">
+                    Horário de funcionamento não verificado recentemente. Consulte o estabelecimento antes da visita.
+                </p>
+            }
+        </div>
+
+        <!-- FASE 4: Ingressos, Tarifas e Gratuidade -->
+        <div class="card" style="padding:14px;margin-bottom:16px;background:var(--color-cream);">
+            <h4 style="margin:0 0 8px;font-size:0.95rem;">🎟️ Ingressos e Tarifas</h4>
+            @if (confirmed && schedule.Info is { } confirmedInfo)
+            {
+                @if (confirmedInfo.EntryPrice is { } price)
+                {
+                    <p style="margin:0 0 4px;"><strong>Inteira:</strong> R$ @price.ToString("N2")</p>
+                    @if (confirmedInfo.HalfPrice is { } half)
+                    {
+                        <p style="margin:0 0 4px;"><strong>Meia-entrada:</strong> R$ @half.ToString("N2")</p>
+                    }
+                }
+                else
+                {
+                    <p style="margin:0 0 4px;"><strong>Entrada:</strong> Gratuita ou sob consulta no local.</p>
+                }
+
+                @if (!string.IsNullOrWhiteSpace(confirmedInfo.PriceConditions))
+                {
+                    <p class="small text-muted" style="margin:4px 0 0;">@confirmedInfo.PriceConditions</p>
+                }
+
+                <div style="margin-top:10px;padding-top:8px;border-top:1px solid var(--color-border-subtle);font-size:0.8rem;color:var(--color-text-muted);">
+                    <a href="@confirmedInfo.SourceUrl" target="_blank" rel="noopener noreferrer">Fonte oficial ↗</a> ·
+                    Verificado: @PortalTime.Local(confirmedInfo.ConfirmedAt).ToString("dd/MM/yyyy")
+                </div>
+            }
+            else if (!string.IsNullOrWhiteSpace(Model.PriceText))
+            {
+                <p style="margin:0;"><strong>Valor:</strong> @Model.PriceText</p>
+                <p class="small text-muted" style="margin-top:4px;">Tarifa conforme informado pelo estabelecimento.</p>
+            }
+            else
+            {
+                <p class="small text-muted" style="margin:0;">
+                    Tarifa não informada / Entrada franca ou a confirmar na bilheteria local.
+                </p>
+            }
+        </div>
+
+        <!-- Acessibilidade -->
+        <p class="small" style="margin-bottom:14px;">
+            ♿ <strong>Acessibilidade:</strong> @(Model.WheelchairAccessible == true ? "Acesso para cadeirantes confirmado" : Model.WheelchairAccessible == false ? "Sem acessibilidade informada" : "Consulte com a administração")
+        </p>
         @if (TempData["VisitRequest"] is string visitNote)
         {
             <p class="notice" role="status">@visitNote</p>
