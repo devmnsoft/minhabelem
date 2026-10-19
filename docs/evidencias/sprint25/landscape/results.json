@@ -1,0 +1,40 @@
+{
+  "method": "Real MVC snapshots from disposable database. No POST or external integrations executed by snapshot server.",
+  "checked": 2,
+  "interactions": [
+    {
+      "culture": "pt-BR",
+      "width": 844,
+      "menu": true,
+      "escape": true,
+      "themePersistence": true
+    }
+  ],
+  "failures": [],
+  "results": [
+    {
+      "culture": "pt-BR",
+      "width": 844,
+      "theme": "light",
+      "file": "home.html",
+      "scrollWidth": 844,
+      "brokenImages": [],
+      "overflow": [],
+      "h1": "O que você quer fazer em Belém?",
+      "unknownKeys": [],
+      "violations": []
+    },
+    {
+      "culture": "pt-BR",
+      "width": 844,
+      "theme": "dark",
+      "file": "home.html",
+      "scrollWidth": 844,
+      "brokenImages": [],
+      "overflow": [],
+      "h1": "O que você quer fazer em Belém?",
+      "unknownKeys": [],
+      "violations": []
+    }
+  ]
+}

@@ -26,6 +26,10 @@ O inventário inicial em `evidencias/sprint25/initial-inventory.json` enumera to
 
 Evidências anteriores disponíveis: `evidencias/sprint14`, `sprint17`, `sprint18`, `sprint20/before`, `sprint20/after` e `sprint22`. Não foram anexadas capturas adicionais do operador ao pedido. As novas capturas iniciais usam HTML MVC renderizado do baseline em banco aleatório descartável, sem copiar dados reais.
 
-Verificação inicial sem banco: 160 aprovados, 67 ignorados, zero falhas. A integração local usa a fixture existente, que restringe o host a localhost e cria/remove somente seu banco aleatório. Credenciais permanecem em memória. Pipelines: o conector GitHub devolveu lista vazia para o commit `a119871` (consulta limitada a execuções de PR); isso não comprova sucesso do CI. A ferramenta gh não está instalada.
+Verificação inicial sem banco: 160 aprovados, 67 ignorados, zero falhas. A integração local usa a fixture existente, que restringe o host a localhost e cria/remove somente seu banco aleatório. Credenciais permanecem em memória.
+
+Pipelines: a consulta inicial por SHA curto devolveu lista vazia. A consulta posterior da API de Actions confirmou o [baseline main aprovado](https://github.com/devmnsoft/minhabelem/actions/runs/39325828484), com quatro jobs bem-sucedidos: Windows, Ubuntu, MySQL 8 e MariaDB 10.11. Foram conferidas as 12 execuções recentes, registradas em `evidencias/sprint25/recent-pipelines.json`. A execução `39308808758`, de `5dcd6b6`, falhou nos testes MariaDB e cancelou MySQL; os builds passaram. Isso não representa falha do baseline atual nem CI desta branch local.
+
+Comparação visual: a captura desktop da Sprint 14 apresenta ilustração de IA, navegação com nove entradas e título sobre a imagem; o baseline atual apresenta fotografia licenciada, header com quebra de linha e cinco chips mais um bloco grande de mobilidade. O Marco A conserva a marca e a fotografia documental, separa leitura e imagem, reduz a navegação principal a cinco destinos e elimina o indicador público sem dados atuais.
 
 O Marco A entrega Home, identidade, navegação e fundamentos CSS para revisão visual. A aprovação do operador é exigida pela seção 18 do pedido antes da propagação nos Marcos B/C. Compilação, overflow e axe não substituem essa aprovação. Esta sprint não será declarada concluída ao entregar o Marco A.

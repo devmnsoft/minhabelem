@@ -1,0 +1,1210 @@
+{
+  "method": "Real MVC snapshots from disposable database. No POST or external integrations executed by snapshot server.",
+  "checked": 88,
+  "interactions": [],
+  "failures": [],
+  "results": [
+    {
+      "culture": "pt-BR",
+      "width": 390,
+      "theme": "light",
+      "file": "-busca-Belém.html",
+      "scrollWidth": 390,
+      "brokenImages": [],
+      "overflow": [
+        "",
+        ""
+      ],
+      "h1": "O que você quer fazer em Belém?",
+      "unknownKeys": [],
+      "violations": []
+    },
+    {
+      "culture": "pt-BR",
+      "width": 390,
+      "theme": "dark",
+      "file": "-busca-Belém.html",
+      "scrollWidth": 390,
+      "brokenImages": [],
+      "overflow": [
+        "",
+        ""
+      ],
+      "h1": "O que você quer fazer em Belém?",
+      "unknownKeys": [],
+      "violations": []
+    },
+    {
+      "culture": "pt-BR",
+      "width": 390,
+      "theme": "light",
+      "file": "admin-anunciantes.html",
+      "scrollWidth": 390,
+      "brokenImages": [],
+      "overflow": [],
+      "h1": "Anunciantes & Campanhas",
+      "unknownKeys": [],
+      "violations": []
+    },
+    {
+      "culture": "pt-BR",
+      "width": 390,
+      "theme": "dark",
+      "file": "admin-anunciantes.html",
+      "scrollWidth": 390,
+      "brokenImages": [],
+      "overflow": [],
+      "h1": "Anunciantes & Campanhas",
+      "unknownKeys": [],
+      "violations": []
+    },
+    {
+      "culture": "pt-BR",
+      "width": 390,
+      "theme": "light",
+      "file": "admin-auditoria.html",
+      "scrollWidth": 390,
+      "brokenImages": [],
+      "overflow": [],
+      "h1": "Trilha de Auditoria",
+      "unknownKeys": [],
+      "violations": []
+    },
+    {
+      "culture": "pt-BR",
+      "width": 390,
+      "theme": "dark",
+      "file": "admin-auditoria.html",
+      "scrollWidth": 390,
+      "brokenImages": [],
+      "overflow": [],
+      "h1": "Trilha de Auditoria",
+      "unknownKeys": [],
+      "violations": []
+    },
+    {
+      "culture": "pt-BR",
+      "width": 390,
+      "theme": "light",
+      "file": "admin-bairros.html",
+      "scrollWidth": 390,
+      "brokenImages": [],
+      "overflow": [
+        "",
+        ""
+      ],
+      "h1": "Guias de Bairros de Belém",
+      "unknownKeys": [],
+      "violations": []
+    },
+    {
+      "culture": "pt-BR",
+      "width": 390,
+      "theme": "dark",
+      "file": "admin-bairros.html",
+      "scrollWidth": 390,
+      "brokenImages": [],
+      "overflow": [
+        "",
+        ""
+      ],
+      "h1": "Guias de Bairros de Belém",
+      "unknownKeys": [],
+      "violations": []
+    },
+    {
+      "culture": "pt-BR",
+      "width": 390,
+      "theme": "light",
+      "file": "admin-colaboracoes.html",
+      "scrollWidth": 390,
+      "brokenImages": [],
+      "overflow": [],
+      "h1": "Colaborações da Comunidade",
+      "unknownKeys": [],
+      "violations": []
+    },
+    {
+      "culture": "pt-BR",
+      "width": 390,
+      "theme": "dark",
+      "file": "admin-colaboracoes.html",
+      "scrollWidth": 390,
+      "brokenImages": [],
+      "overflow": [],
+      "h1": "Colaborações da Comunidade",
+      "unknownKeys": [],
+      "violations": []
+    },
+    {
+      "culture": "pt-BR",
+      "width": 390,
+      "theme": "light",
+      "file": "admin-configuracoes.html",
+      "scrollWidth": 390,
+      "brokenImages": [],
+      "overflow": [],
+      "h1": "Configurações operacionais",
+      "unknownKeys": [],
+      "violations": []
+    },
+    {
+      "culture": "pt-BR",
+      "width": 390,
+      "theme": "dark",
+      "file": "admin-configuracoes.html",
+      "scrollWidth": 390,
+      "brokenImages": [],
+      "overflow": [],
+      "h1": "Configurações operacionais",
+      "unknownKeys": [],
+      "violations": []
+    },
+    {
+      "culture": "pt-BR",
+      "width": 390,
+      "theme": "light",
+      "file": "admin-conteudo.html",
+      "scrollWidth": 390,
+      "brokenImages": [],
+      "overflow": [],
+      "h1": "Gestão de Matérias & Notícias",
+      "unknownKeys": [],
+      "violations": []
+    },
+    {
+      "culture": "pt-BR",
+      "width": 390,
+      "theme": "dark",
+      "file": "admin-conteudo.html",
+      "scrollWidth": 390,
+      "brokenImages": [],
+      "overflow": [],
+      "h1": "Gestão de Matérias & Notícias",
+      "unknownKeys": [],
+      "violations": []
+    },
+    {
+      "culture": "pt-BR",
+      "width": 390,
+      "theme": "light",
+      "file": "admin-evolucao.html",
+      "scrollWidth": 390,
+      "brokenImages": [],
+      "overflow": [],
+      "h1": "Evolução e Governança Operacional",
+      "unknownKeys": [],
+      "violations": []
+    },
+    {
+      "culture": "pt-BR",
+      "width": 390,
+      "theme": "dark",
+      "file": "admin-evolucao.html",
+      "scrollWidth": 390,
+      "brokenImages": [],
+      "overflow": [],
+      "h1": "Evolução e Governança Operacional",
+      "unknownKeys": [],
+      "violations": []
+    },
+    {
+      "culture": "pt-BR",
+      "width": 390,
+      "theme": "light",
+      "file": "admin-fontes.html",
+      "scrollWidth": 390,
+      "brokenImages": [],
+      "overflow": [],
+      "h1": "Fontes de Ingestão & Monitoramento",
+      "unknownKeys": [],
+      "violations": []
+    },
+    {
+      "culture": "pt-BR",
+      "width": 390,
+      "theme": "dark",
+      "file": "admin-fontes.html",
+      "scrollWidth": 390,
+      "brokenImages": [],
+      "overflow": [],
+      "h1": "Fontes de Ingestão & Monitoramento",
+      "unknownKeys": [],
+      "violations": []
+    },
+    {
+      "culture": "pt-BR",
+      "width": 390,
+      "theme": "light",
+      "file": "admin-idiomas.html",
+      "scrollWidth": 390,
+      "brokenImages": [],
+      "overflow": [],
+      "h1": "Idiomas Globais da Plataforma",
+      "unknownKeys": [],
+      "violations": []
+    },
+    {
+      "culture": "pt-BR",
+      "width": 390,
+      "theme": "dark",
+      "file": "admin-idiomas.html",
+      "scrollWidth": 390,
+      "brokenImages": [],
+      "overflow": [],
+      "h1": "Idiomas Globais da Plataforma",
+      "unknownKeys": [],
+      "violations": []
+    },
+    {
+      "culture": "pt-BR",
+      "width": 390,
+      "theme": "light",
+      "file": "admin-integracoes.html",
+      "scrollWidth": 390,
+      "brokenImages": [],
+      "overflow": [],
+      "h1": "Integrações",
+      "unknownKeys": [],
+      "violations": []
+    },
+    {
+      "culture": "pt-BR",
+      "width": 390,
+      "theme": "dark",
+      "file": "admin-integracoes.html",
+      "scrollWidth": 390,
+      "brokenImages": [],
+      "overflow": [],
+      "h1": "Integrações",
+      "unknownKeys": [],
+      "violations": []
+    },
+    {
+      "culture": "pt-BR",
+      "width": 390,
+      "theme": "light",
+      "file": "admin-lugares.html",
+      "scrollWidth": 390,
+      "brokenImages": [],
+      "overflow": [],
+      "h1": "Curadoria de Lugares & Atrações",
+      "unknownKeys": [],
+      "violations": []
+    },
+    {
+      "culture": "pt-BR",
+      "width": 390,
+      "theme": "dark",
+      "file": "admin-lugares.html",
+      "scrollWidth": 390,
+      "brokenImages": [],
+      "overflow": [],
+      "h1": "Curadoria de Lugares & Atrações",
+      "unknownKeys": [],
+      "violations": []
+    },
+    {
+      "culture": "pt-BR",
+      "width": 390,
+      "theme": "light",
+      "file": "admin-midias.html",
+      "scrollWidth": 390,
+      "brokenImages": [],
+      "overflow": [],
+      "h1": "Galeria de mídia",
+      "unknownKeys": [],
+      "violations": []
+    },
+    {
+      "culture": "pt-BR",
+      "width": 390,
+      "theme": "dark",
+      "file": "admin-midias.html",
+      "scrollWidth": 390,
+      "brokenImages": [],
+      "overflow": [],
+      "h1": "Galeria de mídia",
+      "unknownKeys": [],
+      "violations": []
+    },
+    {
+      "culture": "pt-BR",
+      "width": 390,
+      "theme": "light",
+      "file": "admin-mobilidade.html",
+      "scrollWidth": 390,
+      "brokenImages": [],
+      "overflow": [],
+      "h1": "Mobilidade Urbana & Trânsito",
+      "unknownKeys": [],
+      "violations": []
+    },
+    {
+      "culture": "pt-BR",
+      "width": 390,
+      "theme": "dark",
+      "file": "admin-mobilidade.html",
+      "scrollWidth": 390,
+      "brokenImages": [],
+      "overflow": [],
+      "h1": "Mobilidade Urbana & Trânsito",
+      "unknownKeys": [],
+      "violations": []
+    },
+    {
+      "culture": "pt-BR",
+      "width": 390,
+      "theme": "light",
+      "file": "admin-perfis.html",
+      "scrollWidth": 390,
+      "brokenImages": [],
+      "overflow": [],
+      "h1": "Perfis e permissões",
+      "unknownKeys": [],
+      "violations": []
+    },
+    {
+      "culture": "pt-BR",
+      "width": 390,
+      "theme": "dark",
+      "file": "admin-perfis.html",
+      "scrollWidth": 390,
+      "brokenImages": [],
+      "overflow": [],
+      "h1": "Perfis e permissões",
+      "unknownKeys": [],
+      "violations": []
+    },
+    {
+      "culture": "pt-BR",
+      "width": 390,
+      "theme": "light",
+      "file": "admin-radar.html",
+      "scrollWidth": 390,
+      "brokenImages": [],
+      "overflow": [],
+      "h1": "MinhaBelém Radar",
+      "unknownKeys": [],
+      "violations": []
+    },
+    {
+      "culture": "pt-BR",
+      "width": 390,
+      "theme": "dark",
+      "file": "admin-radar.html",
+      "scrollWidth": 390,
+      "brokenImages": [],
+      "overflow": [],
+      "h1": "MinhaBelém Radar",
+      "unknownKeys": [],
+      "violations": []
+    },
+    {
+      "culture": "pt-BR",
+      "width": 390,
+      "theme": "light",
+      "file": "admin-relatorios.html",
+      "scrollWidth": 390,
+      "brokenImages": [],
+      "overflow": [],
+      "h1": "Relatórios Executivos & Indicadores",
+      "unknownKeys": [],
+      "violations": []
+    },
+    {
+      "culture": "pt-BR",
+      "width": 390,
+      "theme": "dark",
+      "file": "admin-relatorios.html",
+      "scrollWidth": 390,
+      "brokenImages": [],
+      "overflow": [],
+      "h1": "Relatórios Executivos & Indicadores",
+      "unknownKeys": [],
+      "violations": []
+    },
+    {
+      "culture": "pt-BR",
+      "width": 390,
+      "theme": "light",
+      "file": "admin-traducoes.html",
+      "scrollWidth": 390,
+      "brokenImages": [],
+      "overflow": [],
+      "h1": "Fila & Gestão de Traduções",
+      "unknownKeys": [],
+      "violations": []
+    },
+    {
+      "culture": "pt-BR",
+      "width": 390,
+      "theme": "dark",
+      "file": "admin-traducoes.html",
+      "scrollWidth": 390,
+      "brokenImages": [],
+      "overflow": [],
+      "h1": "Fila & Gestão de Traduções",
+      "unknownKeys": [],
+      "violations": []
+    },
+    {
+      "culture": "pt-BR",
+      "width": 390,
+      "theme": "light",
+      "file": "admin-usuarios.html",
+      "scrollWidth": 390,
+      "brokenImages": [],
+      "overflow": [],
+      "h1": "Usuários & Controle de Acessos",
+      "unknownKeys": [],
+      "violations": []
+    },
+    {
+      "culture": "pt-BR",
+      "width": 390,
+      "theme": "dark",
+      "file": "admin-usuarios.html",
+      "scrollWidth": 390,
+      "brokenImages": [],
+      "overflow": [],
+      "h1": "Usuários & Controle de Acessos",
+      "unknownKeys": [],
+      "violations": []
+    },
+    {
+      "culture": "pt-BR",
+      "width": 390,
+      "theme": "light",
+      "file": "admin.html",
+      "scrollWidth": 390,
+      "brokenImages": [],
+      "overflow": [],
+      "h1": "Painel de operação",
+      "unknownKeys": [],
+      "violations": []
+    },
+    {
+      "culture": "pt-BR",
+      "width": 390,
+      "theme": "dark",
+      "file": "admin.html",
+      "scrollWidth": 390,
+      "brokenImages": [],
+      "overflow": [],
+      "h1": "Painel de operação",
+      "unknownKeys": [],
+      "violations": []
+    },
+    {
+      "culture": "pt-BR",
+      "width": 390,
+      "theme": "light",
+      "file": "agenda-semana.html",
+      "scrollWidth": 390,
+      "brokenImages": [],
+      "overflow": [
+        "",
+        ""
+      ],
+      "h1": "Sua próxima boa história começa aqui.",
+      "unknownKeys": [],
+      "violations": []
+    },
+    {
+      "culture": "pt-BR",
+      "width": 390,
+      "theme": "dark",
+      "file": "agenda-semana.html",
+      "scrollWidth": 390,
+      "brokenImages": [],
+      "overflow": [
+        "",
+        ""
+      ],
+      "h1": "Sua próxima boa história começa aqui.",
+      "unknownKeys": [],
+      "violations": []
+    },
+    {
+      "culture": "pt-BR",
+      "width": 390,
+      "theme": "light",
+      "file": "agenda.html",
+      "scrollWidth": 390,
+      "brokenImages": [],
+      "overflow": [
+        "",
+        ""
+      ],
+      "h1": "Sua próxima boa história começa aqui.",
+      "unknownKeys": [],
+      "violations": []
+    },
+    {
+      "culture": "pt-BR",
+      "width": 390,
+      "theme": "dark",
+      "file": "agenda.html",
+      "scrollWidth": 390,
+      "brokenImages": [],
+      "overflow": [
+        "",
+        ""
+      ],
+      "h1": "Sua próxima boa história começa aqui.",
+      "unknownKeys": [],
+      "violations": []
+    },
+    {
+      "culture": "pt-BR",
+      "width": 390,
+      "theme": "light",
+      "file": "agora.html",
+      "scrollWidth": 390,
+      "brokenImages": [],
+      "overflow": [
+        "",
+        ""
+      ],
+      "h1": "Sua próxima boa história começa aqui.",
+      "unknownKeys": [],
+      "violations": []
+    },
+    {
+      "culture": "pt-BR",
+      "width": 390,
+      "theme": "dark",
+      "file": "agora.html",
+      "scrollWidth": 390,
+      "brokenImages": [],
+      "overflow": [
+        "",
+        ""
+      ],
+      "h1": "Sua próxima boa história começa aqui.",
+      "unknownKeys": [],
+      "violations": []
+    },
+    {
+      "culture": "pt-BR",
+      "width": 390,
+      "theme": "light",
+      "file": "cinema-teatro.html",
+      "scrollWidth": 390,
+      "brokenImages": [],
+      "overflow": [
+        "",
+        ""
+      ],
+      "h1": "Sua próxima boa história começa aqui.",
+      "unknownKeys": [],
+      "violations": []
+    },
+    {
+      "culture": "pt-BR",
+      "width": 390,
+      "theme": "dark",
+      "file": "cinema-teatro.html",
+      "scrollWidth": 390,
+      "brokenImages": [],
+      "overflow": [
+        "",
+        ""
+      ],
+      "h1": "Sua próxima boa história começa aqui.",
+      "unknownKeys": [],
+      "violations": []
+    },
+    {
+      "culture": "pt-BR",
+      "width": 390,
+      "theme": "light",
+      "file": "como-chegar.html",
+      "scrollWidth": 390,
+      "brokenImages": [],
+      "overflow": [
+        "",
+        ""
+      ],
+      "h1": "Como chegar",
+      "unknownKeys": [],
+      "violations": []
+    },
+    {
+      "culture": "pt-BR",
+      "width": 390,
+      "theme": "dark",
+      "file": "como-chegar.html",
+      "scrollWidth": 390,
+      "brokenImages": [],
+      "overflow": [
+        "",
+        ""
+      ],
+      "h1": "Como chegar",
+      "unknownKeys": [],
+      "violations": []
+    },
+    {
+      "culture": "pt-BR",
+      "width": 390,
+      "theme": "light",
+      "file": "conta-login.html",
+      "scrollWidth": 390,
+      "brokenImages": [],
+      "overflow": [
+        "",
+        ""
+      ],
+      "h1": "Entre na sua conta",
+      "unknownKeys": [],
+      "violations": []
+    },
+    {
+      "culture": "pt-BR",
+      "width": 390,
+      "theme": "dark",
+      "file": "conta-login.html",
+      "scrollWidth": 390,
+      "brokenImages": [],
+      "overflow": [
+        "",
+        ""
+      ],
+      "h1": "Entre na sua conta",
+      "unknownKeys": [],
+      "violations": []
+    },
+    {
+      "culture": "pt-BR",
+      "width": 390,
+      "theme": "light",
+      "file": "conta-perfil.html",
+      "scrollWidth": 390,
+      "brokenImages": [],
+      "overflow": [
+        "",
+        "",
+        "",
+        "",
+        "small text-muted",
+        "small"
+      ],
+      "h1": "Usuário de teste",
+      "unknownKeys": [],
+      "violations": []
+    },
+    {
+      "culture": "pt-BR",
+      "width": 390,
+      "theme": "dark",
+      "file": "conta-perfil.html",
+      "scrollWidth": 390,
+      "brokenImages": [],
+      "overflow": [
+        "",
+        "",
+        "",
+        "",
+        "small text-muted",
+        "small"
+      ],
+      "h1": "Usuário de teste",
+      "unknownKeys": [],
+      "violations": []
+    },
+    {
+      "culture": "pt-BR",
+      "width": 390,
+      "theme": "light",
+      "file": "conta-sessoes.html",
+      "scrollWidth": 390,
+      "brokenImages": [],
+      "overflow": [
+        "",
+        ""
+      ],
+      "h1": "Minhas sessões",
+      "unknownKeys": [],
+      "violations": []
+    },
+    {
+      "culture": "pt-BR",
+      "width": 390,
+      "theme": "dark",
+      "file": "conta-sessoes.html",
+      "scrollWidth": 390,
+      "brokenImages": [],
+      "overflow": [
+        "",
+        ""
+      ],
+      "h1": "Minhas sessões",
+      "unknownKeys": [],
+      "violations": []
+    },
+    {
+      "culture": "pt-BR",
+      "width": 390,
+      "theme": "light",
+      "file": "editorial-lotes.html",
+      "scrollWidth": 390,
+      "brokenImages": [],
+      "overflow": [],
+      "h1": "Aprovação em lote",
+      "unknownKeys": [],
+      "violations": []
+    },
+    {
+      "culture": "pt-BR",
+      "width": 390,
+      "theme": "dark",
+      "file": "editorial-lotes.html",
+      "scrollWidth": 390,
+      "brokenImages": [],
+      "overflow": [],
+      "h1": "Aprovação em lote",
+      "unknownKeys": [],
+      "violations": []
+    },
+    {
+      "culture": "pt-BR",
+      "width": 390,
+      "theme": "light",
+      "file": "editorial.html",
+      "scrollWidth": 390,
+      "brokenImages": [],
+      "overflow": [],
+      "h1": "Revisão Editorial & Publicação",
+      "unknownKeys": [],
+      "violations": []
+    },
+    {
+      "culture": "pt-BR",
+      "width": 390,
+      "theme": "dark",
+      "file": "editorial.html",
+      "scrollWidth": 390,
+      "brokenImages": [],
+      "overflow": [],
+      "h1": "Revisão Editorial & Publicação",
+      "unknownKeys": [],
+      "violations": []
+    },
+    {
+      "culture": "pt-BR",
+      "width": 390,
+      "theme": "light",
+      "file": "explore-glossario.html",
+      "scrollWidth": 390,
+      "brokenImages": [],
+      "overflow": [
+        "",
+        ""
+      ],
+      "h1": "📖 Glossário Amazônico",
+      "unknownKeys": [],
+      "violations": []
+    },
+    {
+      "culture": "pt-BR",
+      "width": 390,
+      "theme": "dark",
+      "file": "explore-glossario.html",
+      "scrollWidth": 390,
+      "brokenImages": [],
+      "overflow": [
+        "",
+        ""
+      ],
+      "h1": "📖 Glossário Amazônico",
+      "unknownKeys": [],
+      "violations": []
+    },
+    {
+      "culture": "pt-BR",
+      "width": 390,
+      "theme": "light",
+      "file": "explore-planejar.html",
+      "scrollWidth": 390,
+      "brokenImages": [],
+      "overflow": [
+        "",
+        ""
+      ],
+      "h1": "Planejar roteiro",
+      "unknownKeys": [],
+      "violations": []
+    },
+    {
+      "culture": "pt-BR",
+      "width": 390,
+      "theme": "dark",
+      "file": "explore-planejar.html",
+      "scrollWidth": 390,
+      "brokenImages": [],
+      "overflow": [
+        "",
+        ""
+      ],
+      "h1": "Planejar roteiro",
+      "unknownKeys": [],
+      "violations": []
+    },
+    {
+      "culture": "pt-BR",
+      "width": 390,
+      "theme": "light",
+      "file": "explore.html",
+      "scrollWidth": 390,
+      "brokenImages": [],
+      "overflow": [
+        "",
+        ""
+      ],
+      "h1": "Explore Belém — Guia Turístico Internacional",
+      "unknownKeys": [],
+      "violations": []
+    },
+    {
+      "culture": "pt-BR",
+      "width": 390,
+      "theme": "dark",
+      "file": "explore.html",
+      "scrollWidth": 390,
+      "brokenImages": [],
+      "overflow": [
+        "",
+        ""
+      ],
+      "h1": "Explore Belém — Guia Turístico Internacional",
+      "unknownKeys": [],
+      "violations": []
+    },
+    {
+      "culture": "pt-BR",
+      "width": 390,
+      "theme": "light",
+      "file": "guia-ia.html",
+      "scrollWidth": 390,
+      "brokenImages": [],
+      "overflow": [
+        "",
+        ""
+      ],
+      "h1": "MinhaBelém Guia IA",
+      "unknownKeys": [],
+      "violations": []
+    },
+    {
+      "culture": "pt-BR",
+      "width": 390,
+      "theme": "dark",
+      "file": "guia-ia.html",
+      "scrollWidth": 390,
+      "brokenImages": [],
+      "overflow": [
+        "",
+        ""
+      ],
+      "h1": "MinhaBelém Guia IA",
+      "unknownKeys": [],
+      "violations": []
+    },
+    {
+      "culture": "pt-BR",
+      "width": 390,
+      "theme": "light",
+      "file": "guia.html",
+      "scrollWidth": 390,
+      "brokenImages": [],
+      "overflow": [
+        "",
+        ""
+      ],
+      "h1": "Guia da Cidade",
+      "unknownKeys": [],
+      "violations": []
+    },
+    {
+      "culture": "pt-BR",
+      "width": 390,
+      "theme": "dark",
+      "file": "guia.html",
+      "scrollWidth": 390,
+      "brokenImages": [],
+      "overflow": [
+        "",
+        ""
+      ],
+      "h1": "Guia da Cidade",
+      "unknownKeys": [],
+      "violations": []
+    },
+    {
+      "culture": "pt-BR",
+      "width": 390,
+      "theme": "light",
+      "file": "home-data.html",
+      "scrollWidth": 390,
+      "brokenImages": [],
+      "overflow": [],
+      "h1": "O que você quer fazer em Belém?",
+      "unknownKeys": [],
+      "violations": []
+    },
+    {
+      "culture": "pt-BR",
+      "width": 390,
+      "theme": "dark",
+      "file": "home-data.html",
+      "scrollWidth": 390,
+      "brokenImages": [],
+      "overflow": [],
+      "h1": "O que você quer fazer em Belém?",
+      "unknownKeys": [],
+      "violations": []
+    },
+    {
+      "culture": "pt-BR",
+      "width": 390,
+      "theme": "light",
+      "file": "meu-bairro.html",
+      "scrollWidth": 390,
+      "brokenImages": [],
+      "overflow": [
+        "",
+        ""
+      ],
+      "h1": "Meu Bairro",
+      "unknownKeys": [],
+      "violations": []
+    },
+    {
+      "culture": "pt-BR",
+      "width": 390,
+      "theme": "dark",
+      "file": "meu-bairro.html",
+      "scrollWidth": 390,
+      "brokenImages": [],
+      "overflow": [
+        "",
+        ""
+      ],
+      "h1": "Meu Bairro",
+      "unknownKeys": [],
+      "violations": []
+    },
+    {
+      "culture": "pt-BR",
+      "width": 390,
+      "theme": "light",
+      "file": "mobilidade-alertas.html",
+      "scrollWidth": 390,
+      "brokenImages": [],
+      "overflow": [
+        "",
+        ""
+      ],
+      "h1": "Alertas vigentes de mobilidade",
+      "unknownKeys": [],
+      "violations": []
+    },
+    {
+      "culture": "pt-BR",
+      "width": 390,
+      "theme": "dark",
+      "file": "mobilidade-alertas.html",
+      "scrollWidth": 390,
+      "brokenImages": [],
+      "overflow": [
+        "",
+        ""
+      ],
+      "h1": "Alertas vigentes de mobilidade",
+      "unknownKeys": [],
+      "violations": []
+    },
+    {
+      "culture": "pt-BR",
+      "width": 390,
+      "theme": "light",
+      "file": "mobilidade-fluvial.html",
+      "scrollWidth": 390,
+      "brokenImages": [],
+      "overflow": [
+        "",
+        ""
+      ],
+      "h1": "Travessias fluviais",
+      "unknownKeys": [],
+      "violations": []
+    },
+    {
+      "culture": "pt-BR",
+      "width": 390,
+      "theme": "dark",
+      "file": "mobilidade-fluvial.html",
+      "scrollWidth": 390,
+      "brokenImages": [],
+      "overflow": [
+        "",
+        ""
+      ],
+      "h1": "Travessias fluviais",
+      "unknownKeys": [],
+      "violations": []
+    },
+    {
+      "culture": "pt-BR",
+      "width": 390,
+      "theme": "light",
+      "file": "mobilidade.html",
+      "scrollWidth": 390,
+      "brokenImages": [],
+      "overflow": [
+        "",
+        ""
+      ],
+      "h1": "Central de Mobilidade Urbana",
+      "unknownKeys": [],
+      "violations": []
+    },
+    {
+      "culture": "pt-BR",
+      "width": 390,
+      "theme": "dark",
+      "file": "mobilidade.html",
+      "scrollWidth": 390,
+      "brokenImages": [],
+      "overflow": [
+        "",
+        ""
+      ],
+      "h1": "Central de Mobilidade Urbana",
+      "unknownKeys": [],
+      "violations": []
+    },
+    {
+      "culture": "pt-BR",
+      "width": 390,
+      "theme": "light",
+      "file": "parceiros.html",
+      "scrollWidth": 390,
+      "brokenImages": [],
+      "overflow": [
+        "",
+        ""
+      ],
+      "h1": "Sua marca faz parte de Belém.",
+      "unknownKeys": [],
+      "violations": []
+    },
+    {
+      "culture": "pt-BR",
+      "width": 390,
+      "theme": "dark",
+      "file": "parceiros.html",
+      "scrollWidth": 390,
+      "brokenImages": [],
+      "overflow": [
+        "",
+        ""
+      ],
+      "h1": "Sua marca faz parte de Belém.",
+      "unknownKeys": [],
+      "violations": []
+    },
+    {
+      "culture": "pt-BR",
+      "width": 390,
+      "theme": "light",
+      "file": "privacidade.html",
+      "scrollWidth": 390,
+      "brokenImages": [],
+      "overflow": [
+        "",
+        ""
+      ],
+      "h1": "Privacidade",
+      "unknownKeys": [],
+      "violations": []
+    },
+    {
+      "culture": "pt-BR",
+      "width": 390,
+      "theme": "dark",
+      "file": "privacidade.html",
+      "scrollWidth": 390,
+      "brokenImages": [],
+      "overflow": [
+        "",
+        ""
+      ],
+      "h1": "Privacidade",
+      "unknownKeys": [],
+      "violations": []
+    },
+    {
+      "culture": "pt-BR",
+      "width": 390,
+      "theme": "light",
+      "file": "programacao-infantil.html",
+      "scrollWidth": 390,
+      "brokenImages": [],
+      "overflow": [
+        "",
+        ""
+      ],
+      "h1": "Sua próxima boa história começa aqui.",
+      "unknownKeys": [],
+      "violations": []
+    },
+    {
+      "culture": "pt-BR",
+      "width": 390,
+      "theme": "dark",
+      "file": "programacao-infantil.html",
+      "scrollWidth": 390,
+      "brokenImages": [],
+      "overflow": [
+        "",
+        ""
+      ],
+      "h1": "Sua próxima boa história começa aqui.",
+      "unknownKeys": [],
+      "violations": []
+    },
+    {
+      "culture": "pt-BR",
+      "width": 390,
+      "theme": "light",
+      "file": "termos.html",
+      "scrollWidth": 390,
+      "brokenImages": [],
+      "overflow": [
+        "",
+        ""
+      ],
+      "h1": "Termos de uso",
+      "unknownKeys": [],
+      "violations": []
+    },
+    {
+      "culture": "pt-BR",
+      "width": 390,
+      "theme": "dark",
+      "file": "termos.html",
+      "scrollWidth": 390,
+      "brokenImages": [],
+      "overflow": [
+        "",
+        ""
+      ],
+      "h1": "Termos de uso",
+      "unknownKeys": [],
+      "violations": []
+    }
+  ]
+}
