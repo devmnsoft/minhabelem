@@ -1,12 +1,9 @@
-/* Amazônico 5.0: shared surfaces for public pages, forms and administration. */
+/* Amazônico 6.0: superfícies e componentes alinhados ao Design System */
 :root {
-  --paper: #f7f4ed; --ink: #193c32; --river: #174a3c; --clay: #913c29;
-  --text-muted: #59675f; --line: #d9ded4; --radius-md: 12px; --radius-lg: 18px;
-  --shadow-editorial: 0 12px 36px #193c3209;
+  --shadow-editorial: var(--shadow-md);
 }
-body { background: var(--paper); color: var(--ink); }
 body.portal h1, body.portal .sectionhead h2, .city-ways h2, .city-window h3 {
-  font-family: Georgia, 'Times New Roman', serif; font-weight: 500; letter-spacing: -.045em;
+  font-family: var(--font-heading); font-weight: 700; letter-spacing: -.025em;
 }
 .header { border-bottom: 1px solid var(--line); background: #fffdf8; gap: 18px; padding-block: 20px; }
 .brand-logo { width: 208px; }

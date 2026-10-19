@@ -14,8 +14,10 @@
     var page = (int)(ViewData["Page"] ?? 1);
     var filtered = ViewData["Category"] != null || !string.IsNullOrWhiteSpace(ViewData["Search"] as string) || page > 1;
 }
+
+<!-- HERO PRINCIPAL DE BELÉM DO PARÁ -->
 <section class="hero home-hero video-hero reveal" aria-labelledby="hero-title">
-    <video class="hero-video" playsinline muted loop poster="/images/belem-guajara-hero.jpg" loading="lazy" decoding="async">
+    <video class="hero-video" playsinline muted loop poster="/images/licensed/estacao-docas-1920.webp" loading="lazy" decoding="async">
         <source src="/videos/belem-hero.mp4" type="video/mp4" />
         <source src="/videos/belem-hero.webm" type="video/webm" />
         Seu navegador não suporta vídeo.
@@ -47,9 +49,26 @@
         <span>Curió · Guia de Belém</span>
     </span>
 </section>
-<div class="city-ribbon"><span class="live-dot" aria-hidden="true"></span><strong>@Loc["CityNow"]</strong><span>@Loc["EditorialNote"]</span><a href="/agora">@Loc["ViewMore"] ↗</a></div>
-@if(!filtered){<partial name="_CityWindows" />}
-@if(ViewData["Campaigns"] is IReadOnlyList<AdvertiserCampaign> campaigns){<partial name="_SponsoredCampaigns" model="campaigns" />}
+
+<!-- FAIXA DA CIDADE EM TEMPO REAL -->
+<div class="city-ribbon">
+    <span class="live-dot" aria-hidden="true"></span>
+    <strong>@Loc["CityNow"]</strong>
+    <span>@Loc["EditorialNote"]</span>
+    <a href="/agora">@Loc["ViewMore"] ↗</a>
+</div>
+
+@if (!filtered)
+{
+    <partial name="_CityWindows" />
+}
+
+@if (ViewData["Campaigns"] is IReadOnlyList<AdvertiserCampaign> campaigns)
+{
+    <partial name="_SponsoredCampaigns" model="campaigns" />
+}
+
+<!-- FAIXA DE CATEGORIAS -->
 <nav class="categories category-strip" aria-label="@Loc["AllCategories"]">
     <a href="/" aria-current="@(ViewData["Category"] == null ? "page" : null)">@Loc["AllCategories"]</a>
     @foreach (var category in MinhaBelem.Core.Taxonomy.Taxonomy.All)
@@ -57,11 +76,27 @@
         <a href="/?categoria=@category.Slug" aria-current="@(string.Equals(ViewData["Category"] as string, category.Slug, StringComparison.OrdinalIgnoreCase) ? "page" : null)">@Loc["Category_" + category.Slug]</a>
     }
 </nav>
+
+<!-- SEÇÃO DE NOTÍCIAS EDITORIAIS -->
 <section class="section news-section" aria-labelledby="news-title">
-    <div class="sectionhead"><div><span class="eyebrow">MINHABELÉM / 360</span><h2 id="news-title">@Loc["Home_LatestNews"]</h2></div><a href="/agora">@Loc["ViewMore"] ↗</a></div>
+    <div class="sectionhead">
+        <div>
+            <span class="eyebrow">MINHABELÉM / 360</span>
+            <h2 id="news-title">@Loc["Home_LatestNews"]</h2>
+        </div>
+        <a href="/agora">@Loc["ViewMore"] ↗</a>
+    </div>
+
     @if (Model.Count == 0)
     {
-        <div class="editorial-empty"><svg class="empty-art" aria-hidden="true"><use href="/images/icons.svg#river" /></svg><div><h3>@Loc["EmptyTitle"]</h3><p>@Loc["EmptyDescription"]</p><a class="button-link" href="/guia">@Loc["NavGuide"] ↗</a></div></div>
+        <div class="editorial-empty">
+            <svg class="empty-art" aria-hidden="true"><use href="/images/icons.svg#river" /></svg>
+            <div>
+                <h3>@Loc["EmptyTitle"]</h3>
+                <p>@Loc["EmptyDescription"]</p>
+                <a class="button-link" href="/guia">@Loc["NavGuide"] ↗</a>
+            </div>
+        </div>
     }
     else
     {
@@ -76,7 +111,10 @@
                 <span class="eyebrow">@Loc["Category_" + MinhaBelem.Core.Taxonomy.Taxonomy.Info(item.Category).Slug]</span>
                 <h3><a asp-action="Detalhe" asp-route-id="@item.Id">@item.DisplayTitle</a></h3>
                 <p>@item.DisplaySummary</p>
-                <div class="card-meta"><span>@item.SourceName</span><time datetime="@item.PublishedAt.ToString("O")">@PortalTime.Local(item.PublishedAt).ToString("d", culture)</time></div>
+                <div class="card-meta">
+                    <span>@item.SourceName</span>
+                    <time datetime="@item.PublishedAt.ToString("O")">@PortalTime.Local(item.PublishedAt).ToString("d", culture)</time>
+                </div>
             </article>
         }
         </div>
@@ -87,24 +125,47 @@
         </nav>
     }
 </section>
+
+<!-- GUIA DE LOCAIS DE BELÉM -->
 @if (places.Count > 0)
 {
-    <section class="section"><div class="sectionhead"><h2>@Loc["NavGuide"]</h2></div><div class="grid">
-        @foreach (var place in places) { <article class="card"><span class="eyebrow">@place.PrimaryType</span><h3><a href="/guia/@place.Id">@place.DisplayName</a></h3><p>@place.DisplayEditorialNote</p><span class="small">@place.Neighborhood</span></article> }
-    </div></section>
+    <section class="section">
+        <div class="sectionhead">
+            <div>
+                <span class="eyebrow">PATRIMÔNIO & VISITAÇÃO</span>
+                <h2>@Loc["NavGuide"]</h2>
+            </div>
+            <a href="/guia">@Loc["ViewMore"] ↗</a>
+        </div>
+        <div class="grid">
+            @foreach (var place in places.Take(6))
+            {
+                <article class="card">
+                    <span class="eyebrow">@place.PrimaryType</span>
+                    <h3><a href="/guia/@place.Id">@place.DisplayName</a></h3>
+                    <p>@place.DisplayEditorialNote</p>
+                    <div class="card-meta">
+                        <span>📍 @place.Neighborhood</span>
+                    </div>
+                </article>
+            }
+        </div>
+    </section>
 }
+
 @if (!filtered)
 {
+    <!-- DESTAQUE DA AGENDA CULTURAL & FESTIVA -->
     <section class="section home-events-highlight" aria-labelledby="home-events-title">
         <div class="sectionhead">
             <div>
                 <span class="eyebrow">AGENDA CULTURAL & FESTIVA</span>
                 <h2 id="home-events-title">@Loc["Upcoming_Belém_Events"]</h2>
-                <p class="section-subtitle" style="color:var(--text-muted,#59675f);margin-top:6px;max-width:65ch;">
+                <p class="section-subtitle">
                     @Loc["Upcoming_Belém_Events_Subtitle"]
                 </p>
             </div>
-            <div style="display:flex;gap:10px;align-items:center;">
+            <div class="header-tools">
                 <a class="button secondary" href="/agenda">@Loc["NavAgenda"] ↗</a>
                 <a class="button" href="/agenda/semana">@Loc["ThisWeek"] ↗</a>
             </div>
@@ -112,10 +173,10 @@
 
         @if (events.Count == 0)
         {
-            <div class="empty" style="text-align:center;padding:48px 24px;">
-                <svg class="empty-art" aria-hidden="true" style="width:64px;height:64px;margin-bottom:16px;"><use href="/images/icons.svg#calendar" /></svg>
+            <div class="empty">
+                <svg class="empty-art" aria-hidden="true"><use href="/images/icons.svg#calendar" /></svg>
                 <h3>@Loc["General_Empty"]</h3>
-                <p style="max-width:45ch;margin:8px auto 20px;color:var(--text-muted,#59675f);">@Loc["AgendaEmpty"]</p>
+                <p>@Loc["AgendaEmpty"]</p>
                 <a class="button secondary" href="/agenda">@Loc["AgendaAll"] ↗</a>
             </div>
         }
@@ -148,7 +209,7 @@
                         </div>
 
                         <div class="event-spotlight-body">
-                            <span class="event-category-label">
+                            <span class="eyebrow">
                                 <span aria-hidden="true">🏷️</span> @Loc[topicSlug]
                             </span>
 
@@ -159,28 +220,28 @@
                             <div class="event-spotlight-meta">
                                 @if (localStart.HasValue)
                                 {
-                                    <div class="event-meta-item">
+                                    <div>
                                         <span aria-hidden="true">🕒</span>
                                         <time datetime="@item.EventStartAt?.ToString("O")">
                                             @localStart.Value.ToString("dddd, dd 'de' MMMM", culture) · @(AgendaPage.DateOnlyEvent(item) ? Loc["AgendaUnknownTime"].Value : localStart.Value.ToString("HH:mm"))
                                         </time>
                                     </div>
                                 }
-                                <div class="event-meta-item">
+                                <div>
                                     <span aria-hidden="true">📍</span>
                                     <span>@(item.EventDetails?.Location ?? item.Address ?? item.Neighborhood ?? "Belém do Pará")</span>
                                 </div>
                             </div>
 
-                            <p style="font-size:0.88rem;color:var(--text-secondary,#42554b);line-height:1.5;margin:0 0 16px;flex:1;">
+                            <p>
                                 @(item.DisplaySummary.Length > 150 ? item.DisplaySummary[..147] + "..." : item.DisplaySummary)
                             </p>
 
                             <div class="event-spotlight-actions">
-                                <span class="event-source-credit" title="@Loc["Event_Official_Source"]">
+                                <span class="badge" title="@Loc["Event_Official_Source"]">
                                     🏛️ @item.SourceName
                                 </span>
-                                <a asp-action="Detalhe" asp-route-id="@item.Id" class="button-link" style="font-weight:700;font-size:0.86rem;" aria-label="@Loc["Event_Details_Link"]: @item.DisplayTitle">
+                                <a asp-action="Detalhe" asp-route-id="@item.Id" class="button-link" aria-label="@Loc["Event_Details_Link"]: @item.DisplayTitle">
                                     @Loc["ViewMore"] ↗
                                 </a>
                             </div>
@@ -188,7 +249,7 @@
                     </article>
                 }
             </div>
-            <nav class="agenda-links" style="display:flex;gap:14px;flex-wrap:wrap;margin-top:24px;justify-content:center;">
+            <nav class="pagination" aria-label="Atalhos da Agenda">
                 <a href="/agenda" class="quick-pill">@Loc["UpcomingEvents"] ↗</a>
                 <a href="/cinema-teatro" class="quick-pill">@Loc["CinemaTheater"] ↗</a>
                 <a href="/programacao-infantil" class="quick-pill">@Loc["ChildrenProgram"] ↗</a>
@@ -196,127 +257,213 @@
             </nav>
         }
     </section>
-    <section class="section discovery-feature"><div><span class="eyebrow">@Loc["NavExplore"]</span><h2>@Loc["Explore_Hero_Title"]</h2><p>@Loc["Explore_Hero_Subtitle"]</p><a class="button-link" href="/explore">@Loc["WhatToVisit"] ↗</a></div><div class="route-list">
-        @foreach (var route in itineraries.Take(4)) { <a href="/explore/roteiro/@route.Slug"><span>@route.Days.ToString("00")</span><strong>@route.GetTitle(culture.Name)</strong><span aria-hidden="true">↗</span></a> }
-        @if (itineraries.Count == 0) { <p>@Loc["General_Empty"]</p> }
-    </div></section>
-    <section class="section"><div class="sectionhead"><div><span class="eyebrow">AÇAÍ / TACACÁ / MANIOCA</span><h2>@Loc["GastronomyTitle"]</h2></div><a href="/guia?categoria=restaurant">@Loc["WhereToEat"] ↗</a></div>
-        <div class="grid">@foreach (var place in gastronomy) { <article class="card"><span class="eyebrow">@place.Neighborhood</span><h3><a href="/guia/@place.Id">@place.DisplayName</a></h3><p>@place.DisplayEditorialNote</p></article> }</div>
-        @if (gastronomy.Count == 0) { <p class="empty-inline">@Loc["General_Empty"] · <a href="/guia">@Loc["NavGuide"] ↗</a></p> }
-    </section>
-    <section class="section city-columns"><div class="mobility-feature"><svg class="feature-icon" aria-hidden="true"><use href="/images/icons.svg#boat" /></svg><span class="eyebrow">@Loc["NavMobility"]</span><h2>@Loc["RiverMobility"]</h2><p>@Loc["MobilityDescription"]</p><a href="/mobilidade" class="button-link">@Loc["NavMobility"] ↗</a></div><div class="service-feature"><svg class="feature-icon" aria-hidden="true"><use href="/images/icons.svg#city" /></svg><span class="eyebrow">@Loc["NavCitizenship"]</span><h2>@Loc["PublicServices"]</h2><p>@Loc["ServicesDescription"]</p><a href="/?categoria=servicos" class="button-link">@Loc["ViewMore"] ↗</a></div></section>
-    <section class="section"><div class="sectionhead"><div><span class="eyebrow">@Loc["NavNeighborhood"]</span><h2>@Loc["NeighborhoodTitle"]</h2></div><a href="/meu-bairro">@Loc["ViewMore"] ↗</a></div><div class="neighborhood-list">
-        @foreach (var area in neighborhoods.Take(4)) { <a href="/meu-bairro/@area.Slug"><span class="eyebrow">@area.Zone</span><h3>@area.Name</h3><span aria-hidden="true">↗</span></a> }
-        @if (neighborhoods.Count == 0) { <p class="empty-inline">@Loc["General_Empty"]</p> }
-    </div></section>
-    <section class="section reveal" aria-labelledby="video-list-title">
-        <div class="sectionhead"><h2 id="video-list-title">@Loc["VideoTitle"]</h2></div>
-        <div class="video-grid">
-            @if (videos is not null && videos.Count > 0)
+
+    <!-- EXPLORE & ROTEIROS DE BELÉM -->
+    <section class="section discovery-feature">
+        <div>
+            <span class="eyebrow">@Loc["NavExplore"]</span>
+            <h2>@Loc["Explore_Hero_Title"]</h2>
+            <p>@Loc["Explore_Hero_Subtitle"]</p>
+            <a class="button" href="/explore">@Loc["WhatToVisit"] ↗</a>
+        </div>
+        <div class="route-list">
+            @foreach (var route in itineraries.Take(4))
             {
-                @foreach (var video in videos.Skip(6))
-                {
-                    <article class="video-card reveal">
-                        <div class="video-wrapper">
-                            @if (!string.IsNullOrWhiteSpace(video.EmbedHtml))
-                            {
-                                <div class="video-embed">@Html.Raw(video.EmbedHtml)</div>
-                                <div class="play-overlay"></div>
-                                <div class="video-badge" aria-hidden="true">▶ @video.Platform</div>
-                            }
-                            else
-                            {
-                                <div class="video-placeholder" style="background:var(--border-soft);display:flex;align-items:center;justify-content:center;">
-                                    <span style="font-size:2.5rem;">🎬</span>
-                                </div>
-                                <div class="play-overlay"></div>
-                                <div class="video-badge" aria-hidden="true">▶ @video.Platform</div>
-                            }
-                        </div>
-                        <h3><a href="@(video.PostUrl ?? "#")" target="_blank" rel="noopener noreferrer">@video.Title ↗</a></h3>
-                        <p>@video.CaptionSnippet</p>
-                        <div class="video-meta"><span aria-hidden="true">📺</span> @video.Platform · <span>@video.PublishedAt?.ToString("dd/MM/yyyy", culture) ?? ""</span></div>
-                    </article>
-                }
+                <a href="/explore/roteiro/@route.Slug">
+                    <span>@route.Days.ToString("00")</span>
+                    <strong>@route.GetTitle(culture.Name)</strong>
+                    <span aria-hidden="true">↗</span>
+                </a>
             }
-            else
+            @if (itineraries.Count == 0)
             {
-                <div class="empty" style="text-align:center;padding:48px 24px;">
-                    <svg class="empty-art" aria-hidden="true" style="width:64px;height:64px;margin-bottom:16px;"><use href="/images/icons.svg#video" /></svg>
-                    <h3>@Loc["General_Empty"]</h3>
-                </div>
+                <p>@Loc["General_Empty"]</p>
             }
         </div>
     </section>
-    <section class="section sponsor-feature"><div><span class="eyebrow">@Loc["NavPartners"] / MINHABELÉM</span><h2>@Loc["PartnerTitle"]</h2><p>@Loc["PartnerDescription"]</p></div><a href="/parceiros" class="button">@Loc["NavPartners"] ↗</a></section>
+
+    <!-- GASTRONOMIA PARAENSE -->
+    <section class="section">
+        <div class="sectionhead">
+            <div>
+                <span class="eyebrow">AÇAÍ / TACACÁ / MANIÇOBA</span>
+                <h2>@Loc["GastronomyTitle"]</h2>
+            </div>
+            <a href="/guia?categoria=restaurant">@Loc["WhereToEat"] ↗</a>
+        </div>
+        <div class="grid">
+            @foreach (var place in gastronomy.Take(3))
+            {
+                <article class="card">
+                    <span class="eyebrow">@place.Neighborhood</span>
+                    <h3><a href="/guia/@place.Id">@place.DisplayName</a></h3>
+                    <p>@place.DisplayEditorialNote</p>
+                </article>
+            }
+        </div>
+        @if (gastronomy.Count == 0)
+        {
+            <p class="empty">@Loc["General_Empty"] · <a href="/guia">@Loc["NavGuide"] ↗</a></p>
+        }
+    </section>
+
+    <!-- MOBILIDADE FLUVIAL E SERVIÇOS URBANOS -->
+    <section class="section city-columns">
+        <div class="mobility-feature">
+            <svg class="feature-icon" aria-hidden="true"><use href="/images/icons.svg#boat" /></svg>
+            <span class="eyebrow">@Loc["NavMobility"]</span>
+            <h2>@Loc["RiverMobility"]</h2>
+            <p>@Loc["MobilityDescription"]</p>
+            <a href="/mobilidade" class="button">@Loc["NavMobility"] ↗</a>
+        </div>
+        <div class="service-feature">
+            <svg class="feature-icon" aria-hidden="true"><use href="/images/icons.svg#city" /></svg>
+            <span class="eyebrow">@Loc["NavCitizenship"]</span>
+            <h2>@Loc["PublicServices"]</h2>
+            <p>@Loc["ServicesDescription"]</p>
+            <a href="/?categoria=servicos" class="button secondary">@Loc["ViewMore"] ↗</a>
+        </div>
+    </section>
+
+    <!-- MEU BAIRRO -->
+    <section class="section">
+        <div class="sectionhead">
+            <div>
+                <span class="eyebrow">@Loc["NavNeighborhood"]</span>
+                <h2>@Loc["NeighborhoodTitle"]</h2>
+            </div>
+            <a href="/meu-bairro">@Loc["ViewMore"] ↗</a>
+        </div>
+        <div class="neighborhood-list">
+            @foreach (var area in neighborhoods.Take(4))
+            {
+                <a href="/meu-bairro/@area.Slug">
+                    <span class="eyebrow">@area.Zone</span>
+                    <h3>@area.Name</h3>
+                    <span aria-hidden="true">↗</span>
+                </a>
+            }
+            @if (neighborhoods.Count == 0)
+            {
+                <p class="empty">@Loc["General_Empty"]</p>
+            }
+        </div>
+    </section>
+
+    <!-- PARCEIROS DA CIDADE -->
+    <section class="section sponsor-feature">
+        <div>
+            <span class="eyebrow">@Loc["NavPartners"] / MINHABELÉM</span>
+            <h2>@Loc["PartnerTitle"]</h2>
+            <p>@Loc["PartnerDescription"]</p>
+        </div>
+        <a href="/parceiros" class="button">@Loc["NavPartners"] ↗</a>
+    </section>
 }
+
+<!-- SEÇÃO ÚNICA E CONSOLIDADA DE VÍDEOS DE BELÉM (ELIMINADA A DUPLICAÇÃO DA SPRINT ANTERIOR) -->
 <section class="section video-section reveal" aria-labelledby="video-section-title">
-        <div class="sectionhead"><div><span class="eyebrow">MINHABELÉM / VÍDEOS</span><h2 id="video-section-title">@Loc["VideoTitle"]</h2></div><a href="/videos" class="button-link">@Loc["ViewAllVideos"] ↗</a></div>
-        <div class="video-grid">
-            @if (videos is not null && videos.Count > 0)
+    <div class="sectionhead">
+        <div>
+            <span class="eyebrow">MINHABELÉM / VÍDEOS</span>
+            <h2 id="video-section-title">@Loc["VideoTitle"]</h2>
+        </div>
+        <a href="/videos" class="button-link">@Loc["ViewAllVideos"] ↗</a>
+    </div>
+    <div class="video-grid">
+        @if (videos is not null && videos.Count > 0)
+        {
+            @foreach (var video in videos.Take(6))
             {
-                @foreach (var video in videos.Take(6))
-                {
-                    <article class="video-card reveal">
-                        <div class="video-wrapper">
-                            @if (!string.IsNullOrWhiteSpace(video.EmbedHtml))
-                            {
-                                <div class="video-embed">@Html.Raw(video.EmbedHtml)</div>
-                                <div class="play-overlay"></div>
-                                <div class="video-badge" aria-hidden="true">▶ @video.Platform</div>
-                            }
-                            else
-                            {
-                                <div class="video-placeholder" style="height:100%;background:var(--border-soft);display:flex;align-items:center;justify-content:center;">
-                                    <span style="font-size:2.5rem;" aria-hidden="true">🎬</span>
-                                </div>
-                                <div class="play-overlay"></div>
-                                <div class="video-badge" aria-hidden="true">▶ @video.Platform</div>
-                            }
-                        </div>
-                        <h3><a href="@(video.PostUrl ?? "#")" target="_blank" rel="noopener noreferrer">@video.Title ↗</a></h3>
-                        <p>@video.CaptionSnippet</p>
-                        <div class="video-meta"><span aria-hidden="true">📺</span> @video.Platform · <span>@video.PublishedAt?.ToString("dd/MM/yyyy", culture) ?? ""</span></div>
-                    </article>
-                }
+                <article class="video-card reveal">
+                    <div class="video-wrapper">
+                        @if (!string.IsNullOrWhiteSpace(video.EmbedHtml))
+                        {
+                            <div class="video-embed">@Html.Raw(video.EmbedHtml)</div>
+                            <div class="video-badge" aria-hidden="true">▶ @video.Platform</div>
+                        }
+                        else
+                        {
+                            <div class="video-placeholder" style="height:100%;display:flex;align-items:center;justify-content:center;background:var(--color-green-surface);">
+                                <span style="font-size:2.5rem;" aria-hidden="true">🎬</span>
+                            </div>
+                            <div class="video-badge" aria-hidden="true">▶ @video.Platform</div>
+                        }
+                    </div>
+                    <h3><a href="@(video.PostUrl ?? "#")" target="_blank" rel="noopener noreferrer">@video.Title ↗</a></h3>
+                    <p>@video.CaptionSnippet</p>
+                    <div class="video-meta">
+                        <span aria-hidden="true">📺</span> @video.Platform · <span>@(video.PublishedAt?.ToString("dd/MM/yyyy", culture) ?? "")</span>
+                    </div>
+                </article>
             }
-            else
-            {
-                <div class="empty" style="text-align:center;padding:48px 24px;">
-                    <svg class="empty-art" aria-hidden="true" style="width:64px;height:64px;margin-bottom:16px;"><use href="/images/icons.svg#video" /></svg>
-                    <h3>@Loc["General_Empty"]</h3>
-                    <p style="max-width:45ch;margin:8px auto 20px;color:var(--text-muted,#59675f);">Nenhum vídeo publicado no momento.</p>
-                </div>
-            }
-        </div>
-    </section>
+        }
+        else
+        {
+            <div class="empty">
+                <svg class="empty-art" aria-hidden="true"><use href="/images/icons.svg#video" /></svg>
+                <h3>@Loc["General_Empty"]</h3>
+                <p>Nenhum vídeo publicado no momento.</p>
+            </div>
+        }
+    </div>
+</section>
 
-    <section class="section photo-gallery-section reveal" aria-labelledby="photo-gallery-title">
-        <div class="sectionhead"><div><span class="eyebrow">MINHABELÉM / FOTOS</span><h2 id="photo-gallery-title">@Loc["PhotoGalleryTitle"]</h2></div><a href="/guia/acervo" class="button-link">@Loc["ViewPhotoArchive"] ↗</a></div>
-        <div class="photo-gallery" id="home-photo-gallery">
-            <figure class="photo-item reveal" data-lightbox="home-photos" data-src="/images/licensed/sprint18-ver-o-peso-1280.webp" data-caption="Ver-o-Peso · Campina, Belém">
-                <img src="/images/licensed/sprint18-ver-o-peso-640.webp" alt="Ver-o-Peso · Campina, Belém" width="640" height="480" loading="lazy" decoding="async" />
-                <figcaption>Ver-o-Peso · Campina</figcaption>
-            </figure>
-            <figure class="photo-item reveal" data-lightbox="home-photos" data-src="/images/licensed/sprint18-tacaca-1280.webp" data-caption="Tacacá do Renato · Belém">
-                <img src="/images/licensed/sprint18-tacaca-640.webp" alt="Tacacá do Renato · Belém" width="640" height="480" loading="lazy" decoding="async" />
-                <figcaption>Tacacá · Belém</figcaption>
-            </figure>
-            <figure class="photo-item reveal" data-lightbox="home-photos" data-src="/images/licensed/sprint18-guajara-1280.webp" data-caption="Baía do Guajará · Belém">
-                <img src="/images/licensed/sprint18-guajara-640.webp" alt="Baía do Guajará · Belém" width="640" height="480" loading="lazy" decoding="async" />
-                <figcaption>Baía do Guajará</figcaption>
-            </figure>
-            <figure class="photo-item reveal" data-lightbox="home-photos" data-src="/images/licensed/estacao-docas-1920.webp" data-caption="Estação das Docas · Belém">
-                <img src="/images/licensed/estacao-docas-640.webp" alt="Estação das Docas · Belém" width="640" height="480" loading="lazy" decoding="async" />
-                <figcaption>Estação das Docas</figcaption>
-            </figure>
+<!-- ACERVO FOTOGRÁFICO DOCUMENTAL E ENVIO DE FOTOS -->
+<section class="section photo-gallery-section reveal" aria-labelledby="photo-gallery-title">
+    <div class="sectionhead">
+        <div>
+            <span class="eyebrow">MINHABELÉM / FOTOS</span>
+            <h2 id="photo-gallery-title">@Loc["PhotoGalleryTitle"]</h2>
         </div>
-        <div class="photo-upload-zone" role="group" aria-label="@Loc["UploadPhotoTitle"]">
-            <span class="photo-upload-icon">📷</span>
-            <p><strong>@Loc["UploadPhotoTitle"]</strong></p>
-            <p style="font-size:0.8rem;color:var(--text-muted,#59675f);">@Loc["UploadPhotoDesc"]</p>
-            <a class="button small" href="/fotos/enviar">Enviar foto ↗</a>
-        </div>
-    </section>
+        <a href="/guia/acervo" class="button-link">@Loc["ViewPhotoArchive"] ↗</a>
+    </div>
+    <div class="photo-gallery" id="home-photo-gallery">
+        <figure class="photo-item reveal" data-lightbox="home-photos" data-src="/images/licensed/sprint18-ver-o-peso-1280.webp" data-caption="Ver-o-Peso · Belém">
+            <img src="/images/licensed/sprint18-ver-o-peso-640.webp" alt="Mercado Ver-o-Peso em Belém do Pará" width="640" height="480" loading="lazy" decoding="async" />
+            <figcaption>Ver-o-Peso · Campina</figcaption>
+        </figure>
+        <figure class="photo-item reveal" data-lightbox="home-photos" data-src="/images/licensed/estacao-docas-1920.webp" data-caption="Estação das Docas · Belém">
+            <img src="/images/licensed/estacao-docas-640.webp" alt="Estação das Docas na orla de Belém" width="640" height="480" loading="lazy" decoding="async" />
+            <figcaption>Estação das Docas</figcaption>
+        </figure>
+        <figure class="photo-item reveal" data-lightbox="home-photos" data-src="/images/licensed/sprint18-tacaca-1280.webp" data-caption="Tacacá do Renato · Belém">
+            <img src="/images/licensed/sprint18-tacaca-640.webp" alt="Tacacá tradicional fervente em cuia" width="640" height="480" loading="lazy" decoding="async" />
+            <figcaption>Tacacá · Tradição Paraense</figcaption>
+        </figure>
+        <figure class="photo-item reveal" data-lightbox="home-photos" data-src="/images/licensed/sprint18-guajara-1280.webp" data-caption="Baía do Guajará · Belém">
+            <img src="/images/licensed/sprint18-guajara-640.webp" alt="Pôr do sol na Baía do Guajará" width="640" height="480" loading="lazy" decoding="async" />
+            <figcaption>Baía do Guajará</figcaption>
+        </figure>
+    </div>
+    <div class="photo-upload-zone" role="group" aria-label="@Loc["UploadPhotoTitle"]">
+        <span class="photo-upload-icon" aria-hidden="true">📷</span>
+        <p><strong>@Loc["UploadPhotoTitle"]</strong></p>
+        <p>@Loc["UploadPhotoDesc"]</p>
+        <a class="button small" href="/fotos/enviar">Enviar foto ↗</a>
+    </div>
+</section>
 
-    <section class="section collaboration"><div><span class="eyebrow">MINHABELÉM / COMUNIDADE</span><h2>@Loc["Collab_Title"]</h2><p>@Loc["Collab_Subtitle"]</p></div><form asp-controller="Home" asp-action="Colaborar" method="post"><label>@Loc["Collab_Name"]<input name="nome" maxlength="100" required autocomplete="name" /></label><label>@Loc["Collab_Message"]<textarea name="mensagem" maxlength="2500" rows="4" required></textarea></label><label class="checkbox-label"><input type="checkbox" name="consentimento" value="true" required /><span>@Loc["Collab_Consent"] (<a href="/privacidade">@Loc["Nav_Privacy"]</a>)</span></label><button type="submit">@Loc["Collab_Submit"] ↗</button></form></section>
+<!-- COLABORAÇÃO DA COMUNIDADE -->
+<section class="section collaboration">
+    <div>
+        <span class="eyebrow">MINHABELÉM / COMUNIDADE</span>
+        <h2>@Loc["Collab_Title"]</h2>
+        <p>@Loc["Collab_Subtitle"]</p>
+    </div>
+    <form asp-controller="Home" asp-action="Colaborar" method="post">
+        <label>
+            @Loc["Collab_Name"]
+            <input name="nome" maxlength="100" required autocomplete="name" />
+        </label>
+        <label>
+            @Loc["Collab_Message"]
+            <textarea name="mensagem" maxlength="2500" rows="4" required></textarea>
+        </label>
+        <label class="checkbox-label">
+            <input type="checkbox" name="consentimento" value="true" required />
+            <span>@Loc["Collab_Consent"] (<a href="/privacidade">@Loc["Nav_Privacy"]</a>)</span>
+        </label>
+        <button type="submit" class="button">@Loc["Collab_Submit"] ↗</button>
+    </form>
+</section>

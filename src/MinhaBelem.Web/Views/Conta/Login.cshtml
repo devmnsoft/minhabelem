@@ -23,7 +23,7 @@
             @Html.AntiForgeryToken()
 
             <div class="form-group">
-                <label asp-for="Email" id="email-label">
+                <label for="login-email" id="email-label">
                     @Loc["EmailLabel"]
                     <span class="required-indicator" aria-hidden="true">*</span>
                 </label>
@@ -34,6 +34,7 @@
                        inputmode="email"
                        required
                        aria-required="true"
+                       aria-labelledby="email-label"
                        aria-describedby="email-help @(ViewData.ModelState["Email"]?.Errors.Count > 0 ? "email-error" : "")"
                        class="form-control" />
                 <span id="email-help" class="sr-only">Digite seu e-mail cadastrado na plataforma</span>
@@ -41,7 +42,7 @@
             </div>
 
             <div class="form-group">
-                <label asp-for="Password" id="password-label">
+                <label for="login-password" id="password-label">
                     @Loc["PasswordLabel"]
                     <span class="required-indicator" aria-hidden="true">*</span>
                 </label>
@@ -52,6 +53,7 @@
                            type="password"
                            required
                            aria-required="true"
+                           aria-labelledby="password-label"
                            aria-describedby="password-help @(ViewData.ModelState["Password"]?.Errors.Count > 0 ? "password-error" : "")"
                            class="form-control" />
                     <button type="button"
