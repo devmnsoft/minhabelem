@@ -4,6 +4,11 @@
 <div class="admin-shell">
     <partial name="_AdminSidebar" />
     <div class="admin-content" id="conteudo-admin">
+        <div class="admin-mobile-bar">
+            <button class="button small secondary admin-sidebar-toggle" type="button" aria-expanded="false" aria-controls="admin-sidebar" onclick="const sb=document.querySelector('.admin-sidebar');sb.classList.toggle('open');this.setAttribute('aria-expanded',sb.classList.contains('open'))">
+                <span>🧭</span> @Loc["AdminNavigation"]
+            </button>
+        </div>
         @RenderBody()
     </div>
 </div>

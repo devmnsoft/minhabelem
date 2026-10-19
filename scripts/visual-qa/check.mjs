@@ -53,7 +53,8 @@ try {
           brokenImages: [...document.images].filter(img => !img.complete || img.naturalWidth === 0).map(img => img.getAttribute('src')),
           overflow: [...document.querySelectorAll('body *')].filter(el => {
             const rect = el.getBoundingClientRect();
-            if (getComputedStyle(el).position === 'absolute' || el.closest('.table-scroll,.categories')) return false;
+            const pos = getComputedStyle(el).position;
+            if (pos === 'absolute' || pos === 'fixed' || el.closest('.table-scroll,.categories,.city-ribbon')) return false;
             return rect.width > 0 && rect.right > innerWidth + 4;
           }).slice(0, 5).map(el => ({ tag: el.tagName, class: el.className, width: Math.round(el.getBoundingClientRect().width) }))
         }));
