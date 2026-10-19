@@ -153,7 +153,12 @@ public sealed class Sprint19EvolutionTests
         var cssPath = Path.Combine(root, "src", "MinhaBelem.Web", "wwwroot", "css", "site.css");
         Assert.True(File.Exists(cssPath), "Arquivo site.css não encontrado.");
 
+        // The entry point imports styles by responsibility; rules are no longer duplicated here.
         var css = File.ReadAllText(cssPath);
+        Assert.Contains("@import url('accessibility.css')", css);
+        Assert.Contains("@import url('components.css')", css);
+        css += File.ReadAllText(Path.Combine(Path.GetDirectoryName(cssPath)!, "accessibility.css"));
+        css += File.ReadAllText(Path.Combine(Path.GetDirectoryName(cssPath)!, "components.css"));
         Assert.Contains("html[data-contrast=\"high\"]", css);
         Assert.Contains("html[data-font-size=\"medium\"]", css);
         Assert.Contains("html[data-spacing=\"wide\"]", css);

@@ -6,6 +6,11 @@
 
 @layer tokens {
   :root {
+    --color-white: #ffffff;
+    --bg-subtle: var(--color-green-surface-subtle);
+    --gold-dark: var(--color-gold-dark);
+    --color-input-border: #7b9185;
+    --color-link: #1d5c48;
     /* --- Cores Identitárias Paraenses (Paleta Oficial MinhaBelém 6.0) --- */
     --color-green-deep: #082f2b;         /* Verde Amazônico Profundo */
     --color-green-forest: #124838;       /* Verde Floresta / Folhagem de Belém */
@@ -63,11 +68,12 @@
     --text-primary: var(--color-text-primary);
     --text-secondary: var(--color-text-secondary);
     --text-muted: var(--color-text-muted);
+    --text-inverse: var(--color-text-inverse);
     --surface-primary: var(--color-cream-card);
     --surface-secondary: var(--color-green-surface);
     --surface-inverse: var(--color-green-deep);
     --border-default: var(--color-border);
-    --action-primary: var(--color-terracotta);
+    --action-primary: var(--color-terracotta-dark);
     --action-hover: var(--color-terracotta-dark);
     --focus-ring: var(--color-border-focus);
     --status-success: var(--color-success);
@@ -157,11 +163,6 @@
     --ink: var(--color-text-primary);
     --line: var(--color-border);
 
-    --text-primary: var(--color-text-primary);
-    --text-secondary: var(--color-text-secondary);
-    --text-muted: var(--color-text-muted);
-    --text-inverse: var(--color-text-inverse);
-
     /* Aliases prefixo --mb-* */
     --mb-deep: var(--color-green-deep);
     --mb-forest: var(--color-green-forest);
@@ -203,7 +204,11 @@
 
     --color-border: #1e3d34;
     --color-border-subtle: #17322a;
-    --color-border-focus: #3a856e;
+    --color-border-focus: #8ed4b5;
+    --color-terracotta-dark: #f1b18f;
+    --color-gold-dark: #ebc574;
+    --color-input-border: #819e90;
+    --color-link: #a8d9c3;
 
     --color-green-surface: #142a24;
     --color-green-surface-subtle: #0f211c;
@@ -229,7 +234,10 @@
 
       --color-border: #1e3d34;
       --color-border-subtle: #17322a;
-      --color-border-focus: #3a856e;
+      --color-border-focus: #8ed4b5;
+      --color-terracotta-dark: #f1b18f;
+      --color-gold-dark: #ebc574;
+      --color-input-border: #819e90;
 
       --color-green-surface: #142a24;
       --color-green-surface-subtle: #0f211c;

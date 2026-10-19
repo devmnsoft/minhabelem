@@ -48,14 +48,14 @@
   a.button.secondary:hover {
     background-color: var(--color-green-surface);
     border-color: var(--color-green-mid);
-    color: var(--color-green-forest);
+    color: var(--color-link);
   }
 
   .button.outline,
   a.button.outline {
     background-color: transparent;
-    border: 2px solid var(--color-green-forest);
-    color: var(--color-green-forest);
+    border: 2px solid var(--color-link);
+    color: var(--color-link);
   }
 
   .button.outline:hover,
@@ -89,7 +89,7 @@
     gap: 6px;
     font-weight: 700;
     font-size: 0.9rem;
-    color: var(--color-green-mid);
+    color: var(--color-link);
   }
 
   .button-link:hover {
@@ -265,7 +265,7 @@
     position: absolute;
     top: 12px;
     left: 12px;
-    background: var(--color-white);
+    background: var(--surface-primary);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-sm);
     padding: 4px 10px;
@@ -278,14 +278,14 @@
 
   .event-date-badge strong {
     font-size: 1.15rem;
-    color: var(--color-green-deep);
+    color: var(--text-primary);
   }
 
   .event-date-badge span {
     font-size: 0.7rem;
     text-transform: uppercase;
     font-weight: 700;
-    color: var(--color-terracotta);
+    color: var(--color-terracotta-dark);
   }
 
   .event-price-tag {
@@ -404,7 +404,7 @@
     font-weight: 700;
     line-height: 1;
     background-color: var(--color-green-surface);
-    color: var(--color-green-forest);
+    color: var(--color-link);
     border: 1px solid var(--color-border);
   }
 
@@ -445,6 +445,8 @@
     border-color: var(--color-success-border);
     color: var(--color-success);
   }
+
+  .notice a { color: inherit; text-decoration: underline; }
 
   .alert.error {
     background-color: var(--color-danger-bg);

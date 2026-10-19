@@ -7,18 +7,52 @@ document.getElementById('share')?.addEventListener('click', async () => {
   } catch (error) { if (error.name !== 'AbortError') status.textContent = 'Copie o endereço desta página para compartilhar.'; }
 });
 
-document.querySelector('.menu-toggle')?.addEventListener('click', event => {
-  const button = event.currentTarget;
-  const open = button.getAttribute('aria-expanded') !== 'true';
-  button.setAttribute('aria-expanded', String(open));
-  document.getElementById('main-navigation')?.classList.toggle('is-open', open);
+// Shared navigation uses one state for pointer, touch and keyboard.
+const mainNavigation = document.getElementById('main-navigation');
+const menuButtons = [...document.querySelectorAll('.menu-toggle,.mobile-tab-more')];
+let menuOpener;
+function setNavigation(open, opener) {
+  if (open) menuOpener = opener;
+  mainNavigation?.classList.toggle('is-open', open);
+  menuButtons.forEach(button => button.setAttribute('aria-expanded', String(open)));
+  if (open) mainNavigation?.querySelector('a')?.focus();
+}
+menuButtons.forEach(button => button.addEventListener('click', () => {
+  const open = !mainNavigation?.classList.contains('is-open');
+  setNavigation(open, button);
+  if (!open) button.focus();
+}));
+document.querySelectorAll('.nav-dropdown-btn').forEach(button => {
+  button.addEventListener('click', () => {
+    const open = button.getAttribute('aria-expanded') !== 'true';
+    button.setAttribute('aria-expanded', String(open));
+    button.closest('.nav-dropdown').classList.toggle('is-open', open);
+  });
 });
-
+function closeDisclosures() {
+  document.querySelectorAll('.nav-dropdown.is-open').forEach(menu => {
+    menu.classList.remove('is-open');
+    menu.querySelector('button')?.setAttribute('aria-expanded', 'false');
+  });
+}
+document.addEventListener('click', event => {
+  if (!event.target.closest('.nav-dropdown')) closeDisclosures();
+  if (!event.target.closest('.header,.mobile-tab-bar')) setNavigation(false);
+});
 document.addEventListener('keydown', event => {
-  if (event.key === 'Escape') {
-    document.querySelector('.main-nav.is-open')?.classList.remove('is-open');
-    document.querySelector('.menu-toggle')?.setAttribute('aria-expanded', 'false');
+  if (event.key !== 'Escape') return;
+  const disclosure = document.querySelector('.nav-dropdown.is-open');
+  if (disclosure) { closeDisclosures(); disclosure.querySelector('button')?.focus(); }
+  else if (mainNavigation?.classList.contains('is-open')) {
+    setNavigation(false);
+    menuOpener?.focus();
   }
+});
+mainNavigation?.addEventListener('click', event => {
+  if (event.target.closest('a')) { setNavigation(false); closeDisclosures(); }
+});
+window.matchMedia('(min-width: 1200px)').addEventListener('change', () => {
+  setNavigation(false); closeDisclosures();
 });
 
 const connectionNotice = document.querySelector('[data-connection-status]');
@@ -156,6 +190,9 @@ document.querySelectorAll('table').forEach(table => {
       lastFocusedElement = triggerEl || document.activeElement;
       backdrop.classList.add('is-open');
       backdrop.setAttribute('aria-hidden', 'false');
+      [...document.body.children].filter(el => el !== backdrop && el.tagName !== 'SCRIPT').forEach(el => {
+        if (!el.inert) { el.inert = true; el.dataset.a11yInert = 'true'; }
+      });
       if (triggerEl) triggerEl.setAttribute('aria-expanded', 'true');
       if (dialog) dialog.focus();
       document.body.style.overflow = 'hidden';
@@ -165,6 +202,7 @@ document.querySelectorAll('table').forEach(table => {
       if (!backdrop) return;
       backdrop.classList.remove('is-open');
       backdrop.setAttribute('aria-hidden', 'true');
+      document.querySelectorAll('[data-a11y-inert]').forEach(el => { el.inert = false; delete el.dataset.a11yInert; });
       document.querySelectorAll('[data-open-a11y]').forEach(btn => btn.setAttribute('aria-expanded', 'false'));
       document.body.style.overflow = '';
       if (lastFocusedElement && typeof lastFocusedElement.focus === 'function') {
@@ -187,6 +225,12 @@ document.querySelectorAll('table').forEach(table => {
     });
 
     document.addEventListener('keydown', e => {
+      if (e.key === 'Tab' && backdrop?.classList.contains('is-open')) {
+        const controls = [...dialog.querySelectorAll('button,input,select,a[href]')].filter(el => el.getClientRects().length);
+        const first = controls[0], last = controls[controls.length - 1];
+        if (e.shiftKey && (document.activeElement === first || document.activeElement === dialog)) { e.preventDefault(); last?.focus(); }
+        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first?.focus(); }
+      }
       if (e.key === 'Escape' && backdrop?.classList.contains('is-open')) {
         closePanel();
       }

@@ -20,13 +20,13 @@
       htmlEl.setAttribute('data-theme', 'dark');
       document.body.classList.add('dark-theme');
     } else {
-      htmlEl.removeAttribute('data-theme');
+      htmlEl.setAttribute('data-theme', 'light');
       document.body.classList.remove('dark-theme');
     }
     try { localStorage.setItem(THEME_KEY, theme); } catch (e) {}
   }
   function toggleTheme() {
-    const isDark = htmlEl.hasAttribute('data-theme') || document.body.classList.contains('dark-theme');
+    const isDark = htmlEl.getAttribute('data-theme') === 'dark' || document.body.classList.contains('dark-theme');
     setTheme(isDark ? 'light' : 'dark');
     if (themeToggle) {
       themeToggle.setAttribute('aria-pressed', String(!isDark));
@@ -42,7 +42,7 @@
       setTheme(saved || 'light');
     }
     if (themeToggle) {
-      const isDark = htmlEl.hasAttribute('data-theme') || document.body.classList.contains('dark-theme');
+      const isDark = htmlEl.getAttribute('data-theme') === 'dark' || document.body.classList.contains('dark-theme');
       themeToggle.setAttribute('aria-pressed', String(isDark));
       themeToggle.innerHTML = isDark ? '☀️' : '🌙';
       themeToggle.addEventListener('click', toggleTheme);
@@ -63,21 +63,6 @@
         });
         ticking = true;
       }
-    });
-  }
-
-  /* ---------- Menu mobile ----------
-     O clique do botão é tratado por site.js. Aqui apenas garantimos o
-     fechamento ao navegar e evitamos handlers duplicados (dois toggles
-     no mesmo elemento se anulariam). */
-  const menuToggle = document.querySelector('.menu-toggle');
-  const mainNav = document.getElementById('main-navigation');
-  if (menuToggle && mainNav) {
-    mainNav.querySelectorAll('a').forEach(function (link) {
-      link.addEventListener('click', function () {
-        mainNav.classList.remove('is-open');
-        menuToggle.setAttribute('aria-expanded', 'false');
-      });
     });
   }
 
@@ -102,21 +87,29 @@
 
   let galleryItems = [];
   let currentIndex = 0;
+  let lightboxOpener;
 
   function openLightbox(items, index) {
     if (!lightbox) return;
+    lightboxOpener = document.activeElement;
     galleryItems = items;
     currentIndex = Math.max(0, Math.min(index, items.length - 1));
     renderLightboxItem();
     lightbox.classList.add('is-open');
     document.body.style.overflow = 'hidden';
     lightbox.setAttribute('aria-hidden', 'false');
+    [...document.body.children].filter(el => el !== lightbox && el.tagName !== 'SCRIPT').forEach(el => {
+      if (!el.inert) { el.inert = true; el.dataset.lightboxInert = 'true'; }
+    });
+    lightboxClose?.focus();
   }
   function closeLightbox() {
     if (!lightbox) return;
     lightbox.classList.remove('is-open');
     document.body.style.overflow = '';
     lightbox.setAttribute('aria-hidden', 'true');
+    document.querySelectorAll('[data-lightbox-inert]').forEach(el => { el.inert = false; delete el.dataset.lightboxInert; });
+    lightboxOpener?.focus();
     if (lightboxContent) lightboxContent.innerHTML = '';
     if (lightboxCaption) lightboxCaption.textContent = '';
   }
@@ -153,6 +146,12 @@
       if (e.key === 'Escape') closeLightbox();
       if (e.key === 'ArrowRight') nextLightbox();
       if (e.key === 'ArrowLeft') prevLightbox();
+      if (e.key === 'Tab') {
+        const controls = [...lightbox.querySelectorAll('button,video')].filter(el => el.getClientRects().length);
+        const first = controls[0], last = controls[controls.length - 1];
+        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last?.focus(); }
+        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first?.focus(); }
+      }
     });
   }
 
