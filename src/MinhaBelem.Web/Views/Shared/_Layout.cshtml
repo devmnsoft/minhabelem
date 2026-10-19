@@ -99,17 +99,29 @@
         <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="main-navigation">@Loc["MenuToggle"] <span aria-hidden="true">☰</span></button>
         <nav id="main-navigation" class="main-nav" aria-label="@Loc["Nav_Home"]">
             <a href="/">@Loc["Nav_Home"]</a>
-            <a href="/explore" class="nav-highlight">@Loc["Nav_Explore"]</a>
-            <a href="/guia">@Loc["Nav_Guide"]</a>
             <a href="/agenda">@Loc["Nav_Agenda"]</a>
-            <a href="/mobilidade">@Loc["NavMobility"]</a>
+            <a href="/explore" class="nav-highlight">@Loc["Nav_Explore"]</a>
             <a href="/como-chegar">@Loc["RouteTitle"]</a>
-            <a href="/guia-ia" class="nav-ai-highlight">✨ @Loc["TouristAssistantTitle"]</a>
-            <a href="/videos" class="nav-media-highlight">🎬 @Loc["VideoGalleryTitle"]</a>
-            <a href="/meu-bairro">@Loc["NavNeighborhood"]</a>
-            <a href="/salvos">@Loc["SavedPlans"]</a>
-            <a href="/parceiros">@Loc["NavPartners"]</a>
-            <a href="/explore/glossario">@Loc["Glossary_Title"]</a>
+            <a href="/?categoria=cultura#noticias">@Loc["Home_LatestNews"]</a>
+
+            <div class="nav-dropdown">
+                <button type="button" class="nav-dropdown-btn" aria-expanded="false" aria-haspopup="true">
+                    <span>Mais</span>
+                    <span aria-hidden="true">▾</span>
+                </button>
+                <div class="nav-dropdown-menu" role="menu">
+                    <a href="/mobilidade" role="menuitem">🚌 @Loc["NavMobility"]</a>
+                    <a href="/mobilidade/de-para" role="menuitem">🔀 Planejador De-Para</a>
+                    <a href="/guia" role="menuitem">🏛️ @Loc["Nav_Guide"]</a>
+                    <a href="/guia-ia" class="nav-ai-highlight" role="menuitem">✨ @Loc["TouristAssistantTitle"]</a>
+                    <a href="/videos" role="menuitem">🎬 @Loc["VideoGalleryTitle"]</a>
+                    <a href="/meu-bairro" role="menuitem">🏘️ @Loc["NavNeighborhood"]</a>
+                    <a href="/salvos" role="menuitem">💾 @Loc["SavedPlans"]</a>
+                    <a href="/parceiros" role="menuitem">🤝 @Loc["NavPartners"]</a>
+                    <a href="/explore/glossario" role="menuitem">📖 @Loc["Glossary_Title"]</a>
+                </div>
+            </div>
+
             @if (User.Identity?.IsAuthenticated == true)
             {
                 <a href="/conta/perfil">@Loc["Nav_Account"]</a>
@@ -253,5 +265,29 @@
     <script src="~/js/site.js" asp-append-version="true"></script>
     <script src="~/js/evolution.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
+
+    <!-- Barra de Navegação Rápida Mobile (5 abas essenciais - Sprint 22) -->
+    <nav class="mobile-tab-bar" aria-label="Navegação rápida móvel">
+        <a href="/" class="@(Context.Request.Path == "/" ? "active" : "")">
+            <span class="tab-icon" aria-hidden="true">🏠</span>
+            <span>Início</span>
+        </a>
+        <a href="/agenda" class="@(Context.Request.Path.StartsWithSegments("/agenda") ? "active" : "")">
+            <span class="tab-icon" aria-hidden="true">📅</span>
+            <span>Agenda</span>
+        </a>
+        <a href="/explore" class="@(Context.Request.Path.StartsWithSegments("/explore") ? "active" : "")">
+            <span class="tab-icon" aria-hidden="true">🗺️</span>
+            <span>Explorar</span>
+        </a>
+        <a href="/como-chegar" class="@(Context.Request.Path.StartsWithSegments("/como-chegar") || Context.Request.Path.StartsWithSegments("/mobilidade") ? "active" : "")">
+            <span class="tab-icon" aria-hidden="true">🚌</span>
+            <span>Rotas</span>
+        </a>
+        <button type="button" class="mobile-tab-more" onclick="document.querySelector('.menu-toggle').click();" aria-label="Abrir menu completo">
+            <span class="tab-icon" aria-hidden="true">☰</span>
+            <span>Mais</span>
+        </button>
+    </nav>
 </body>
 </html>

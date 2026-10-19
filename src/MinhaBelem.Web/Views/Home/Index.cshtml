@@ -16,13 +16,7 @@
 }
 
 <!-- HERO PRINCIPAL DE BELÉM DO PARÁ -->
-<section class="hero home-hero video-hero reveal" aria-labelledby="hero-title">
-    <video class="hero-video" playsinline muted loop poster="/images/licensed/estacao-docas-1920.webp" loading="lazy" decoding="async">
-        <source src="/videos/belem-hero.mp4" type="video/mp4" />
-        <source src="/videos/belem-hero.webm" type="video/webm" />
-        Seu navegador não suporta vídeo.
-    </video>
-    <div class="hero-video-overlay"></div>
+<section class="hero home-hero reveal" aria-labelledby="hero-title">
     <div class="hero-content">
         <span class="eyebrow">BELÉM DO PARÁ / AMAZÔNIA / BRASIL</span>
         <h1 id="hero-title">@Loc["Hero_Title"]</h1>
@@ -35,6 +29,7 @@
         </form>
         <div class="hero-quick-tags">
             <a href="/guia-ia" class="quick-pill">✨ Pergunte ao Curió IA ↗</a>
+            <a href="/como-chegar" class="quick-pill">🚌 Rotas e Ônibus ↗</a>
             <a href="/agenda/semana" class="quick-pill">@Loc["ThisWeek"] ↗</a>
             <a href="/explore" class="quick-pill">@Loc["NavExplore"] ↗</a>
             <a href="/guia" class="quick-pill">@Loc["NavGuide"] ↗</a>
@@ -60,6 +55,47 @@
 
 @if (!filtered)
 {
+    <!-- DESTAQUE DA MOBILIDADE: COMO VOCÊ QUER SE DESLOCAR POR BELÉM? (SPRINT 22) -->
+    <section class="section home-mobility-highlight" aria-labelledby="home-mobility-title">
+        <div class="mobility-banner-card">
+            <div class="mobility-banner-header">
+                <div>
+                    <span class="eyebrow">COMO VOCÊ QUER SE DESLOCAR POR BELÉM? 🚌 🚤</span>
+                    <h2 id="home-mobility-title">Como Chegar, Ônibus, BRT e Travessias Fluviais</h2>
+                    <p>Planeje seu deslocamento por Belém com linhas verificadas, itinerários, integrações e barcos para as ilhas.</p>
+                </div>
+                <a href="/mobilidade" class="button" aria-label="Acessar Central de Mobilidade completa">Central de Mobilidade ↗</a>
+            </div>
+            <div class="mobility-quick-grid">
+                <a href="/como-chegar" class="mobility-quick-action">
+                    <span class="action-icon" aria-hidden="true">🗺️</span>
+                    <strong>Como Chegar</strong>
+                    <span>Planejador multimodal com mapas e etapas a pé</span>
+                </a>
+                <a href="/mobilidade#linhas" class="mobility-quick-action">
+                    <span class="action-icon" aria-hidden="true">🚌</span>
+                    <strong>Pesquisar Ônibus</strong>
+                    <span>Busque por número, nome da linha ou bairro</span>
+                </a>
+                <a href="/mobilidade?tipo=BRT" class="mobility-quick-action">
+                    <span class="action-icon" aria-hidden="true">🚊</span>
+                    <strong>BRT Metropolitano</strong>
+                    <span>Corredores expressos, terminais e paradas</span>
+                </a>
+                <a href="/mobilidade/fluvial" class="mobility-quick-action">
+                    <span class="action-icon" aria-hidden="true">🚤</span>
+                    <strong>Transporte Fluvial</strong>
+                    <span>Ilha do Combu, Cotijuba e Mosqueiro</span>
+                </a>
+                <a href="/mobilidade/de-para" class="mobility-quick-action">
+                    <span class="action-icon" aria-hidden="true">🔀</span>
+                    <strong>De-Para</strong>
+                    <span>Cruzamento inteligente de conexões e integrações</span>
+                </a>
+            </div>
+        </div>
+    </section>
+
     <partial name="_CityWindows" />
 }
 
