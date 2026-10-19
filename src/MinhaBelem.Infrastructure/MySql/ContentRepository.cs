@@ -9,8 +9,9 @@ namespace MinhaBelem.Infrastructure.MySql;
 
 public sealed class ContentRepository(MySqlDataSource dataSource) : IContentRepository
 {
-    private const string Select = """
-        SELECT id AS Id, kind AS Kind, category AS Category, subject AS Subject, title AS Title, slug AS Slug,
+    /// <summary>Colunas projectionadas, sem a cláusula FROM.</summary>
+    private const string SelectColumns = """
+        id AS Id, kind AS Kind, category AS Category, subject AS Subject, title AS Title, slug AS Slug,
                summary AS Summary, body AS Body, neighborhood AS Neighborhood, municipality AS Municipality,
                state AS State, address AS Address, latitude AS Latitude, longitude AS Longitude,
                source_id AS SourceId, source_name AS SourceName, source_url AS SourceUrl, source_url_hash AS SourceUrlHash,
@@ -22,6 +23,20 @@ public sealed class ContentRepository(MySqlDataSource dataSource) : IContentRepo
                requires_human_approval AS RequiresHumanApproval, published_at AS PublishedAt,
                expires_at AS ExpiresAt, last_verified_at AS LastVerifiedAt, reviewed_by_id AS ReviewedById,
                created_by_id AS CreatedById, revision AS Revision, created_at AS CreatedAt, updated_at AS UpdatedAt
+        """;
+
+    /// <summary>Aliases projetados, usados no SELECT externo da CTE (sem a coluna de ranking).</summary>
+    private const string SelectAliases = """
+        Id, Kind, Category, Subject, Title, Slug, Summary, Body, Neighborhood, Municipality,
+        State, Address, Latitude, Longitude, SourceId, SourceName, SourceUrl, SourceUrlHash,
+        AuthorName, SourcePublishedAt, ImageUrl, ImageCredit, ImageLicense,
+        EventStartAt, EventEndAt, TicketPrice, TicketPriceText, IsFree, Status,
+        VerificationStatus, Flags, DuplicateOfId, RequiresHumanApproval, PublishedAt,
+        ExpiresAt, LastVerifiedAt, ReviewedById, CreatedById, Revision, CreatedAt, UpdatedAt
+        """;
+
+    private const string Select = $"""
+        SELECT {SelectColumns}
         FROM mb_content_items
         """;
 
@@ -37,15 +52,35 @@ public sealed class ContentRepository(MySqlDataSource dataSource) : IContentRepo
     private async Task<IReadOnlyList<ContentItem>> SearchInternalAsync(ContentQuery query, bool publicOnly, CancellationToken ct)
     {
         var (where, parameters) = BuildFilter(query, publicOnly);
+        // A consulta pública passa por uma CTE, cujos nomes de coluna são os aliases
+        // projetados; por isso a ordenação usa os mesmos aliases.
         var order = query.Sort switch
         {
-            ContentSort.Upcoming => "COALESCE(event_start_at, published_at) ASC",
-            ContentSort.Oldest => "published_at ASC",
-            _ => "published_at DESC"
+            ContentSort.Upcoming => publicOnly
+                ? "COALESCE(EventStartAt, PublishedAt) ASC"
+                : "COALESCE(event_start_at, published_at) ASC",
+            ContentSort.Oldest => publicOnly ? "PublishedAt ASC" : "published_at ASC",
+            _ => publicOnly ? "PublishedAt DESC" : "published_at DESC"
         };
-        var sql = $"""
-            {Select} {where} ORDER BY {order} LIMIT @limit OFFSET @offset
-            """;
+        // Eventos publicados com o mesmo título normalizado e a mesma data de início são
+        // o mesmo fato: a agenda pública mostra apenas o registro mais verificado e recente.
+        var sql = publicOnly
+            ? $"""
+                WITH ranked AS (
+                  SELECT {SelectColumns},
+                         CASE WHEN kind = 'Event' THEN ROW_NUMBER() OVER (
+                                PARTITION BY kind, LOWER(TRIM(title)), COALESCE(DATE(event_start_at), '9999-12-31')
+                                ORDER BY (verification_status = 'Verified') DESC, published_at DESC, id DESC)
+                              ELSE 1 END AS duplicate_rank
+                  FROM mb_content_items
+                  {where}
+                )
+                SELECT {SelectAliases} FROM ranked WHERE duplicate_rank = 1
+                ORDER BY {order} LIMIT @limit OFFSET @offset
+                """
+            : $"""
+                {Select} {where} ORDER BY {order} LIMIT @limit OFFSET @offset
+                """;
         parameters.Add("limit", query.PageSize);
         parameters.Add("offset", (Math.Max(1, query.Page) - 1) * query.PageSize);
 
@@ -120,6 +155,8 @@ public sealed class ContentRepository(MySqlDataSource dataSource) : IContentRepo
         }
         if (query.OnlyUpcomingEvents)
             clauses.Add("event_start_at IS NOT NULL AND COALESCE(event_end_at,expires_at,event_start_at) >= UTC_TIMESTAMP(6)");
+        if (query.ExcludeEvents)
+            clauses.Add("(kind IS NULL OR kind <> 'Event')");
         if (query.StartsFromUtc is { } from) { clauses.Add(query.EventsOverlapWindow ? "COALESCE(event_end_at,expires_at,event_start_at) >= @startsFrom" : "event_start_at >= @startsFrom"); parameters.Add("startsFrom", from); }
         if (query.StartsBeforeUtc is { } before) { clauses.Add("event_start_at < @startsBefore"); parameters.Add("startsBefore", before); }
         if (query.AgeAtMost is { } age)

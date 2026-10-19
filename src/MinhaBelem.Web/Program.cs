@@ -133,6 +133,26 @@ if (args.Contains("--register-researched-sources"))
     return;
 }
 
+if (args.Contains("--mobility-report"))
+{
+    if (!app.Environment.IsDevelopment()) throw new InvalidOperationException("Comando exclusivo de Development local.");
+    using var scope = app.Services.CreateScope();
+    var report = await new MinhaBelem.Web.Operations.MobilityReport(
+        scope.ServiceProvider.GetRequiredService<MySqlConnector.MySqlDataSource>()).RunAsync(default);
+    Console.WriteLine(report);
+    return;
+}
+
+if (args.Contains("--duplicate-report"))
+{
+    if (!app.Environment.IsDevelopment()) throw new InvalidOperationException("Comando exclusivo de Development local.");
+    using var scope = app.Services.CreateScope();
+    var report = await new MinhaBelem.Web.Operations.DuplicateContentReport(
+        scope.ServiceProvider.GetRequiredService<MySqlConnector.MySqlDataSource>()).RunAsync(default);
+    Console.WriteLine(report);
+    return;
+}
+
 if (args.Contains("--bootstrap-homologation"))
 {
     if (!app.Environment.IsDevelopment() || !OperatingSystem.IsWindows())

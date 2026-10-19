@@ -30,21 +30,23 @@
         <label>
             Status
             <select name="status">
-                <!option value="" @(string.IsNullOrEmpty(currentStatus) ? "selected" : "")>Todos os status</!option>
-                <!option value="Published" @(currentStatus == "Published" ? "selected" : "")>Publicado</!option>
-                <!option value="InReview" @(currentStatus == "InReview" ? "selected" : "")>Em Revisão</!option>
-                <!option value="Draft" @(currentStatus == "Draft" ? "selected" : "")>Rascunho</!option>
-                <!option value="Archived" @(currentStatus == "Archived" ? "selected" : "")>Arquivado</!option>
+                @Html.Raw(SelectOptions.Build(new[]
+                {
+                    ("", "Todos os status"),
+                    ("Published", "Publicado"),
+                    ("InReview", "Em Revisão"),
+                    ("Draft", "Rascunho"),
+                    ("Archived", "Arquivado")
+                }, currentStatus ?? ""))
             </select>
         </label>
         <label>
             Categoria
             <select name="categoria">
-                <!option value="" @(string.IsNullOrEmpty(currentCat) ? "selected" : "")>Todas as categorias</!option>
-                @foreach (var c in MinhaBelem.Core.Taxonomy.Taxonomy.All)
-                {
-                    <!option value="@c.Category" @(currentCat == c.Category.ToString() ? "selected" : "")>@c.Label</!option>
-                }
+                @Html.Raw(SelectOptions.Build(
+                    new[] { ("", "Todas as categorias") }
+                        .Concat(MinhaBelem.Core.Taxonomy.Taxonomy.All.Select(c => (c.Category.ToString(), c.Label))),
+                    currentCat ?? ""))
             </select>
         </label>
         <label>

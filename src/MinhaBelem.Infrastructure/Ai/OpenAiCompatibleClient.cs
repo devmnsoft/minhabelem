@@ -69,9 +69,37 @@ public sealed class OpenAiCompatibleClient : IAiCompletionClient
 
     private AiProviderOptions ProviderOptions => options.For(Provider);
 
+    /// <summary>
+    /// Disjuntor por provedor: após falhas consecutivas (por exemplo, credencial sem
+    /// permissão habilitada), o provedor é ignorado por um período para não gastar
+    /// latência a cada requisição. O motor nativo do Curió cobre a resposta.
+    /// </summary>
+    private static readonly System.Collections.Concurrent.ConcurrentDictionary<AiProvider, (int Failures, DateTime Until)> Breaker = new();
+
+    private bool IsTripped => IsProviderTripped(Provider);
+
+    /// <summary>Indica se o disjuntor do provedor está aberto (provedor temporariamente indisponível).</summary>
+    public static bool IsProviderTripped(AiProvider provider) =>
+        Breaker.TryGetValue(provider, out var state) && state.Failures >= TripThreshold && state.Until > DateTime.UtcNow;
+
+    private const int TripThreshold = 3;
+    private static readonly TimeSpan TripDuration = TimeSpan.FromMinutes(10);
+    private static readonly TimeSpan FailureWindow = TimeSpan.FromMinutes(15);
+
+    private void RegisterFailure()
+    {
+        Breaker.AddOrUpdate(Provider, _ => (1, DateTime.UtcNow + TripDuration),
+            (_, current) => current.Failures == 0 || current.Until < DateTime.UtcNow
+                ? (1, DateTime.UtcNow + TripDuration)
+                : (current.Failures + 1, DateTime.UtcNow + TripDuration));
+    }
+
+    private void RegisterSuccess() => Breaker.TryRemove(Provider, out _);
+
     public async Task<AiCompletion> CompleteAsync(string systemPrompt, string userPrompt, CancellationToken ct)
     {
         if (!IsConfigured) throw new InvalidOperationException($"Provedor {Provider} sem credencial configurada.");
+        if (IsTripped) throw new InvalidOperationException($"Provedor {Provider} indisponível temporariamente (disjuntor aberto).");
         if (!await budget.ReserveAsync("ai-" + Provider, options.MaxDailyRequests, ct)) throw new InvalidOperationException("Limite diário de IA atingido.");
 
         var endpoint = Provider switch
@@ -106,8 +134,11 @@ public sealed class OpenAiCompatibleClient : IAiCompletionClient
         if (!response.IsSuccessStatusCode)
         {
             logger.LogWarning("{Provider} respondeu {Status}", Provider, (int)response.StatusCode);
+            RegisterFailure();
             throw new HttpRequestException($"{Provider} respondeu {(int)response.StatusCode}.");
         }
+
+        RegisterSuccess();
 
         using var document = JsonDocument.Parse(await response.Content.ReadAsStringAsync(ct));
         var root = document.RootElement;

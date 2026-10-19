@@ -237,6 +237,7 @@ public sealed class AiClientResolver : IAiClientResolver
         var preferred = Enum.TryParse<AiProvider>(options.DefaultProvider, true, out var parsed) && Enum.IsDefined(parsed) ? parsed : AiProvider.Groq;
         return new[] { preferred, AiProvider.Groq, AiProvider.Gemini, AiProvider.DeepSeek }.Distinct()
             .Where(p => !string.IsNullOrWhiteSpace(options.For(p).ApiKey) && !string.IsNullOrWhiteSpace(options.For(p).Model))
+            .Where(p => !OpenAiCompatibleClient.IsProviderTripped(p))
             .Select(p => Create(p, options)).ToArray();
     }
 

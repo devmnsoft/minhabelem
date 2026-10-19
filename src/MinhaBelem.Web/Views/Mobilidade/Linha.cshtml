@@ -1,62 +1,158 @@
 @model MinhaBelem.Web.Models.TransitLineDetailViewModel
+@using System.Globalization
 
 @{
-    ViewData["Title"] = $"Linha {Model.Line.Code} - {Model.Line.Name}";
+    ViewData["Title"] = $"Linha {Model.Line.Code} — {Model.Line.Name}";
+    var linha = Model.Line;
 }
 
 <article class="section line-detail-page">
     <div class="sectionhead">
         <div>
             <a href="/mobilidade" class="back-link">← Voltar para Mobilidade</a>
-            <div style="display:flex;align-items:center;gap:12px;margin-top:10px;">
-                <span class="line-code-badge" style="background:var(--green-forest, #123826);color:white;padding:8px 18px;border-radius:12px;font-weight:900;font-size:1.5rem;">
-                    @Model.Line.Code
+            <div style="display:flex;align-items:center;gap:12px;margin-top:10px;flex-wrap:wrap;">
+                <span class="line-code-badge" style="background:var(--green-forest,#123826);color:#fff;padding:8px 18px;border-radius:12px;font-weight:900;font-size:1.5rem;">
+                    @linha.Code
                 </span>
                 <div>
-                    <span class="badge badge-info">@Model.Line.TransitType</span>
-                    <h1 style="margin:4px 0 0;">@Model.Line.Name</h1>
+                    <span class="badge badge-info">@linha.TransitType</span>
+                    <h1 style="margin:4px 0 0;">@linha.Name</h1>
                 </div>
             </div>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            <a class="button secondary small" href="/mobilidade/de-para?origem=@Uri.EscapeDataString(linha.Origin)&destino=@Uri.EscapeDataString(linha.Destination)">🔀 Usar no de-para</a>
+            <a class="button secondary small" href="/guia-ia?q=@Uri.EscapeDataString("linha " + linha.Code + " horário e trajeto")">✨ Perguntar ao Curió</a>
         </div>
     </div>
 
     <div class="grid" style="grid-template-columns:2fr 1fr;gap:24px;margin-top:24px;">
-        <div class="card">
-            <h3>Informações da Linha</h3>@if(!Model.Line.IsVerified){<p class="notice">@Loc["RouteUnknown"] · @Loc["RouteState_unavailable"]</p>}else{<p><a href="@Model.Line.SourceUrl" rel="noopener noreferrer">@Loc["RouteSource"] ↗</a> · @Model.Line.VerifiedAt?.ToString("d") → @Model.Line.ValidUntil?.ToString("d")</p>}
-            <p><strong>Origem:</strong> @Model.Line.Origin</p>
-            <p><strong>Destino:</strong> @Model.Line.Destination</p>
-            <p><strong>Tarifa:</strong> @(Model.Line.ConfirmedFare is {} fare ? "R$ " + fare.ToString("F2") : "Não confirmada")</p>
-            @if (!string.IsNullOrWhiteSpace(Model.Line.OperatorName))
-            {
-                <p><strong>Empresa Operadora:</strong> @Model.Line.OperatorName</p>
-            }
+        <div>
+            <div class="card">
+                <h3>Informações da Linha</h3>
+                @if (!linha.IsVerified)
+                {
+                    <p class="notice">@Loc["RouteUnknown"] · @Loc["RouteState_unavailable"]</p>
+                }
+                else
+                {
+                    <p><a href="@linha.SourceUrl" rel="noopener noreferrer" target="_blank">@Loc["RouteSource"] ↗</a> · verificado em @linha.VerifiedAt?.ToString("d", CultureInfo.CurrentUICulture) → válido até @linha.ValidUntil?.ToString("d", CultureInfo.CurrentUICulture)</p>
+                }
 
-            <div class="features-box" style="margin:20px 0;padding:16px;background:#f4f7f4;border-radius:10px;">
-                <h4>Equipamentos do Ônibus</h4>
-                <p>@(Model.Line.IsVerified && Model.Line.HasAirConditioning ? "✅ Com Ar-Condicionado" : "Equipamento não confirmado")</p>
-                <p>@(Model.Line.IsVerified && Model.Line.HasWheelchairLift ? "✅ Elevador para Acessibilidade Cadeirante" : "Acessibilidade não confirmada")</p>
+                <div class="transit-de-para">
+                    <div class="depara-end">
+                        <span class="depara-label">Origem</span>
+                        <strong>@linha.Origin</strong>
+                    </div>
+                    <span class="depara-arrow" aria-hidden="true">⇄</span>
+                    <div class="depara-end">
+                        <span class="depara-label">Destino</span>
+                        <strong>@linha.Destination</strong>
+                    </div>
+                </div>
+
+                <div class="features-box" style="margin:20px 0;padding:16px;background:var(--green-surface-subtle,#f4f8f5);border-radius:10px;">
+                    <h4>🕒 Horário e tarifa</h4>
+                    <p><strong>Operação:</strong> @linha.ScheduleText</p>
+                    <p><strong>Tarifa:</strong> @(linha.ConfirmedFare is { } fare ? $"R$ {fare.ToString("F2", CultureInfo.InvariantCulture)} · meia-passagem R$ {(fare / 2).ToString("F2", CultureInfo.InvariantCulture)}" : "Não confirmada")</p>
+                    @if (!string.IsNullOrWhiteSpace(linha.IntegrationPoints))
+                    {
+                        <p><strong>Integração:</strong> @linha.IntegrationPoints</p>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(linha.Notes))
+                    {
+                        <p><strong>Observação:</strong> @linha.Notes</p>
+                    }
+                </div>
+
+                <div class="features-box" style="margin:0 0 20px;padding:16px;background:var(--green-surface-subtle,#f4f8f5);border-radius:10px;">
+                    <h4>🚌 Equipamentos do ônibus</h4>
+                    <p>@(linha.IsVerified && linha.HasAirConditioning ? "✅ Com ar-condicionado" : "Equipamento não confirmado")</p>
+                    <p>@(linha.IsVerified && linha.HasWheelchairLift ? "✅ Elevador para acessibilidade de cadeirante" : "Acessibilidade não confirmada")</p>
+                    @if (!string.IsNullOrWhiteSpace(linha.OperatorName))
+                    {
+                        <p><strong>Operadora:</strong> @linha.OperatorName</p>
+                    }
+                </div>
+
+                @if (!string.IsNullOrWhiteSpace(linha.ItinerarySummary))
+                {
+                    <div class="itinerary-summary-box">
+                        <h4>Resumo do trajeto</h4>
+                        <p style="white-space:pre-wrap;line-height:1.7;">@linha.ItinerarySummary</p>
+                    </div>
+                }
             </div>
 
-            @if (!string.IsNullOrWhiteSpace(Model.Line.ItinerarySummary))
+            @if (Model.Ida.Count > 0 || Model.Volta.Count > 0)
             {
-                <div class="itinerary-summary-box">
-                    <h4>Itinerário Resumido</h4>
-                    <p style="white-space:pre-wrap;line-height:1.7;">@Model.Line.ItinerarySummary</p>
+                <div class="card" style="margin-top:24px;">
+                    <h3>🗺️ Itinerário oficial</h3>
+                    <p class="small">Ordem de percurso publicada pela SEGBEL/SEMOB. Terminais e estações marcados em destaque são pontos de integração.</p>
+
+                    @foreach (var dir in new[] { ("IDA", "Ida"), ("VOLTA", "Volta") })
+                    {
+                        var seq = dir.Item1 == "IDA" ? Model.Ida : Model.Volta;
+                        if (seq.Count == 0) { continue; }
+                        <div class="itinerary-block">
+                            <h4 class="itinerary-direction">
+                                <span class="direction-chip">@dir.Item1</span> @dir.Item2
+                                <span class="small">· @seq.Count pontos</span>
+                            </h4>
+                            <ol class="route-timeline">
+                                @foreach (var p in seq)
+                                {
+                                    var isIntegration = p.Kind is "Terminal" or "Estação" or "Integração";
+                                    <li class="route-point @(isIntegration ? "is-integration" : "")">
+                                        <span class="route-marker" aria-hidden="true"></span>
+                                        <span class="route-label">@p.Label</span>
+                                        @if (isIntegration)
+                                        {
+                                            <span class="route-kind">@p.Kind</span>
+                                        }
+                                    </li>
+                                }
+                            </ol>
+                        </div>
+                    }
                 </div>
             }
         </div>
 
         <div class="side-info">
-            <div class="card notice">
-                <h4>⚠️ Dicas para o Passageiro</h4>
-                <p>Confirme os meios de pagamento, benefícios e condições de integração com a operadora.</p>
-                <p>Consulte os canais atualizados da autoridade de mobilidade.</p>
-            </div>
+            @if (Model.IntegrationPoints.Count > 0)
+            {
+                <div class="card">
+                    <h4>🔄 Terminais e estações</h4>
+                    <div class="stop-lines">
+                        @foreach (var s in Model.IntegrationPoints)
+                        {
+                            <a class="line-chip" href="/mobilidade/paradas?busca=@Uri.EscapeDataString(s.Name)">@s.Name</a>
+                        }
+                    </div>
+                    <p class="small" style="margin-top:12px;">Integração <strong>física</strong>: embarque e desembarque dentro do terminal. Integração <strong>temporal</strong>: desembarque na parada lateral da pista para acessar a estação.</p>
+                </div>
+            }
 
-            <div class="view-910f53fb card">
-                <h4>Integrações & Conexões</h4>
-                <p>Consulte as integrações e o sentido de operação na fonte oficial.</p>
-                <a href="/mobilidade" class="view-726e8b31 button secondary small">Ver todas as linhas</a>
+            @if (Model.RelatedStops.Count > 0)
+            {
+                <div class="card" style="margin-top:16px;">
+                    <h4>📍 Pontos atendidos</h4>
+                    <ul class="plain-list">
+                        @foreach (var s in Model.RelatedStops.Take(14))
+                        {
+                            <li><strong>@s.Name</strong><span class="small">@s.Neighborhood · @s.StopType</span></li>
+                        }
+                    </ul>
+                    <a href="/mobilidade/paradas" class="button secondary small">Ver todos os pontos</a>
+                </div>
+            }
+
+            <div class="card notice" style="margin-top:16px;">
+                <h4>⚠️ Dicas para o passageiro</h4>
+                <p>Use o cartão Passe Fácil para integração entre linhas e terminais. A meia-passagem estudantil é recarregável e custa R$ 1,80.</p>
+                <p>Cartões Passe Fácil Senior e Especial dão gratuidade e permitem integração.</p>
+                <p>Confirme os meios de pagamento e as condições do dia com a operadora.</p>
             </div>
         </div>
     </div>

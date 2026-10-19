@@ -17,6 +17,13 @@
             <input id="busca-linha" name="busca" maxlength="120" placeholder="Digite número da linha, rua ou destino (ex: 758, Ver-o-Peso, BRT)..." value="@Model.SearchQuery" />
             <button type="submit">Buscar Linha</button>
         </form>
+
+        <div class="hero-quick-tags" style="margin-top:18px;">
+            <a href="/mobilidade/de-para">🔀 Planejador de-para</a>
+            <a href="/mobilidade/paradas">📍 Paradas e terminais</a>
+            <a href="/mobilidade/fluvial">🚤 Travessias fluviais</a>
+            <a href="/mobilidade/alertas">⚠️ Alertas de trânsito</a>
+        </div>
     </section>
 
     <!-- Alertas de Trânsito Ativos -->
@@ -75,23 +82,48 @@
                 @foreach (var line in Model.Lines)
                 {
                     <article class="card line-card">
-                        <div class="line-header" style="display:flex;justify-content:space-between;align-items:center;">
-                            <span class="line-code-badge" style="background:var(--green-forest, #123826);color:white;padding:6px 14px;border-radius:10px;font-weight:900;font-size:1.1rem;">
-                                @line.Code
-                            </span>
+                        <div class="line-header" style="display:flex;justify-content:space-between;align-items:center;gap:10px;">
+                            <span class="line-code-badge">@line.Code</span>
                             <span class="badge badge-info">@line.TransitType</span>
                         </div>
 
                         <h3 style="margin:14px 0 6px;"><a href="/mobilidade/linha/@line.Code">@line.Name</a></h3>
-                        <p class="small"><strong>Trajeto:</strong> @line.Origin ⇄ @line.Destination</p>
+
+                        <div class="transit-de-para" style="margin:10px 0 12px;padding:12px 14px;">
+                            <div class="depara-end">
+                                <span class="depara-label">De</span>
+                                <strong>@line.Origin</strong>
+                            </div>
+                            <span class="depara-arrow" aria-hidden="true">→</span>
+                            <div class="depara-end">
+                                <span class="depara-label">Para</span>
+                                <strong>@line.Destination</strong>
+                            </div>
+                        </div>
+
+                        @if (line.IsVerified)
+                        {
+                            <p class="small"><strong>🕒 Horário:</strong> @line.ScheduleText</p>
+                            @if (line.ConfirmedFare is { } verifiedFare)
+                            {
+                                <p class="small"><strong>💰 Tarifa:</strong> R$ @verifiedFare.ToString("F2", CultureInfo.InvariantCulture) · meia R$ @((verifiedFare / 2).ToString("F2", CultureInfo.InvariantCulture))</p>
+                            }
+                            @if (!string.IsNullOrWhiteSpace(line.IntegrationPoints))
+                            {
+                                <p class="small"><strong>🔄 Integração:</strong> @line.IntegrationPoints</p>
+                            }
+                        }
+                        else
+                        {
+                            <p class="small">Horário e tarifa: confirme com o operador.</p>
+                        }
 
                         @if (!string.IsNullOrWhiteSpace(line.ItinerarySummary))
                         {
                             <p class="small text-muted">@line.ItinerarySummary</p>
                         }
 
-                        <div class="line-features" style="display:flex;gap:12px;margin:12px 0;font-size:0.85rem;">
-                            <span>💰 @(line.ConfirmedFare is {} fare ? "R$ " + fare.ToString("F2") : "Tarifa não confirmada")</span>
+                        <div class="line-features" style="display:flex;gap:12px;margin:12px 0;font-size:0.85rem;flex-wrap:wrap;">
                             @if (line.IsVerified && line.HasAirConditioning)
                             {
                                 <span>❄️ Ar-condicionado</span>
@@ -100,15 +132,69 @@
                             {
                                 <span>♿ Elevador acessível</span>
                             }
+                            @if (line.IsVerified)
+                            {
+                                <span>📅 @line.ServiceDays</span>
+                            }
                         </div>
 
-                        <div class="card-footer" style="margin-top:12px;border-top:1px solid #edf1ed;padding-top:10px;">
-                            <a href="/mobilidade/linha/@line.Code" class="button-link">Ver detalhes e itinerário →</a>
+                        <div class="card-footer" style="margin-top:12px;border-top:1px solid var(--border-subtle,#eef3ef);padding-top:10px;display:flex;gap:12px;flex-wrap:wrap;">
+                            <a href="/mobilidade/linha/@line.Code" class="button-link">Itinerário completo →</a>
+                            <a href="/guia-ia?q=@Uri.EscapeDataString("linha " + line.Code + " horário")" class="button-link">✨ Perguntar ao Curió</a>
                         </div>
                     </article>
                 }
             </div>
         }
+    </section>
+
+    <!-- Demais modais de transporte -->
+    <section class="section other-modes-section">
+        <div class="sectionhead">
+            <div>
+                <span class="eyebrow">OUTROS MODAIS</span>
+                <h2>🚲 🚕 🛵 Mais formas de se mover</h2>
+                <p class="section-subtitle">Serviços públicos de mobilidade managecidos pela Prefeitura de Belém e pela SEMOB.</p>
+            </div>
+        </div>
+        <div class="grid">
+            <article class="card">
+                <span class="eyebrow">Ciclovias</span>
+                <h3>Rede Cicloviária de Belém</h3>
+                <p>Ciclovias e rotas cicláveis que conectam a orla, o centro histórico e as áreas de lazer.</p>
+                <a class="button-link" href="https://seguranca.belem.pa.gov.br/servicos-online/rede-cicloviaria-de-belem/" target="_blank" rel="noopener noreferrer">Ver na fonte oficial ↗</a>
+            </article>
+            <article class="card">
+                <span class="eyebrow">Táxi</span>
+                <h3>Serviços para táxi</h3>
+                <p>Disque táxi, pontos de embarque e tabela de fares do serviço municipal.</p>
+                <a class="button-link" href="https://seguranca.belem.pa.gov.br/servicos-online/servicos-para-taxi/" target="_blank" rel="noopener noreferrer">Ver na fonte oficial ↗</a>
+            </article>
+            <article class="card">
+                <span class="eyebrow">Mototáxi</span>
+                <h3>Cadastro de mototaxistas</h3>
+                <p>Cadastro operacional dos mototaxistas de Belém e pontos de atendimento.</p>
+                <a class="button-link" href="https://seguranca.belem.pa.gov.br/servicos-online/formularios-diversos/" target="_blank" rel="noopener noreferrer">Ver na fonte oficial ↗</a>
+            </article>
+            <article class="card">
+                <span class="eyebrow">Integração</span>
+                <h3>Integra Belém</h3>
+                <p>Regras de integração, cartões Passe Fácil, gratuidades e cobrança por sentido de trajeto.</p>
+                <a class="button-link" href="https://seguranca.belem.pa.gov.br/integra-belem/" target="_blank" rel="noopener noreferrer">Ver na fonte oficial ↗</a>
+            </article>
+            <article class="card">
+                <span class="eyebrow">Rotas</span>
+                <h3>Planejador de-para</h3>
+                <p>Descubra quais linhas oficiais conectam um ponto a outro e onde trocar de ônibus.</p>
+                <a class="button-link" href="/mobilidade/de-para">Abrir planejador ↗</a>
+            </article>
+            <article class="card">
+                <span class="eyebrow">Radar</span>
+                <h3>Alertas de trânsito</h3>
+                <p>Obras, interdições, desvios e eventos que afetam a circulação na cidade.</p>
+                <a class="button-link" href="/mobilidade/alertas">Ver alertas ↗</a>
+            </article>
+        </div>
     </section>
 
     <!-- Travessias Fluviais Amazônicas -->

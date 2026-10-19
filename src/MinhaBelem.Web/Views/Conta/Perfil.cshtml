@@ -22,12 +22,10 @@
                     @Loc["AccountLanguage"]
                 </label>
                 <select id="pref-culture" name="culture" class="form-control" style="max-width:320px;">
-                    @foreach (var language in MinhaBelem.Web.Resources.SupportedCultures.All)
-                    {
-                        <!option value="@language" @(string.Equals(ViewData["PreferredCulture"] as string, language, StringComparison.OrdinalIgnoreCase) ? "selected" : null)>
-                            @System.Globalization.CultureInfo.GetCultureInfo(language).NativeName (@language)
-                        </!option>
-                    }
+                    @Html.Raw(SelectOptions.Build(
+                        MinhaBelem.Web.Resources.SupportedCultures.All.Select(l =>
+                            (l, System.Globalization.CultureInfo.GetCultureInfo(l).NativeName + " (" + l + ")")),
+                        ViewData["PreferredCulture"] as string))
                 </select>
             </div>
 

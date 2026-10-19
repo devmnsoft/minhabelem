@@ -10,7 +10,7 @@ var actions=(kind=="candidate"?new[]{"approve","rejectCandidate","reviewCandidat
 <header class="admin-header"><div><span class="eyebrow">MINHABELÉM · EDITORIAL</span><h1>@L["BatchTitle"]</h1><p>@L["BatchSafety"]</p></div></header>
 <div class="grid">@foreach(var metric in (IReadOnlyDictionary<string,long>)ViewData["BatchMetrics"]!){<div class="card"><strong>@metric.Value</strong><span>@L[metric.Key]</span></div>}</div>
 <form method="get" class="filter-bar">
-<label>@L["BatchType"]<select name="kind"><option value="content" selected="@(kind == "content")">@L["BatchContent"]</option><option value="candidate" selected="@(kind == "candidate")">@L["BatchCandidates"]</option></select></label>
+<label>@L["BatchType"]<select name="kind">@Html.Raw(SelectOptions.Build(new[] { ("content", L["BatchContent"].Value), ("candidate", L["BatchCandidates"].Value) }, kind))</select></label>
 <label>@L["Search"]<input name="search" value="@ViewData["Search"]" maxlength="200"/></label><button>@L["Search"]</button>
 </form>
 <p class="small">@L["BatchKeyboard"]</p>

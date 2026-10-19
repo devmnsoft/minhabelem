@@ -35,14 +35,17 @@ Configure `ConnectionStrings:Default` nos segredos do projeto Web. O acesso usa 
 
 ## Módulos e Rotas Ativas
 
-- **Mobilidade Urbana (MinhaBelém Mobilidade):** `/mobilidade`, `/mobilidade/linha/{code}` (linhas de ônibus municipais e intermunicipais, tarifas e acessibilidade), `/mobilidade/fluvial` (travessias para Ilha do Combu, Cotijuba e Mosqueiro) e `/mobilidade/alertas` (interdições e obras da Semob).
+- **Mobilidade Urbana (MinhaBelém Mobilidade):** `/mobilidade` (58 linhas oficiais do Integra Belém e do BRT Metropolitano, com horário, tarifa e integração), `/mobilidade/linha/{code}` (itinerário oficial IDA/VOLTA ponto a ponto), `/mobilidade/paradas` (16 terminais e estações), `/mobilidade/de-para` (planejador de rota que indica onde trocar de ônibus), `/mobilidade/fluvial` (travessias para Ilha do Combu e Cotijuba) e `/mobilidade/alertas` (interdições e obras da Semob). Dados da SEGBEL/SEMOB e do Decreto Municipal 113.606/2025.
 - **Meu Bairro (Comunidade Paraense):** `/meu-bairro`, `/meu-bairro/{slug}` (guias históricos, memórias e vida comunitária em Cidade Velha, Campina, Nazaré, Umarizal, Batista Campos, Guamá).
 - **MinhaBelém Parceiros (Monetização):** `/parceiros`, `/parceiros/anunciar` (planos comerciais, gastronômicos e culturais, métricas de impressões e cliques e selo "Publicidade Verificada").
 - **SuperAdmin Expandido:** `/admin/conteudo`, `/admin/mobilidade`, `/admin/anunciantes`, `/admin/bairros`, `/admin/relatorios`, `/admin/idiomas`, `/admin/traducoes`.
 - **Explore Belém (Portal Turístico Internacional):** `/explore`, `/explore/roteiro/{slug}` (roteiros de 1, 2, 3 e 5 dias), `/explore/glossario` (preservação cultural de termos como *Ver-o-Peso*, *Tacacá*, *Círio de Nazaré*, *Açaí*, *Maniçoba*, *Carimbó*).
 - **Internacionalização:** Seletor nativo no cabeçalho e rodapé, rotas prefixadas `/{culture}/...` e persistência via cookie `/idioma/mudar`.
 - **Guia e Agenda:** `/guia` (curadoria própria integrada a Google Places), `/agenda`, `/proximos-eventos`, `/cinema-teatro`, `/esporte-lazer`, `/eventos-gratuitos`.
+- **Vídeo e Mídia:** `/videos` (mídia oficial, publicações do Radar e acervo), `/midias` (fotos e vídeos com licença verificada em lightbox), `/fotos/enviar` (envio de foto ou vídeo pela comunidade, com fila editorial em `/admin/midias/submissoes`).
+- **Design e Acessibilidade:** tema claro/escuro persistente, herói em vídeo, galeria de fotos com lightbox acessível, widget flutuante do Curió IA, identidade visual da marca (logo ampliada, marca do curió e padrão do rio) e preferências visuais — auditoria de contraste WCAG 2.2 AA com **0 violações** em 16 páginas × 2 temas.
+- **Curió IA:** `/guia-ia` responde com dado publicado (linhas, terminais, horários, tarifas, itinerários, lugares e eventos) e nunca inventa informação; usa Gemini/Groq/DeepSeek quando configurados e o motor nativo como reserva.
 - **Segurança e Conta:** `/conta/login`, TOTP, recuperação, auditoria e revogação de sessões.
 - **SEO Internacional:** `/sitemap.xml` dinâmico com tags `hreflang` e links canônicos.
 
-Documentação técnica: [Homologação Sprint 05](docs/SPRINT-05-HOMOLOGACAO.md), [Homologação Sprint 04](docs/SPRINT-04-HOMOLOGACAO.md) e [Arquitetura](docs/ARQUITETURA.md).
+Documentação técnica: [Homologação Sprint 24](docs/SPRINT-24-HOMOLOGACAO.md), [Homologação Sprint 23](docs/SPRINT-23-HOMOLOGACAO.md), [Homologação Sprint 05](docs/SPRINT-05-HOMOLOGACAO.md), [Homologação Sprint 04](docs/SPRINT-04-HOMOLOGACAO.md) e [Arquitetura](docs/ARQUITETURA.md).

@@ -63,20 +63,14 @@
                     <label>
                         <span>@Loc["RouteMode"]</span>
                         <select name="Mode">
-                            @foreach (var m in modes)
-                            {
-                                <option value="@m" selected="@(Model.Query.Mode == m)">@Loc["RouteMode_" + m]</option>
-                            }
+                            @Html.Raw(SelectOptions.Build(modes.Select(m => (m, Loc["RouteMode_" + m].Value)), Model.Query.Mode))
                         </select>
                     </label>
 
                     <label>
                         <span>@Loc["RoutePreference"]</span>
                         <select name="Preference">
-                            @foreach (var p in new[] { "less_walking", "less_transfers", "fastest", "cheapest" })
-                            {
-                                <option value="@p" selected="@(Model.Query.Preference == p)">@Loc["RoutePreference_" + p]</option>
-                            }
+                            @Html.Raw(SelectOptions.Build(new[] { "less_walking", "less_transfers", "fastest", "cheapest" }.Select(p => (p, Loc["RoutePreference_" + p].Value)), Model.Query.Preference))
                         </select>
                     </label>
                 </div>

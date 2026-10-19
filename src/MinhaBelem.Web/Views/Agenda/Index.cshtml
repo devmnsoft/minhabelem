@@ -16,7 +16,6 @@
     }
     var types = new[]{("teatro","stage"),("musica","music"),("danca","stage"),("humor","music"),("infantil","family"),("corrida","sport"),("congressos","city"),("feiras","city"),("cinema","stage"),("exposicoes","city"),("religioso","city")};
 }
-<link rel="stylesheet" href="~/css/agenda.css" asp-append-version="true"/>
 <section class="agenda-hero">
     <div class="agenda-hero-copy"><p class="eyebrow">MINHABELÉM / @Loc["Nav_Agenda"]</p><h1>@Loc["AgendaDiscover"]</h1><p>@Loc["AgendaExploreIntro"]</p>
     <div class="agenda-hero-actions"><a class="button" href="@Link("dias","0",true)">@Loc["AgendaPeriod_0"] ↗</a><a href="#agenda-results">@Loc["AgendaSeeEvents"] ↓</a></div>
@@ -32,14 +31,14 @@
     </div><p class="small">● @Loc["AgendaCalendarHint"]</p></section>
     <details class="card agenda-filters"><summary>@Loc["AgendaRefine"]</summary><form method="get" action="/agenda" role="search">
     @if(!string.IsNullOrEmpty(Context.Request.Query["tipo"])){<input type="hidden" name="tipo" value="@Context.Request.Query["tipo"]"/>}
-    <label>@Loc["Period"]<select name="dias">@foreach(var period in new[]{0,1,7,30,90,180,365}){<option value="@period" selected="@(Model.Days==period)">@Loc["AgendaPeriod_"+period]</option>}</select></label>
+    <label>@Loc["Period"]<select name="dias">@Html.Raw(SelectOptions.Build(new[]{0,1,7,30,90,180,365}.Select(p => (p.ToString(), Loc["AgendaPeriod_"+p].Value)), Model.Days.ToString()))</select></label>
     <label>@Loc["Search"]<input name="busca" maxlength="120" value="@Context.Request.Query["busca"]" placeholder="@Loc["Search_Placeholder"]"/></label>
     <label>@Loc["Neighborhood"]<input name="bairro" maxlength="120" value="@Context.Request.Query["bairro"]"/></label>
     <label>@Loc["Municipality"]<input name="municipio" maxlength="120" value="@Context.Request.Query["municipio"]"/></label>
     <label>@Loc["AgeRating"]<input type="number" name="idade" min="0" max="18" value="@Context.Request.Query["idade"]"/></label>
-    <label>@Loc["Audience"]<select name="publico"><option value="">@Loc["AgendaAll"]</option>@foreach(var a in Enum.GetNames<MinhaBelem.Core.Taxonomy.Audience>()){<option value="@a" selected="@(Context.Request.Query["publico"]==a)">@Loc["Audience_"+a]</option>}</select></label>
-    <label>@Loc["Explore_Accessibility_Title"]<select name="acessibilidade"><option value="">@Loc["AgendaAll"]</option>@foreach(var a in Enum.GetNames<MinhaBelem.Core.Taxonomy.AccessibilityFeature>()){<option value="@a" selected="@(Context.Request.Query["acessibilidade"]==a)">@Loc["Accessibility_"+a]</option>}</select></label>
-    <label class="agenda-check"><input type="checkbox" name="gratuito" value="true" checked="@(Context.Request.Query["gratuito"]=="true")"/>@Loc["FreeEvents"]</label><button>@Loc["Search_Button"]</button><a href="/agenda">@Loc["AgendaClear"]</a></form></details>
+    <label>@Loc["Audience"]<select name="publico"><option value="">@Loc["AgendaAll"]</option>@Html.Raw(SelectOptions.Build(Enum.GetNames<MinhaBelem.Core.Taxonomy.Audience>().Select(a => (a, Loc["Audience_"+a].Value)), Context.Request.Query["publico"].ToString()))</select></label>
+    <label>@Loc["Explore_Accessibility_Title"]<select name="acessibilidade"><option value="">@Loc["AgendaAll"]</option>@Html.Raw(SelectOptions.Build(Enum.GetNames<MinhaBelem.Core.Taxonomy.AccessibilityFeature>().Select(a => (a, Loc["Accessibility_"+a].Value)), Context.Request.Query["acessibilidade"].ToString()))</select></label>
+    <label class="agenda-check">@Html.Raw(SelectOptions.Checkbox("gratuito", "true", Context.Request.Query["gratuito"] == "true"))@Loc["FreeEvents"]</label><button>@Loc["Search_Button"]</button><a href="/agenda">@Loc["AgendaClear"]</a></form></details>
     <p class="agenda-source-note">@Loc["AgendaSourceNotice"]</p></aside>
     <section id="agenda-results" class="agenda-results"><div class="agenda-results-head"><div><p class="eyebrow">@Loc["AgendaYourPlans"]</p><h2>@Model.Title</h2><p>@Model.Items.Count @Loc["AgendaSessions"] @if(Model.SelectedDate is {} chosen){<span>· @chosen.ToString("D",culture)</span>}</p></div><div class="agenda-tools" hidden data-agenda-tools><button type="button" data-agenda-saved aria-pressed="false">☆ @Loc["AgendaSaved"]</button><button type="button" data-agenda-list aria-pressed="false">☷ @Loc["AgendaList"]</button></div></div>
     <nav class="agenda-periods" aria-label="@Loc["Period"]">@foreach(var days in new[]{0,1,7,30,90,180,365}){<a href="@Link("dias",days.ToString(),true)" aria-current="@(Model.Days==days&&Model.SelectedDate is null&&!Context.Request.Query.ContainsKey("mes")?"page":null)">@Loc["AgendaPeriod_"+days]</a>}</nav>

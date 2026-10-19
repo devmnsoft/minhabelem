@@ -11,4 +11,9 @@
 <symbol id="walk" viewBox="0 0 64 64"><circle cx="35" cy="11" r="6"/><path d="m31 22-9 10-11 2m21-13 9 13 12 3M31 24l-4 17-13 16m13-16 14 5 8 12M27 41l10-16"/></symbol>
 <symbol id="brt" viewBox="0 0 64 64"><rect x="9" y="10" width="46" height="40" rx="6"/><path d="M9 30h46M23 10v20m18-20v20M17 50l-4 9m34-9 4 9M7 59h50M17 39h8m14 0h8M5 5h54"/></symbol>
 <symbol id="route" viewBox="0 0 64 64"><circle cx="13" cy="13" r="7"/><circle cx="51" cy="51" r="7"/><path d="M13 21v15q0 8 10 8h15q13 0 13-13V12m-8 8 8-8 8 8"/></symbol>
+<symbol id="video" viewBox="0 0 64 64"><rect x="5" y="15" width="38" height="34" rx="5"/><path d="m43 27 13-8v26l-13-8zM21 28v8l8-4z"/></symbol>
+<symbol id="photo" viewBox="0 0 64 64"><rect x="6" y="12" width="52" height="40" rx="5"/><circle cx="22" cy="26" r="5"/><path d="M9 46l14-13 10 9 8-7 15 14"/></symbol>
+<symbol id="sparkle" viewBox="0 0 64 64"><path d="M32 6l5 15 15 5-15 5-5 15-5-15-15-5 15-5zM49 40l2.5 7 7 2.5-7 2.5-2.5 7-2.5-7-7-2.5 7-2.5zM14 34l2 5.5 5.5 2-5.5 2L14 49l-2-5.5-5.5-2 5.5-2z"/></symbol>
+<symbol id="play" viewBox="0 0 64 64"><circle cx="32" cy="32" r="26"/><path d="m26 21 18 11-18 11z"/></symbol>
+<symbol id="leaf" viewBox="0 0 64 64"><path d="M54 10C30 12 14 22 12 40c-1 8 5 14 13 14 18 0 29-16 29-44zM14 50c8-12 18-20 32-28"/></symbol>
 </svg>

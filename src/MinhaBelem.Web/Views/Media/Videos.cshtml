@@ -1,0 +1,146 @@
+@using MinhaBelem.Core.Entities
+@using MinhaBelem.Web.Controllers
+@{
+    var posts = ViewData["Posts"] as IReadOnlyList<SocialPost> ?? Array.Empty<SocialPost>();
+    var assets = ViewData["Assets"] as IReadOnlyList<PublicMediaAsset> ?? Array.Empty<PublicMediaAsset>();
+    var archive = ViewData["Archive"] as IReadOnlyList<MinhaBelem.Core.Abstractions.PublicPlacePhoto> ?? Array.Empty<MinhaBelem.Core.Abstractions.PublicPlacePhoto>();
+    var pagina = (int)(ViewData["Page"] ?? 1);
+    var totalPaginas = (int)(ViewData["PageCount"] ?? 1);
+    ViewData["Title"] = Loc["VideoGalleryTitle"].Value;
+    ViewData["Description"] = Loc["VideoGalleryIntro"].Value;
+
+    var videoAssets = assets.Where(a => a.HasVideo || a.IsVideoFile).ToArray();
+    var photoAssets = assets.Where(a => a.HasPicture && !a.IsVideoFile).ToArray();
+}
+
+<section class="hero video-hero" aria-labelledby="videos-title">
+    <div class="hero-content">
+        <span class="eyebrow">BELÉM EM VÍDEO</span>
+        <h1 id="videos-title">@Loc["VideoGalleryTitle"]</h1>
+        <p>@Loc["VideoGalleryIntro"]</p>
+        <div class="hero-quick-tags">
+            <a href="/guia-ia" class="quick-pill">✨ Curió IA ↗</a>
+            <a href="/agenda" class="quick-pill">@Loc["Nav_Agenda"] ↗</a>
+            <a href="/midias" class="quick-pill">@Loc["MediaGalleryTitle"] ↗</a>
+        </div>
+    </div>
+</section>
+
+@if (videoAssets.Length > 0)
+{
+    <section class="section reveal" aria-labelledby="official-videos-title">
+        <div class="sectionhead">
+            <div><span class="eyebrow">MINHABELÉM / VÍDEO</span><h2 id="official-videos-title">@Loc["VideoTitle"]</h2></div>
+        </div>
+        <div class="video-grid">
+            @foreach (var asset in videoAssets)
+            {
+                <article class="video-card reveal">
+                    <div class="video-wrapper">
+                        @if (asset.HasVideo)
+                        {
+                            <iframe src="@asset.MediaUrl" title="@asset.Description" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>
+                            <div class="video-badge" aria-hidden="true">▶ YouTube</div>
+                        }
+                        else
+                        {
+                            <video src="@asset.MediaUrl" poster="/midia/@asset.Id" playsinline preload="metadata" controls></video>
+                            <div class="video-badge" aria-hidden="true">▶ Vídeo</div>
+                        }
+                    </div>
+                    <h3>@asset.Description</h3>
+                    <div class="video-meta"><span aria-hidden="true">🎬</span> @asset.Credit · @asset.License</div>
+                </article>
+            }
+        </div>
+    </section>
+}
+
+@if (posts.Count > 0)
+{
+    <section class="section reveal" aria-labelledby="social-videos-title">
+        <div class="sectionhead">
+            <div><span class="eyebrow">REDES OFICIAIS / RADAR</span><h2 id="social-videos-title">@Loc["VideoTitle"]</h2></div>
+        </div>
+        <div class="video-grid">
+            @foreach (var post in posts.Where(p => string.Equals(p.MediaType, "video", StringComparison.OrdinalIgnoreCase)).Take(12))
+            {
+                <article class="video-card reveal">
+                    <div class="video-wrapper">
+                        @if (!string.IsNullOrWhiteSpace(post.EmbedHtml))
+                        {
+                            <div class="video-embed">@Html.Raw(post.EmbedHtml)</div>
+                            <div class="video-badge" aria-hidden="true">▶ @post.Platform</div>
+                        }
+                        else
+                        {
+                            <div class="video-placeholder"><span aria-hidden="true">🎬</span></div>
+                            <div class="video-badge" aria-hidden="true">▶ @post.Platform</div>
+                        }
+                    </div>
+                    <h3><a href="@post.PostUrl" target="_blank" rel="noopener noreferrer">@post.Title ↗</a></h3>
+                    <p>@post.CaptionSnippet</p>
+                    <div class="video-meta">
+                        <span aria-hidden="true">📺</span> @post.Platform
+                        @if (!string.IsNullOrWhiteSpace(post.AuthorHandle))
+                        {
+                            <span>· @post.AuthorHandle</span>
+                        }
+                    </div>
+                </article>
+            }
+        </div>
+    </section>
+}
+
+@if (photoAssets.Length > 0 || archive.Count > 0)
+{
+    <section class="section reveal" aria-labelledby="videos-photos-title">
+        <div class="sectionhead">
+            <div><span class="eyebrow">MINHABELÉM / FOTOS</span><h2 id="videos-photos-title">@Loc["PhotoGalleryTitle"]</h2></div>
+            <a href="/guia/acervo" class="button-link">@Loc["ViewPhotoArchive"] ↗</a>
+        </div>
+        <div class="photo-gallery">
+            @foreach (var asset in photoAssets.Take(8))
+            {
+                <figure class="photo-item reveal" data-lightbox="media-photos" data-src="/midia/@asset.Id" data-caption="@asset.Description — @asset.Credit">
+                    <img src="/midia/@asset.Id" alt="@asset.Description" width="640" height="480" loading="lazy" decoding="async" />
+                    <figcaption>@asset.Description</figcaption>
+                </figure>
+            }
+            @foreach (var photo in archive.Take(8))
+            {
+                <figure class="photo-item reveal" data-lightbox="media-photos" data-src="@photo.ThumbUrl" data-caption="@photo.PlaceName — @photo.Credit">
+                    <img src="@photo.ThumbUrl" alt="@photo.PlaceName" width="640" height="480" loading="lazy" referrerpolicy="no-referrer" />
+                    <figcaption>@photo.PlaceName</figcaption>
+                </figure>
+            }
+        </div>
+        @if (totalPaginas > 1)
+        {
+            <nav class="pagination" aria-label="@Loc["NextPage"]">
+                @if (pagina > 1)
+                {
+                    <a href="/videos?pagina=@(pagina - 1)">← @Loc["PreviousPage"]</a>
+                }
+                <span>@pagina / @totalPaginas</span>
+                @if (pagina < totalPaginas)
+                {
+                    <a href="/videos?pagina=@(pagina + 1)">@Loc["NextPage"] →</a>
+                }
+            </nav>
+        }
+    </section>
+}
+
+@if (videoAssets.Length == 0 && posts.Count == 0 && photoAssets.Length == 0 && archive.Count == 0)
+{
+    <section class="section">
+        <div class="empty" style="text-align:center;padding:56px 24px;">
+            <svg class="empty-art" aria-hidden="true" style="width:72px;height:72px;margin-bottom:16px;"><use href="/images/icons.svg#video" /></svg>
+            <h2>@Loc["General_Empty"]</h2>
+            <p style="max-width:48ch;margin:10px auto 20px;color:var(--text-muted,#59675f);">Nenhum vídeo publicado no momento. Acompanhe a agenda e o Radar para as próximas publicações.</p>
+            <a class="button secondary" href="/agenda">@Loc["Nav_Agenda"] ↗</a>
+        </div>
+    </section>
+}

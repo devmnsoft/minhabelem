@@ -1,2 +1,51 @@
 @model IReadOnlyList<MinhaBelem.Web.Controllers.MediaAsset>
-@if(Model.Count>0){<section class="section"><h2>@Loc["PhotoGallery"]</h2><div class="grid">@foreach(var asset in Model){<figure class="card">@if(asset.StorageKey is not null){<img src="/midia/@asset.Id" alt="@asset.Description" loading="lazy" decoding="async" width="960" height="640"/>}@if(asset.YoutubeId is not null){<a href="https://www.youtube.com/watch?v=@asset.YoutubeId" target="_blank" rel="noopener noreferrer">@asset.Description · YouTube ↗</a>}<figcaption>@asset.Credit · @asset.License</figcaption></figure>}</div></section>}
+@{
+    var pictures = Model.Where(a => !string.IsNullOrWhiteSpace(a.StorageKey) && !string.IsNullOrWhiteSpace(a.License)).ToArray();
+    var videos = Model.Where(a => !string.IsNullOrWhiteSpace(a.YoutubeId)).ToArray();
+    var group = "media-" + (Model.Count > 0 ? Model[0].Id.ToString() : "empty");
+}
+@if (Model.Count > 0)
+{
+    <section class="section reveal" aria-labelledby="media-gallery-@group">
+        <div class="sectionhead">
+            <h2 id="media-gallery-@group">@Loc["MediaGalleryTitle"]</h2>
+            @if (pictures.Length > 0)
+            {
+                <span class="small">@pictures.Length 📷 @videos.Length 🎬</span>
+            }
+        </div>
+
+        @if (pictures.Length > 0)
+        {
+            <div class="photo-gallery">
+                @foreach (var asset in pictures)
+                {
+                    <figure class="photo-item" data-lightbox="@group" data-src="/midia/@asset.Id" data-caption="@asset.Description — @asset.Credit">
+                        <img src="/midia/@asset.Id" alt="@asset.Description" width="640" height="480" loading="lazy" decoding="async" />
+                        <span class="photo-badge" aria-hidden="true">📷</span>
+                        <figcaption>@asset.Description</figcaption>
+                    </figure>
+                }
+            </div>
+        }
+
+        @if (videos.Length > 0)
+        {
+            <div class="video-grid" style="margin-top:20px;">
+                @foreach (var asset in videos)
+                {
+                    <article class="video-card">
+                        <div class="video-wrapper">
+                            <iframe src="https://www.youtube-nocookie.com/embed/@asset.YoutubeId" title="@asset.Description" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>
+                            <div class="video-badge" aria-hidden="true">▶ YouTube</div>
+                        </div>
+                        <h3>@asset.Description</h3>
+                        <div class="video-meta"><span aria-hidden="true">🎬</span> @asset.Credit · @asset.License</div>
+                    </article>
+                }
+            </div>
+        }
+
+        <p class="small" style="margin-top:14px;color:var(--text-muted,#59675f);">@Loc["PhotoArchiveNote"]</p>
+    </section>
+}

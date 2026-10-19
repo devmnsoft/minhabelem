@@ -1,147 +1,178 @@
+@using System.Net
+@using System.Text.RegularExpressions
+@using MinhaBelem.Core.Entities
+@using MinhaBelem.Core.Security
 @model MinhaBelem.Web.Controllers.TouristAssistantPage
 @{
     ViewData["Title"] = Loc["TouristAssistantTitle"];
+    ViewData["Description"] = Loc["AiLead"];
     var answer = Model.Answer;
+    const int size = MinhaBelem.Web.Controllers.TouristAssistantController.PageSize;
+    var skip = (Model.Page - 1) * size;
+    string PageLink(int page)
+    {
+        var link = "/guia-ia?q=" + Uri.EscapeDataString(Model.Question) + "&pagina=" + page;
+        return Model.UseAi ? link : link + "&useAi=false";
+    }
+    bool ShowImage(string? url, string? license)
+    {
+        if (string.IsNullOrWhiteSpace(url) || string.IsNullOrWhiteSpace(license)) return false;
+        if (url.Contains("..", StringComparison.Ordinal)) return false;
+        if (url.StartsWith("/images/", StringComparison.Ordinal) || url.StartsWith("/midia/", StringComparison.Ordinal)) return true;
+        return SafeUrl.Validate(url).IsValid;
+    }
+    string Format(string text)
+    {
+        var encoded = WebUtility.HtmlEncode(text);
+        encoded = Regex.Replace(encoded, @"\*\*(.+?)\*\*", "<strong>$1</strong>", RegexOptions.Singleline);
+        return encoded.Replace("\r\n", "\n").Replace("\n", "<br/>");
+    }
 }
-
 <div class="ai-assistant-shell">
-    <section class="hero ai-hero">
-        <div class="hero-content">
-            <span class="eyebrow ai-badge">✨ INTELIGÊNCIA ARTIFICIAL AMAZÔNICA 360</span>
-            <h1>@Loc["TouristAssistantTitle"]</h1>
-            <p class="lead">
-                Converse com o <strong>Curió IA</strong>, o assistente oficial do MinhaBelém.
-                Receba recomendações de gastronomia autêntica, passeios fluviais, horários de museus,
-                linhas de transporte e eventos reais sem alucinações.
-            </p>
+    <header class="ai-hero">
+        <span class="ai-badge">✨ @Loc["AIAssistantTitle"] · @Loc["AIAssistantHint"]</span>
+        <h1>@Loc["TouristAssistantTitle"]</h1>
+        <p class="lead">@Loc["AiLead"]</p>
+        <div class="ai-hero-capabilities" role="list">
+            <span role="listitem">📍 @Loc["AiPlaces"]</span>
+            <span role="listitem">📅 @Loc["AiEvents"]</span>
+            <span role="listitem">🚌 @Loc["AiLines"]</span>
+            <span role="listitem">🖼️ @Loc["AiMedia"]</span>
         </div>
-    </section>
+        <div class="ai-curio-signature">
+            <img src="/images/curio-marca.svg" width="34" height="34" alt="" aria-hidden="true" />
+            <span>Curió · Motor de Inteligência Amazônica do MinhaBelém</span>
+        </div>
+    </header>
 
-    <main class="section ai-container" id="conteudo">
-        <!-- Barra de Pergunta Conversacional -->
-        <div class="card ai-input-card">
+    <div class="ai-stage">
+        <section class="card ai-input-card" aria-labelledby="ai-ask-title">
             <form method="post" action="/guia-ia" class="ai-query-form" id="ai-form">
                 @Html.AntiForgeryToken()
-                <label for="ai-question" class="ai-label">
-                    <span>Faça sua pergunta sobre Belém do Pará:</span>
-                </label>
-                
+                <label id="ai-ask-title" for="ai-question" class="ai-label">@Loc["AiAsk"]</label>
                 <div class="ai-input-wrapper">
-                    <textarea id="ai-question" name="question" required minlength="3" maxlength="500" rows="3"
-                              placeholder="Ex: Onde comer o melhor tacacá hoje? Como chegar à Ilha do Combu? O que fazer no fim de semana de graça?">@Model.Question</textarea>
+                    <textarea id="ai-question" name="question" required minlength="3" maxlength="500" rows="4" placeholder="@Loc["AiPlaceholder"]">@Model.Question</textarea>
                 </div>
-
                 <div class="ai-form-bar">
                     <label class="checkbox-label ai-consent-toggle">
-                        <input name="useAi" type="checkbox" value="true" checked class="checkbox-input" />
-                        <span>Usar inteligência contextual e ordenar por relevância cultural</span>
+                        <input name="useAi" type="checkbox" value="true" @(Model.UseAi ? "checked" : null) />
+                        <span>@Loc["AiUseContext"]</span>
                     </label>
-
                     <div class="ai-form-actions">
-                        <button type="submit" class="button ai-submit-btn">
-                            <span>Perguntar ao Curió IA</span>
-                            <span aria-hidden="true">✨</span>
-                        </button>
+                        <span class="ai-shortcut-hint small" aria-hidden="true">Ctrl + Enter</span>
+                        <button type="submit" class="button ai-submit-btn">@Loc["AiSubmit"] <span aria-hidden="true">↗</span></button>
                     </div>
                 </div>
             </form>
-
-            <!-- Sugestões Rápidas (Chips de Pergunta) -->
             <div class="ai-suggestions-box">
-                <span class="ai-suggestions-title">💡 Perguntas frequentes dos visitantes:</span>
+                <p class="ai-suggestions-title">@Loc["AiSuggestions"]</p>
                 <div class="ai-chips">
-                    <a href="/guia-ia?q=Onde+comer+o+melhor+tacaca+e+acai+em+Belem" class="ai-chip">🍲 Onde comer o melhor Tacacá e Açaí?</a>
-                    <a href="/guia-ia?q=Como+fazer+o+passeio+de+barco+para+a+Ilha+do+Combu" class="ai-chip">🚤 Como ir de barco para a Ilha do Combu?</a>
-                    <a href="/guia-ia?q=Roteiro+historico+pelo+Ver-o-Peso+e+Theatro+da+Paz" class="ai-chip">🏛️ Theatro da Paz e Ver-o-Peso</a>
-                    <a href="/guia-ia?q=Mangal+das+Garcas+e+Parque+do+Utinga+horarios" class="ai-chip">🌿 Mangal das Garças e Parque do Utinga</a>
-                    <a href="/guia-ia?q=Quais+os+eventos+culturais+gratuitos+nesta+semana" class="ai-chip">🎉 Eventos culturais gratuitos</a>
+                    <a class="ai-chip" href="/guia-ia?q=@Uri.EscapeDataString("Ver-o-Peso e Estação das Docas")">🛒 Ver-o-Peso e Estação das Docas</a>
+                    <a class="ai-chip" href="/guia-ia?q=@Uri.EscapeDataString("Como cruzar para a Ilha do Combu")">⛵ Ilha do Combu</a>
+                    <a class="ai-chip" href="/guia-ia?q=@Uri.EscapeDataString("Museu Goeldi e Mangal das Garças")">🌿 Goeldi e Mangal</a>
+                    <a class="ai-chip" href="/guia-ia?q=@Uri.EscapeDataString("Eventos publicados na agenda")">📅 @Loc["AiEvents"]</a>
+                    <a class="ai-chip" href="/guia-ia?q=@Uri.EscapeDataString("Linhas de transporte conferidas")">🚌 @Loc["AiLines"]</a>
+                    <a class="ai-chip" href="/guia-ia?q=@Uri.EscapeDataString("Roteiro de 3 dias em Belém")">🗺️ Roteiro de 3 dias</a>
+                    <a class="ai-chip" href="/guia-ia?q=@Uri.EscapeDataString("Gastronomia típica paraense")">🍛 Gastronomia paraense</a>
                 </div>
             </div>
-        </div>
+        </section>
+
+        @if (answer is null)
+        {
+            <div class="ai-empty-state reveal">
+                <span class="ai-empty-icon" aria-hidden="true">🦜</span>
+                <h2>@Loc["AIAssistantTitle"]</h2>
+                <p style="max-width:56ch;margin:10px auto 20px;color:var(--text-muted,#59675f);">@Loc["AIAssistantHint"]</p>
+                <div class="ai-chips" style="justify-content:center;">
+                    <a class="ai-chip" href="/guia-ia?q=@Uri.EscapeDataString("O que visitar em Belém em um dia?")">🗺️ O que visitar em 1 dia?</a>
+                    <a class="ai-chip" href="/guia-ia?q=@Uri.EscapeDataString("Como chegar à Estação das Docas?")">🚉 Estação das Docas</a>
+                    <a class="ai-chip" href="/guia-ia?q=@Uri.EscapeDataString("Quais linhas de ônibus saem do Ver-o-Peso?")">🚌 Linhas do Ver-o-Peso</a>
+                    <a class="ai-chip" href="/guia-ia?q=@Uri.EscapeDataString("Fotos e vídeos de Belém com licença")">🖼️ Fotos e vídeos</a>
+                </div>
+            </div>
+        }
 
         @if (answer is not null)
         {
-            <div class="ai-response-section" aria-live="polite">
-                <!-- Painel da Resposta Sintetizada -->
+            var places = answer.Places.Skip(skip).Take(size).ToArray();
+            var stories = answer.Content.Skip(skip).Take(size).ToArray();
+            var lines = answer.Lines.Skip(skip).Take(size).ToArray();
+            <div class="ai-response" aria-live="polite">
                 @if (!string.IsNullOrWhiteSpace(answer.TextResponse))
                 {
                     <article class="card ai-answer-card">
                         <div class="ai-answer-header">
                             <div class="ai-avatar">
-                                <span class="ai-avatar-icon">🦜</span>
+                                <span class="ai-avatar-icon" aria-hidden="true">
+                                    <img src="/images/curio-marca.svg" width="34" height="34" alt="" />
+                                </span>
                                 <div>
-                                    <strong>Curió IA</strong>
-                                    <span class="small ai-provider-tag">@(answer.ProviderName ?? "MinhaBelém IA 360") · Verificado</span>
+                                    <p class="eyebrow">Curió</p>
+                                    <p class="ai-provider-tag">@(answer.ProviderName ?? "MinhaBelém")</p>
                                 </div>
                             </div>
-
                             <div class="ai-toolbar">
-                                <button type="button" class="button secondary small" id="btn-speak" title="Ouvir resposta em áudio" aria-label="Ouvir resposta em áudio">
-                                    <span aria-hidden="true" id="speak-icon">🔊</span>
-                                    <span id="speak-label">Ouvir</span>
+                                <button type="button" class="button secondary" id="btn-speak" aria-pressed="false" data-listen="@Loc["AiListen"]" data-stop="@Loc["AiStop"]">
+                                    <span id="speak-label">@Loc["AiListen"]</span>
                                 </button>
-                                <button type="button" class="button secondary small" id="btn-copy-ai" title="Copiar resposta" aria-label="Copiar resposta">
-                                    <span aria-hidden="true">📋</span>
-                                    <span id="copy-label">Copiar</span>
+                                <button type="button" class="button secondary" id="btn-copy-ai" data-copy="@Loc["AiCopy"]" data-copied="@Loc["AiCopied"]">
+                                    <span id="copy-label">@Loc["AiCopy"]</span>
+                                </button>
+                                <button type="button" class="button secondary" id="btn-share-ai" data-copy-link data-copied="@Loc["AiCopied"]">
+                                    <span aria-hidden="true">🔗</span>
                                 </button>
                             </div>
                         </div>
-
-                        <div class="ai-markdown-body" id="ai-text-content">
-                            @foreach (var paragraph in answer.TextResponse.Split(new[] { "\n\n" }, StringSplitOptions.RemoveEmptyEntries))
-                            {
-                                <p>@Html.Raw(paragraph.Replace("\n", "<br/>"))</p>
-                            }
-                        </div>
-
-                        <div class="ai-card-footer">
-                            <span class="small text-muted">
-                                🛡️ Baseado em dados autênticos de Belém do Pará. Respeita fontes oficiais, segurança e patrimônio cultural.
-                            </span>
-                        </div>
+                        <div class="ai-markdown-body" id="ai-text-content">@Html.Raw(Format(answer.TextResponse))</div>
+                        <p class="ai-card-footer small">@Loc["AiAnswerNote"]</p>
                     </article>
                 }
 
-                <!-- Sugestões de Continuação -->
-                @if (answer.QuickSuggestions?.Count > 0)
+                @if (answer.QuickSuggestions is { Count: > 0 })
                 {
                     <div class="ai-followup-box">
-                        <span class="eyebrow">CONTINUAR EXPLORANDO:</span>
+                        <p class="ai-suggestions-title">@Loc["AiSuggestions"]</p>
                         <div class="ai-chips">
-                            @foreach (var s in answer.QuickSuggestions)
+                            @foreach (var suggestion in answer.QuickSuggestions)
                             {
-                                <a href="/guia-ia?q=@Uri.EscapeDataString(s)" class="ai-chip">@s ↗</a>
+                                <a class="ai-chip" href="/guia-ia?q=@Uri.EscapeDataString(suggestion)">@suggestion</a>
                             }
                         </div>
                     </div>
                 }
 
-                <!-- Lugares Verificados Relacionados -->
-                @if (answer.Places.Count > 0)
+                @if (places.Length == 0 && stories.Length == 0 && lines.Length == 0)
                 {
-                    <section class="ai-places-section">
-                        <div class="sectionhead">
-                            <div>
-                                <span class="eyebrow">PONTOS DE INTERESSE SUGERIDOS</span>
-                                <h2>Lugares em Belém (@answer.Places.Count)</h2>
-                            </div>
-                            <a href="/guia" class="button secondary small">Ver todos os lugares ↗</a>
-                        </div>
+                    <p class="notice" role="status">@Loc["AiEmptyLists"]</p>
+                }
 
-                        <div class="grid ai-places-grid">
-                            @foreach (var p in answer.Places.Take(6))
+                @if (places.Length > 0)
+                {
+                    <section class="ai-block" aria-labelledby="ai-places-title">
+                        <div class="sectionhead">
+                            <h2 id="ai-places-title">@Loc["AiPlaces"] <span class="small">@answer.Places.Count</span></h2>
+                            <a class="button secondary" href="/guia?marco=1">@Loc["Landmarks"]</a>
+                        </div>
+                        <div class="ai-result-grid">
+                            @foreach (var place in places)
                             {
-                                <article class="card ai-place-card">
-                                    <span class="eyebrow">@p.PrimaryType</span>
-                                    <h3><a href="/guia/@p.Id">@p.DisplayName</a></h3>
-                                    <p class="small">@p.FormattedAddress</p>
-                                    @if (!string.IsNullOrWhiteSpace(p.CulturalNotes))
+                                <article class="card ai-result-card">
+                                    @if (Model.Covers.TryGetValue(place.Id, out var cover))
                                     {
-                                        <div class="cultural-badge">💡 @p.CulturalNotes</div>
+                                        <img class="ai-cover" src="@cover.ThumbUrl" alt="@place.DisplayName" width="640" height="360" loading="lazy" referrerpolicy="no-referrer" />
+                                        <p class="small">@cover.Credit · @cover.LicenseName</p>
                                     }
-                                    <div class="ai-place-actions" style="margin-top:auto;padding-top:14px;border-top:1px solid var(--border-subtle);display:flex;gap:8px;">
-                                        <a href="/guia/@p.Id" class="button secondary small">Ver Detalhes</a>
-                                        <a href="/como-chegar?placeId=@p.Id" class="button small">Como Chegar →</a>
+                                    <p class="eyebrow">@place.PrimaryType</p>
+                                    <h3><a href="/guia/@place.Id">@place.DisplayName</a></h3>
+                                    <p>@(place.FormattedAddress ?? place.Neighborhood)</p>
+                                    @if (!string.IsNullOrWhiteSpace(place.Municipality))
+                                    {
+                                        <p class="small">@place.Neighborhood · @place.Municipality</p>
+                                    }
+                                    <div class="ai-card-actions">
+                                        <a class="button secondary" href="/guia/@place.Id">@Loc["AiDetails"]</a>
+                                        <a class="button" href="/como-chegar?placeId=@place.Id">@Loc["AiRoute"]</a>
                                     </div>
                                 </article>
                             }
@@ -149,28 +180,28 @@
                     </section>
                 }
 
-                <!-- Eventos e Matérias Relacionadas -->
-                @if (answer.Content.Count > 0)
+                @if (stories.Length > 0)
                 {
-                    <section class="ai-content-section">
+                    <section class="ai-block" aria-labelledby="ai-events-title">
                         <div class="sectionhead">
-                            <div>
-                                <span class="eyebrow">AGENDA & MATÉRIAS RELEVANTES</span>
-                                <h2>Conteúdos Verificados (@answer.Content.Count)</h2>
-                            </div>
-                            <a href="/agenda" class="button secondary small">Ver Agenda Completa ↗</a>
+                            <h2 id="ai-events-title">@Loc["AiEvents"] <span class="small">@answer.Content.Count</span></h2>
+                            <a class="button secondary" href="/agenda">@Loc["Nav_Agenda"]</a>
                         </div>
-
-                        <div class="grid ai-content-grid">
-                            @foreach (var c in answer.Content.Take(4))
+                        <div class="ai-result-grid">
+                            @foreach (var story in stories)
                             {
-                                <article class="card ai-story-card">
-                                    <span class="eyebrow">@c.Category</span>
-                                    <h3><a href="/Home/Detalhe/@c.Id">@c.DisplayTitle</a></h3>
-                                    <p class="small">@c.DisplaySummary</p>
-                                    <div class="card-meta">
-                                        <span>Fonte: @c.SourceName</span>
-                                        <a href="/Home/Detalhe/@c.Id" class="button-link">Ler matéria →</a>
+                                <article class="card ai-result-card">
+                                    @if (ShowImage(story.ImageUrl, story.ImageLicense))
+                                    {
+                                        <img class="ai-cover" src="@story.ImageUrl" alt="@story.DisplayTitle" width="640" height="360" loading="lazy" />
+                                        <p class="small">@story.ImageCredit · @story.ImageLicense</p>
+                                    }
+                                    <p class="eyebrow">@story.Category</p>
+                                    <h3><a href="/Home/Detalhe/@story.Id">@story.DisplayTitle</a></h3>
+                                    <p>@story.DisplaySummary</p>
+                                    <p class="small">@story.SourceName</p>
+                                    <div class="ai-card-actions">
+                                        <a class="button secondary" href="/Home/Detalhe/@story.Id">@Loc["AiRead"]</a>
                                     </div>
                                 </article>
                             }
@@ -178,92 +209,111 @@
                     </section>
                 }
 
-                <!-- Linhas de Transporte e Travessia -->
-                @if (answer.Lines.Count > 0)
+                @if (lines.Length > 0)
                 {
-                    <section class="ai-transit-section">
+                    <section class="ai-block" aria-labelledby="ai-lines-title">
                         <div class="sectionhead">
-                            <div>
-                                <span class="eyebrow">MOBILIDADE E TRANSPORTE</span>
-                                <h2>Linhas e Acessos Diretos</h2>
-                            </div>
-                            <a href="/mobilidade" class="button secondary small">Ver Mobilidade ↗</a>
+                            <h2 id="ai-lines-title">@Loc["AiLines"] <span class="small">@answer.Lines.Count</span></h2>
+                            <a class="button secondary" href="/mobilidade">@Loc["NavMobility"]</a>
                         </div>
-
-                        <div class="grid ai-lines-grid">
-                            @foreach (var l in answer.Lines.Take(4))
+                        <div class="ai-result-grid">
+                            @foreach (var line in lines)
                             {
-                                <article class="card ai-line-card">
-                                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-                                        <span class="badge" style="background:var(--green-forest);color:white;font-weight:700;">@l.Code</span>
-                                        <span class="small text-muted">@l.TransitType</span>
+                                <article class="card ai-result-card">
+                                    <p class="eyebrow">@line.Code · @line.TransitType</p>
+                                    <h3><a href="/mobilidade/linha/@line.Code">@line.Name</a></h3>
+                                    <p>@line.Origin → @line.Destination</p>
+                                    <div class="ai-card-actions">
+                                        <a class="button secondary" href="/mobilidade/linha/@line.Code">@Loc["AiDetails"]</a>
                                     </div>
-                                    <h3><a href="/mobilidade/linha/@l.Code">@l.Name</a></h3>
-                                    <p class="small">@l.Origin → @l.Destination</p>
-                                    <a href="/mobilidade/linha/@l.Code" class="button secondary small" style="margin-top:10px;">Ver Itinerário</a>
                                 </article>
                             }
                         </div>
                     </section>
+                }
+
+                @if (Model.Clips.Count > 0)
+                {
+                    <section class="ai-block" aria-labelledby="ai-media-title">
+                        <div class="sectionhead">
+                            <h2 id="ai-media-title">@Loc["AiMedia"]</h2>
+                            <a class="button secondary" href="/midias">@Loc["MediaGalleryTitle"]</a>
+                        </div>
+                        <div class="photo-gallery">
+                            @foreach (var clip in Model.Clips)
+                            {
+                                <figure class="photo-item reveal" data-lightbox="ai-media" data-src="@(clip.HasPicture ? "/midia/" + clip.Id : "")" data-caption="@clip.Description">
+                                    @if (clip.HasPicture)
+                                    {
+                                        <img src="/midia/@clip.Id" alt="@clip.Description" width="640" height="480" loading="lazy" decoding="async" />
+                                        <span class="photo-badge" aria-hidden="true">📷</span>
+                                    }
+                                    @if (clip.HasVideo)
+                                    {
+                                        <div class="video-embed" style="position:absolute;inset:0;">
+                                            <iframe src="https://www.youtube-nocookie.com/embed/@clip.YoutubeId" title="@clip.Description" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+                                        </div>
+                                        <span class="photo-badge" aria-hidden="true">🎬</span>
+                                    }
+                                    <figcaption>@clip.Description</figcaption>
+                                </figure>
+                            }
+                        </div>
+                    </section>
+                }
+
+                @if (Model.PageCount > 1)
+                {
+                    <nav class="ai-pager" aria-label="@Loc["AiPage"]">
+                        @if (Model.Page > 1)
+                        {
+                            <a class="button secondary" rel="prev" href="@PageLink(Model.Page - 1)">@Loc["AiPrev"]</a>
+                        }
+                        <span>@Model.Page / @Model.PageCount</span>
+                        @if (Model.Page < Model.PageCount)
+                        {
+                            <a class="button" rel="next" href="@PageLink(Model.Page + 1)">@Loc["AiNext"]</a>
+                        }
+                    </nav>
                 }
             </div>
         }
-    </main>
+    </div>
 </div>
-
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-    // Text-to-Speech (Leitura em voz alta acessível)
+    const textEl = document.getElementById('ai-text-content');
     const btnSpeak = document.getElementById('btn-speak');
     const speakLabel = document.getElementById('speak-label');
-    const speakIcon = document.getElementById('speak-icon');
-    const textEl = document.getElementById('ai-text-content');
-
     if (btnSpeak && textEl && 'speechSynthesis' in window) {
-        let isSpeaking = false;
+        let speaking = false;
+        const listen = btnSpeak.dataset.listen || 'Ouvir';
+        const stop = btnSpeak.dataset.stop || 'Parar';
+        const reset = () => { speaking = false; speakLabel.textContent = listen; btnSpeak.setAttribute('aria-pressed', 'false'); };
         btnSpeak.addEventListener('click', () => {
-            if (isSpeaking) {
-                window.speechSynthesis.cancel();
-                isSpeaking = false;
-                speakLabel.textContent = 'Ouvir';
-                speakIcon.textContent = '🔊';
-            } else {
-                window.speechSynthesis.cancel();
-                const text = textEl.innerText;
-                const utterance = new SpeechSynthesisUtterance(text);
-                utterance.lang = document.documentElement.lang || 'pt-BR';
-                utterance.rate = 1.0;
-                utterance.onend = () => {
-                    isSpeaking = false;
-                    speakLabel.textContent = 'Ouvir';
-                    speakIcon.textContent = '🔊';
-                };
-                utterance.onerror = () => {
-                    isSpeaking = false;
-                    speakLabel.textContent = 'Ouvir';
-                    speakIcon.textContent = '🔊';
-                };
-                window.speechSynthesis.speak(utterance);
-                isSpeaking = true;
-                speakLabel.textContent = 'Parar';
-                speakIcon.textContent = '⏹';
-            }
+            if (speaking) { window.speechSynthesis.cancel(); reset(); return; }
+            const utterance = new SpeechSynthesisUtterance(textEl.innerText);
+            utterance.lang = document.documentElement.lang || 'pt-BR';
+            utterance.onend = reset;
+            utterance.onerror = reset;
+            window.speechSynthesis.cancel();
+            window.speechSynthesis.speak(utterance);
+            speaking = true;
+            speakLabel.textContent = stop;
+            btnSpeak.setAttribute('aria-pressed', 'true');
         });
     } else if (btnSpeak) {
-        btnSpeak.style.display = 'none';
+        btnSpeak.hidden = true;
     }
-
-    // Copiar resposta com feedback acessível
     const btnCopy = document.getElementById('btn-copy-ai');
     const copyLabel = document.getElementById('copy-label');
-    if (btnCopy && textEl) {
+    if (btnCopy && textEl && copyLabel) {
         btnCopy.addEventListener('click', async () => {
             try {
                 await navigator.clipboard.writeText(textEl.innerText);
-                copyLabel.textContent = 'Copiado! ✓';
-                setTimeout(() => { copyLabel.textContent = 'Copiar'; }, 2500);
-            } catch (err) {
-                copyLabel.textContent = 'Erro ao copiar';
+                copyLabel.textContent = btnCopy.dataset.copied || copyLabel.textContent;
+            } catch {
+                copyLabel.textContent = btnCopy.dataset.copy || copyLabel.textContent;
             }
         });
     }

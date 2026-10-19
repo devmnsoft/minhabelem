@@ -1,0 +1,87 @@
+@model IReadOnlyList<MinhaBelem.Web.Controllers.MediaSubmission>
+@{ViewData["Title"]="Submissões de mídia";}
+<div class="admin-shell">
+    <partial name="_AdminSidebar" />
+    <main class="admin-content">
+        <div class="admin-header">
+            <div>
+                <h1>Submissões de fotos e vídeos</h1>
+                <p style="color:var(--text-muted,#59675f);">Envios da comunidade. Nada é publicado antes da conferência editorial.</p>
+            </div>
+            <a class="button secondary" href="/admin/midias">Biblioteca de mídia</a>
+        </div>
+
+        @if (TempData["MediaMessage"] is string msg)
+        {
+            <div class="notice" role="status">@msg</div>
+        }
+
+        @if (Model.Count == 0)
+        {
+            <div class="empty"><h2>@Loc["General_Empty"]</h2><p>Nenhuma submissão recebida.</p></div>
+        }
+        else
+        {
+            <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));">
+                @foreach (var item in Model)
+                {
+                    var isPending = string.Equals(item.Status, "Pending", StringComparison.OrdinalIgnoreCase);
+                    <article class="card" style="@(isPending ? "border-left:4px solid var(--terracotta,#c45835);" : "opacity:.75;")">
+                        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px;">
+                            <span class="badge @(isPending ? "badge-pending" : (item.Status == "Approved" ? "badge-success" : "badge-rejected"))">@item.Status</span>
+                            <span class="small">#@item.Id · @item.CreatedAt.ToString("dd/MM/yyyy HH:mm")</span>
+                        </div>
+
+                        @if (item.IsPhoto && !string.IsNullOrWhiteSpace(item.StorageKey))
+                        {
+                            <img src="/midia-envio/@item.Id" alt="@item.Title" loading="lazy" style="width:100%;height:170px;object-fit:cover;border-radius:10px;margin-bottom:12px;background:#eceee3;" />
+                        }
+                        else if (!item.IsPhoto && !string.IsNullOrWhiteSpace(item.YoutubeId))
+                        {
+                            <div class="video-wrapper" style="border-radius:10px;overflow:hidden;margin-bottom:12px;">
+                                <iframe src="https://www.youtube-nocookie.com/embed/@item.YoutubeId" title="@item.Title" loading="lazy" allowfullscreen></iframe>
+                            </div>
+                        }
+                        else if (!string.IsNullOrWhiteSpace(item.SourceUrl))
+                        {
+                            <p class="small" style="word-break:break-all;"><a href="@item.SourceUrl" target="_blank" rel="noopener noreferrer">@item.SourceUrl</a></p>
+                        }
+
+                        <h3 style="font-size:1.1rem;">@item.Title</h3>
+                        @if (!string.IsNullOrWhiteSpace(item.Description))
+                        {
+                            <p style="font-size:.9rem;">@item.Description</p>
+                        }
+                        <p class="small">
+                            👤 @(item.AuthorName ?? "—") @(item.AuthorEmail is not null ? "· " + item.AuthorEmail : "")<br />
+                            📍 @(item.PlaceName ?? "—") @(item.Neighborhood is not null ? "· " + item.Neighborhood : "")<br />
+                            © @item.Credit · @item.License
+                        </p>
+
+                        @if (isPending)
+                        {
+                            <form method="post" action="/admin/midias/submissoes/@item.Id/decidir" style="display:grid;gap:10px;margin-top:14px;padding-top:14px;border-top:1px solid var(--border,#dde6df);">
+                                @Html.AntiForgeryToken()
+                                <label style="margin:0;">Notas da revisão
+                                    <textarea name="notas" maxlength="1000" rows="2" placeholder="Observação interna"></textarea>
+                                </label>
+                                <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                                    <label style="margin:0;flex:1;min-width:120px;">Conteúdo (ID)
+                                        <input type="number" name="contentId" min="1" />
+                                    </label>
+                                    <label style="margin:0;flex:1;min-width:120px;">Lugar (ID)
+                                        <input type="number" name="placeId" min="1" />
+                                    </label>
+                                </div>
+                                <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                                    <button type="submit" name="aprovar" value="true">Aprovar e publicar</button>
+                                    <button type="submit" name="aprovar" value="false" class="button secondary">Rejeitar</button>
+                                </div>
+                            </form>
+                        }
+                    </article>
+                }
+            </div>
+        }
+    </main>
+</div>

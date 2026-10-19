@@ -738,6 +738,8 @@ public static class LocalizationCatalog
             Sprint19Translations.Register(Translations);
             Sprint20Translations.Register(Translations);
             Sprint21Translations.Register(Translations);
+            Sprint22Translations.Register(Translations);
+            Sprint23Translations.Register(Translations);
     }
 
     public static string Get(string key, string? culture = null)

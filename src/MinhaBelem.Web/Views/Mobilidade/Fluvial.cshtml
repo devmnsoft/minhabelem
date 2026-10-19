@@ -1,23 +1,76 @@
 @model IReadOnlyList<MinhaBelem.Core.Entities.RiverRoute>
-@{ ViewData["Title"] = Loc["RouteMode_boat"]; }
-<section class="hero"><h1>@Loc["RouteMode_boat"]</h1><p>@Loc["RouteRealtimeUnavailable"]</p></section>
-<main class="section">
-    @if (!Model.Any(x => x.IsVerified)) { <p class="notice">@Loc["WaterNotConfirmed"]</p> }
-    <p><a href="https://seguranca.belem.pa.gov.br/" target="_blank" rel="noopener noreferrer">@Loc["WaterOfficialSource"] ↗</a></p>
-    <div class="grid">
-        @foreach (var route in Model)
-        {
-            <article class="card">
-                <h2>@route.Name</h2><p>@route.DeparturePort → @route.DestinationPort · @route.DestinationIsland</p>
-                <p>@(route.ConfirmedFare is { } fare ? "BRL " + fare.ToString("F2") : Loc["RouteUnknown"].Value)</p>
-                <p>@(route.IsVerified ? route.OperatingHours : Loc["RouteState_unavailable"].Value)</p>
-                @if (route.IsVerified)
-                {
-                    <p><a href="@route.SourceUrl" target="_blank" rel="noopener noreferrer">@Loc["RouteSource"] ↗</a> · @route.VerifiedAt?.ToString("d")</p>
-                }
-                <a href="/como-chegar?destino=@Uri.EscapeDataString(route.DestinationPort)&amp;modo=boat">@Loc["RouteTitle"]</a>
-            </article>
-        }
+@using System.Globalization
+@{ ViewData["Title"] = "Travessias fluviais"; }
+<section class="hero">
+    <div class="hero-content">
+        <span class="eyebrow">MOBILIDADE / HIDROVIÁRIO</span>
+        <h1>Travessias fluviais</h1>
+        <p>As ilhas de Belém se alcançam de barco. Tarifas e operation follow o decreto municipal vigente; confirme a operação do dia com o operador.</p>
+        <div class="hero-quick-tags" style="margin-top:18px;">
+            <a href="/mobilidade">🚌 Linhas de ônibus</a>
+            <a href="/mobilidade/de-para">🔀 Planejador de-para</a>
+            <a href="/guia-ia">✨ Perguntar ao Curió</a>
+        </div>
     </div>
-    @if (Model.Count == 0) { <p>@Loc["General_Empty"]</p> }
+</section>
+<main class="section">
+    <div class="sectionhead">
+        <div><span class="eyebrow">ILHAS</span><h2>Embarques e tarifas</h2></div>
+        <a class="button-link" href="https://seguranca.belem.pa.gov.br/integra-belem/" target="_blank" rel="noopener noreferrer">Fonte oficial ↗</a>
+    </div>
+
+    @if (Model.Count == 0)
+    {
+        <p class="empty">@Loc["General_Empty"]</p>
+    }
+    else
+    {
+        <div class="grid">
+            @foreach (var route in Model)
+            {
+                <article class="card river-card">
+                    <span class="eyebrow">@route.DestinationIsland</span>
+                    <h2>@route.Name</h2>
+
+                    <div class="transit-de-para" style="margin:12px 0;">
+                        <div class="depara-end">
+                            <span class="depara-label">Embarque</span>
+                            <strong>@route.DeparturePort</strong>
+                        </div>
+                        <span class="depara-arrow" aria-hidden="true">→</span>
+                        <div class="depara-end">
+                            <span class="depara-label">Desembarque</span>
+                            <strong>@route.DestinationPort</strong>
+                        </div>
+                    </div>
+
+                    <div class="features-box" style="margin:0 0 14px;padding:16px;background:var(--green-surface-subtle,#f4f8f5);border-radius:10px;">
+                        <h4>🕒 Operação e tarifa</h4>
+                        <p><strong>Horários:</strong> @(route.IsVerified && !string.IsNullOrWhiteSpace(route.OperatingHours) ? route.OperatingHours : "Confirme a operação com o responsável")</p>
+                        <p><strong>Tarifa:</strong> @(route.ConfirmedFare is { } fare ? $"R$ {fare.ToString("F2", CultureInfo.CurrentUICulture)}" : "Não confirmada na fonte oficial")</p>
+                        @if (route.EstimatedDurationMinutes > 0)
+                        {
+                            <p><strong>Duração estimada:</strong> @route.EstimatedDurationMinutes min</p>
+                        }
+                        <p><strong>Embarcação:</strong> @route.VesselType</p>
+                    </div>
+
+                    @if (!string.IsNullOrWhiteSpace(route.OperatorNotes))
+                    {
+                        <div class="cultural-badge">💡 @route.OperatorNotes</div>
+                    }
+
+                    @if (route.IsVerified && !string.IsNullOrWhiteSpace(route.SourceUrl))
+                    {
+                        <p class="small"><a href="@route.SourceUrl" target="_blank" rel="noopener noreferrer">@Loc["RouteSource"] ↗</a> · verificado em @route.VerifiedAt?.ToString("d", CultureInfo.CurrentUICulture)</p>
+                    }
+
+                    <div class="card-footer" style="margin-top:12px;border-top:1px solid var(--border-subtle,#eef3ef);padding-top:10px;">
+                        <a href="/como-chegar?destino=@Uri.EscapeDataString(route.DestinationPort)&modo=boat" class="button-link">Como chegar ↗</a>
+                        <a href="/guia-ia?q=@Uri.EscapeDataString("como ir para " + route.DestinationIsland + " de barco")" class="button-link">✨ Perguntar ao Curió</a>
+                    </div>
+                </article>
+            }
+        </div>
+    }
 </main>

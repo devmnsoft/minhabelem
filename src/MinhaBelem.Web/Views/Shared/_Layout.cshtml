@@ -13,6 +13,12 @@
         ("zh-Hans", "简体中文", "🇨🇳"),
         ("ja", "日本語", "🇯🇵")
     };
+    // Markup das opções montado fora da tag para evitar C# na área de atributos do <option>.
+    var languageOptions = string.Concat(languages.Select(l =>
+    {
+        var selected = string.Equals(currentCulture, l.Item1, StringComparison.OrdinalIgnoreCase) ? " selected" : string.Empty;
+        return $"<option value=\"{l.Item1}\"{selected}>{l.Item3} {l.Item2}</option>";
+    }));
 }
 <!DOCTYPE html>
 <html lang="@currentCulture">
@@ -71,6 +77,10 @@
     <link rel="stylesheet" href="~/css/view-formats.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/components.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/amazonico.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/agenda.css" asp-append-version="true" />
+    <!-- Por último: evolution.css ajusta contraste, modo escuro e identidade
+         sobre as demais folhas, que usam a mesma especificidade. -->
+    <link rel="stylesheet" href="~/css/evolution.css" asp-append-version="true" />
 </head>
 <body class="culture-@currentCulture.ToLowerInvariant() @(Context.Request.Path.StartsWithSegments("/admin") || Context.Request.Path.StartsWithSegments("/editorial") ? "administration" : "portal")">
     <a class="skip-link" href="#conteudo">@Loc["SkipToContent"]</a>
@@ -78,8 +88,14 @@
     <div class="page-progress" aria-hidden="true"></div>
 
     <header class="header">
-        <a class="brand" href="/">
-            <img src="/images/minhabelem-marca.svg" width="220" height="62" alt="MinhaBelém — Nossa cidade. Mil histórias." class="brand-logo" />
+        <a class="brand" href="/" aria-label="MinhaBelém — página inicial">
+            <span class="brand-mark" aria-hidden="true">
+                <img src="/images/minhabelem-marca.svg" width="248" height="70" alt="" class="brand-logo" />
+            </span>
+            <span class="brand-tagline">
+                <strong>Nossa cidade. Mil histórias.</strong>
+                <small>Belém do Pará · Amazônia</small>
+            </span>
         </a>
 
         <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="main-navigation">@Loc["MenuToggle"] <span aria-hidden="true">☰</span></button>
@@ -91,6 +107,7 @@
             <a href="/mobilidade">@Loc["NavMobility"]</a>
             <a href="/como-chegar">@Loc["RouteTitle"]</a>
             <a href="/guia-ia" class="nav-ai-highlight">✨ @Loc["TouristAssistantTitle"]</a>
+            <a href="/videos" class="nav-media-highlight">🎬 @Loc["VideoGalleryTitle"]</a>
             <a href="/meu-bairro">@Loc["NavNeighborhood"]</a>
             <a href="/salvos">@Loc["SavedPlans"]</a>
             <a href="/parceiros">@Loc["NavPartners"]</a>
@@ -106,6 +123,9 @@
         </nav>
 
         <div class="header-tools">
+            <!-- Modo Escuro / Claro -->
+            <button type="button" class="theme-toggle" aria-label="Alternar tema" aria-pressed="false">🌙</button>
+
             <!-- Botão de Acessibilidade Visual (WCAG 2.2 AA) -->
             <button type="button" class="a11y-trigger-btn" data-open-a11y aria-haspopup="dialog" aria-expanded="false" title="@Loc["A11y_Panel_Title"]">
                 <span aria-hidden="true">♿</span>
@@ -117,12 +137,7 @@
                 <input type="hidden" name="returnUrl" value="@returnUrl" />
                 <span class="lang-icon" aria-hidden="true">🌐</span>
                 <select name="cultura" onchange="this.form.submit()" aria-label="@Loc["Language_Selector_Title"]" class="lang-select">
-                    @foreach (var lang in languages)
-                    {
-                        <!option value="@lang.Item1" @(string.Equals(currentCulture, lang.Item1, StringComparison.OrdinalIgnoreCase) ? "selected" : null)>
-                            @lang.Item3 @lang.Item2
-                        </!option>
-                    }
+                    @Html.Raw(languageOptions)
                 </select>
                 <noscript><button type="submit">OK</button></noscript>
             </form>
@@ -175,12 +190,17 @@
         @RenderBody()
     </main>
 
-    <footer class="footer">
+    <footer class="footer footer-pattern">
         <div class="footer-container">
             <div class="footer-col brand-col">
-                <strong class="footer-brand">MinhaBelém • Belém do Pará</strong>
+                <img src="/images/minhabelem-marca.svg" width="240" height="68" alt="MinhaBelém — Nossa cidade. Mil histórias." class="footer-logo" />
+                <strong class="footer-brand">MinhaBelém</strong>
                 <p class="footer-tagline">@Loc["Brand_Tagline"]</p>
                 <p class="footer-sub">Belém do Pará, Amazônia, Brasil 🇧🇷</p>
+                <p class="footer-curio">
+                    <img src="/images/curio-marca.svg" width="26" height="26" alt="" aria-hidden="true" />
+                    <span>Curió · o guia inteligente de Belém</span>
+                </p>
                 <p class="small footer-copy">&copy; @DateTime.UtcNow.Year MNSOFT — @Loc["General_AllRightsReserved"]</p>
             </div>
             <div class="footer-col">
@@ -192,6 +212,8 @@
                     <a href="/explore/roteiro/belem-completa-3-dias">3 Dias Completa</a>
                     <a href="/explore/roteiro/amazonia-urbana-ilhas-5-dias">5 Dias Ilhas e Natureza</a>
                     <a href="/explore/glossario">@Loc["Glossary_Title"]</a>
+                    <a href="/videos">🎬 @Loc["VideoGalleryTitle"]</a>
+                    <a href="/midias">📷 @Loc["MediaGalleryTitle"]</a>
                 </nav>
             </div>
             <div class="footer-col">
@@ -230,8 +252,24 @@
         </div>
     </footer>
 
+    <!-- Botão flutuante de IA (Curió) -->
+    <button class="ai-float-btn" data-href="/guia-ia" aria-label="Converse com o Curió IA — assistente turístico de Belém" title="Curió IA — Pergunte sobre Belém">
+        ✨
+        <span class="ai-float-badge" aria-hidden="true">IA</span>
+    </button>
+
+    <!-- Lightbox para fotos e vídeos -->
+    <div id="mb-lightbox" class="mb-lightbox" aria-hidden="true" role="dialog" aria-modal="true" aria-label="Visualizador de mídia">
+        <button id="mb-lightbox-prev" class="mb-lightbox-nav" aria-label="Anterior">&#10094;</button>
+        <div id="mb-lightbox-content" class="mb-lightbox-content"></div>
+        <div id="mb-lightbox-caption" class="mb-lightbox-caption"></div>
+        <button id="mb-lightbox-close" class="mb-lightbox-close" aria-label="Fechar visualizador">✕</button>
+        <button id="mb-lightbox-next" class="mb-lightbox-nav" aria-label="Próximo">&#10095;</button>
+    </div>
+
     <partial name="_AccessibilityPanel" />
     <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="~/js/evolution.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

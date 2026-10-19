@@ -28,6 +28,7 @@
             </a>
             <a href="/editorial/lotes">@Loc["BatchTitle"]</a>
             @if(User.HasClaim("mb:permission",Permissions.ContentWrite)){<a href="/admin/midias">@Loc["PhotoGallery"]</a>}
+            @if(User.HasClaim("mb:permission",Permissions.ContentWrite)){<a href="/admin/midias/submissoes">📨 Submissões de mídia</a>}
         }
         @if (User.HasClaim("mb:permission", Permissions.PlaceManage))
         {

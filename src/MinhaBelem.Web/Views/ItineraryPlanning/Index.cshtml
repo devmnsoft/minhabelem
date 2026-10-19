@@ -40,22 +40,16 @@
                     <label>
                         <span class="label-text">@Loc["Period"]</span>
                         <select name="Days">
-                            @foreach (var d in new[] { .5m, 1m, 2m, 3m, 5m })
-                            {
-                                <option value="@d.ToString(System.Globalization.CultureInfo.InvariantCulture)" selected="@(d == Model.Request.Days)">
-                                    @d @(d <= 1 ? "Dia" : "Dias")
-                                </option>
-                            }
+                            @Html.Raw(SelectOptions.Build(new[] { .5m, 1m, 2m, 3m, 5m }.Select(d =>
+                                (d.ToString(System.Globalization.CultureInfo.InvariantCulture), d + (d <= 1 ? " Dia" : " Dias"))),
+                                Model.Request.Days.ToString(System.Globalization.CultureInfo.InvariantCulture)))
                         </select>
                     </label>
 
                     <label>
                         <span class="label-text">@Loc["RouteMode"]</span>
                         <select name="Mode">
-                            @foreach (var m in new[] { "transit", "walking", "bicycling", "driving", "boat" })
-                            {
-                                <option value="@m" selected="@(Model.Request.Mode == m)">@Loc["RouteMode_" + m]</option>
-                            }
+                            @Html.Raw(SelectOptions.Build(new[] { "transit", "walking", "bicycling", "driving", "boat" }.Select(m => (m, Loc["RouteMode_" + m].Value)), Model.Request.Mode))
                         </select>
                     </label>
 
@@ -80,10 +74,7 @@
                         <span class="label-text">@Loc["BatchCategory"]</span>
                         <select name="Category">
                             <option value="">Todas as categorias</option>
-                            @foreach (var c in MinhaBelem.Infrastructure.Places.PlacesCatalog.Types)
-                            {
-                                <option value="@c" selected="@(Model.Request.Category == c)">@c</option>
-                            }
+                            @Html.Raw(SelectOptions.Build(MinhaBelem.Infrastructure.Places.PlacesCatalog.Types.Select(c => (c, c)), Model.Request.Category))
                         </select>
                     </label>
                 </div>

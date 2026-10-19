@@ -1,5 +1,5 @@
-const cacheName = 'minhabelem-shell-20';
-const shell = ['/css/site.css', '/css/amazonico.css', '/css/components.css', '/css/agenda.css', '/js/site.js', '/js/saved.js', '/manifest.webmanifest', '/images/favicon.svg'];
+const cacheName = 'minhabelem-shell-24';
+const shell = ['/css/site.css', '/css/amazonico.css', '/css/components.css', '/css/agenda.css', '/css/evolution.css', '/js/site.js', '/js/evolution.js', '/js/saved.js', '/manifest.webmanifest', '/images/favicon.svg'];
 
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(cacheName).then(cache => cache.addAll(shell)).then(() => self.skipWaiting()));

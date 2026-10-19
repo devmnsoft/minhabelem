@@ -40,6 +40,8 @@ public sealed class ContentQuery
     public DateOnly? DateFrom { get; set; }
     public DateOnly? DateTo { get; set; }
     public bool OnlyUpcomingEvents { get; set; }
+    /// <summary>Exclui eventos da lista (usado quando a página já tem um bloco de eventos).</summary>
+    public bool ExcludeEvents { get; set; }
     public DateTime? StartsFromUtc { get; set; }
     public DateTime? StartsBeforeUtc { get; set; }
     public int? AgeAtMost { get; set; }
@@ -196,6 +198,14 @@ public interface ITransitRepository
     Task<IReadOnlyList<RiverRoute>> GetRiverRoutesAsync(CancellationToken ct);
     Task<long> UpsertAlertAsync(TransitAlert alert, CancellationToken ct);
     Task<long> UpsertLineAsync(TransitLine line, CancellationToken ct);
+    /// <summary>Terminais e estações de integração, do tipo ponto de embarque.</summary>
+    Task<IReadOnlyList<TransitStop>> GetTerminalsAsync(CancellationToken ct);
+    /// <summary>Busca paradas e terminais por nome, bairro ou linha atendida.</summary>
+    Task<IReadOnlyList<TransitStop>> SearchStopsAsync(string query, CancellationToken ct);
+    /// <summary>Itinerário oficial completo de uma linha, na ordem de percurso.</summary>
+    Task<IReadOnlyList<TransitRoutePoint>> GetRoutePointsAsync(string lineCode, CancellationToken ct);
+    /// <summary>Localiza linhas que conectam dois pontos informados (de-para).</summary>
+    Task<IReadOnlyList<TransitLine>> FindConnectingLinesAsync(string origin, string destination, CancellationToken ct);
 }
 
 public interface INeighborhoodRepository

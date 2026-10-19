@@ -1,0 +1,90 @@
+@using MinhaBelem.Web.Controllers
+@{
+    var assets = ViewData["Assets"] as IReadOnlyList<PublicMediaAsset> ?? Array.Empty<PublicMediaAsset>();
+    var archive = ViewData["Archive"] as IReadOnlyList<MinhaBelem.Core.Abstractions.PublicPlacePhoto> ?? Array.Empty<MinhaBelem.Core.Abstractions.PublicPlacePhoto>();
+    ViewData["Title"] = Loc["MediaGalleryTitle"].Value;
+    ViewData["Description"] = Loc["PhotoGalleryIntro"].Value;
+
+    var videos = assets.Where(a => a.HasVideo || a.IsVideoFile).ToArray();
+    var pictures = assets.Where(a => a.HasPicture && !a.IsVideoFile).ToArray();
+}
+
+<section class="hero" aria-labelledby="midias-title">
+    <div class="hero-content">
+        <span class="eyebrow">MINHABELÉM / ARQUIVO DE MÍDIA</span>
+        <h1 id="midias-title">@Loc["MediaGalleryTitle"]</h1>
+        <p>@Loc["PhotoGalleryIntro"]</p>
+        <div class="hero-quick-tags">
+            <a href="/videos" class="quick-pill">🎬 @Loc["VideoGalleryTitle"] ↗</a>
+            <a href="/guia/acervo" class="quick-pill">📷 @Loc["PhotoGalleryTitle"] ↗</a>
+            <a href="/guia-ia" class="quick-pill">✨ Curió IA ↗</a>
+        </div>
+    </div>
+</section>
+
+@if (videos.Length > 0)
+{
+    <section class="section reveal" aria-labelledby="midias-videos-title">
+        <div class="sectionhead"><div><span class="eyebrow">VÍDEOS</span><h2 id="midias-videos-title">@Loc["VideoGalleryTitle"]</h2></div></div>
+        <div class="video-grid">
+            @foreach (var asset in videos)
+            {
+                <article class="video-card reveal">
+                    <div class="video-wrapper">
+                        @if (asset.HasVideo)
+                        {
+                            <iframe src="@asset.MediaUrl" title="@asset.Description" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>
+                            <div class="video-badge" aria-hidden="true">▶ YouTube</div>
+                        }
+                        else
+                        {
+                            <video src="@asset.MediaUrl" poster="/midia/@asset.Id" playsinline preload="metadata" controls></video>
+                            <div class="video-badge" aria-hidden="true">▶ Vídeo</div>
+                        }
+                    </div>
+                    <h3>@asset.Description</h3>
+                    <div class="video-meta"><span aria-hidden="true">🎬</span> @asset.Credit · @asset.License</div>
+                </article>
+            }
+        </div>
+    </section>
+}
+
+<section class="section reveal" aria-labelledby="midias-photos-title">
+    <div class="sectionhead"><div><span class="eyebrow">FOTOS</span><h2 id="midias-photos-title">@Loc["PhotoGalleryTitle"]</h2></div></div>
+    @if (pictures.Length == 0 && archive.Count == 0)
+    {
+        <div class="empty" style="text-align:center;padding:48px 24px;">
+            <h3>@Loc["General_Empty"]</h3>
+            <p style="max-width:48ch;margin:10px auto 20px;color:var(--text-muted,#59675f);">@Loc["PhotoArchiveEmpty"]</p>
+        </div>
+    }
+    else
+    {
+        <div class="photo-gallery">
+            @foreach (var asset in pictures)
+            {
+                <figure class="photo-item reveal" data-lightbox="midias-photos" data-src="/midia/@asset.Id" data-caption="@asset.Description — @asset.Credit">
+                    <img src="/midia/@asset.Id" alt="@asset.Description" width="640" height="480" loading="lazy" decoding="async" />
+                    <figcaption>@asset.Description</figcaption>
+                </figure>
+            }
+            @foreach (var photo in archive)
+            {
+                <figure class="photo-item reveal" data-lightbox="midias-photos" data-src="@photo.ThumbUrl" data-caption="@photo.PlaceName — @photo.Credit">
+                    <img src="@photo.ThumbUrl" alt="@photo.PlaceName" width="640" height="480" loading="lazy" referrerpolicy="no-referrer" />
+                    <figcaption>@photo.PlaceName</figcaption>
+                </figure>
+            }
+        </div>
+    }
+</section>
+
+<section class="section">
+    <div class="photo-upload-zone reveal" role="group" aria-label="@Loc["UploadPhotoTitle"]">
+        <span class="photo-upload-icon" aria-hidden="true">📷</span>
+        <p><strong>@Loc["UploadPhotoTitle"]</strong></p>
+        <p style="font-size:0.85rem;color:var(--text-muted,#59675f);">@Loc["UploadPhotoDesc"]</p>
+        <a class="button small" href="/fotos/enviar">Enviar foto ↗</a>
+    </div>
+</section>

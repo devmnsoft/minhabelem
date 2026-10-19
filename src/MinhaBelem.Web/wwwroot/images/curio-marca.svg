@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-labelledby="curio-title curio-desc">
+  <title id="curio-title">Curió</title>
+  <desc id="curio-desc">Silhueta do curió, ave símbolo de Belém do Pará, sobre a linha d'água do Guajará</desc>
+  <g fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M60 22c-13 0-22 10-22 23 0 9 4 15 10 19-2 7-7 13-14 17 8 3 17 3 25 0 4 2 9 3 14 3 13 0 24-9 24-21 0-7-4-13-9-17 3-3 5-7 5-11 0-7-6-13-13-13-2-4-6-6-10-6-3 0-6 1-8 3z"/>
+    <path d="M84 44l14-7-6 13"/>
+    <path d="M78 52c3 3 7 4 11 3"/>
+    <circle cx="76" cy="42" r="2.6" fill="currentColor" stroke="none"/>
+    <path d="M30 104q15-8 30 0t30 0"/>
+    <path d="M38 114q11-6 22 0t22 0"/>
+  </g>
+</svg>

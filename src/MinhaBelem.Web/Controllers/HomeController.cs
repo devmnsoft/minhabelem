@@ -132,6 +132,8 @@ public sealed class HomeController(
             DateFrom = de,
             DateTo = ate,
             OnlyUpcomingEvents = categoria == "eventos",
+            // A capa tem um bloco próprio de próximos eventos: a lista geral não os repete.
+            ExcludeEvents = categoria != "eventos" && !string.IsNullOrWhiteSpace(categoria),
             Page = pagina,
             Culture = currentCulture
         }, ct));
@@ -191,7 +193,7 @@ public sealed class HomeController(
         System.Xml.Linq.XNamespace xhtml = "http://www.w3.org/1999/xhtml";
 
         var baseUri = "https://minhabelem.com.br";
-        var staticPaths = new[] { "", "explore", "agenda", "guia", "privacidade", "termos" };
+        var staticPaths = new[] { "", "explore", "agenda", "guia", "videos", "midias", "guia-ia", "privacidade", "termos" };
 
         var urlElements = new List<System.Xml.Linq.XElement>();
 

@@ -54,5 +54,95 @@ public sealed class MediaController(MySqlDataSource data,IWebHostEnvironment env
         var path=Path.Combine(Storage,asset.StorageKey);if(!System.IO.File.Exists(path))return NotFound();
         Response.Headers["X-Content-Type-Options"]="nosniff";Response.Headers.CacheControl="public,max-age=300";return PhysicalFile(path,asset.MimeType!);
     }
+
+    /// <summary>Imagem de submissão pendente, visível apenas para a equipe editorial.</summary>
+    [Authorize(Policy = Permissions.ContentWrite),HttpGet("/midia-envio/{id:long}")]
+    public async Task<IActionResult> PendingFile(long id,CancellationToken ct)
+    {
+        await using var db=await data.OpenConnectionAsync(ct);
+        var row=await db.QuerySingleOrDefaultAsync<(string? Key,string? Mime)>(new CommandDefinition("SELECT storage_key AS `Key`, mime_type AS Mime FROM mb_media_submissions WHERE id=@id",new{id},cancellationToken:ct));
+        if(row.Key is null||!System.Text.RegularExpressions.Regex.IsMatch(row.Key,"^[a-f0-9]{32}$"))return NotFound();
+        var pendingRoot=Path.Combine(environment.ContentRootPath,"App_Data","media-pending");
+        var path=Path.Combine(pendingRoot,row.Key);
+        if(!System.IO.File.Exists(path))return NotFound();
+        Response.Headers["X-Content-Type-Options"]="nosniff";Response.Headers.CacheControl="private,max-age=120";
+        return PhysicalFile(path,row.Mime??"application/octet-stream");
+    }
+
+    /// <summary>Submissões de fotos e vídeos enviadas pela comunidade, aguardando conferência.</summary>
+    [HttpGet("submissoes")]
+    public async Task<IActionResult> Submissoes(CancellationToken ct)
+    {
+        await using var db=await data.OpenConnectionAsync(ct);
+        try
+        {
+            var rows=await db.QueryAsync<MediaSubmission>(new CommandDefinition("""
+                SELECT id AS Id, kind AS Kind, title AS Title, description AS Description, credit AS Credit,
+                       license AS License, place_name AS PlaceName, neighborhood AS Neighborhood,
+                       author_name AS AuthorName, author_email AS AuthorEmail, youtube_id AS YoutubeId,
+                       source_url AS SourceUrl, storage_key AS StorageKey, mime_type AS MimeType,
+                       status AS Status, created_at AS CreatedAt
+                FROM mb_media_submissions
+                ORDER BY (status='Pending') DESC, id DESC
+                LIMIT 200
+                """,cancellationToken:ct));
+            return View("~/Views/Media/Submissoes.cshtml", rows.AsList());
+        }
+        catch(MySqlException)
+        {
+            // Esquema ainda sem a migration de submissões: mostra estado vazio em vez de erro 500.
+            TempData["MediaMessage"]="A fila de submissões ainda não está disponível neste ambiente. Aplique a migration sprint23_photo_video_submissions.";
+            return View("~/Views/Media/Submissoes.cshtml", Array.Empty<MediaSubmission>());
+        }
+    }
+
+    [HttpPost("submissoes/{id:long}/decidir"),ValidateAntiForgeryToken]
+    public async Task<IActionResult> Decidir(long id,bool aprovar,string? notas,long? contentId,long? placeId,CancellationToken ct)
+    {
+        var actor=long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        await using var db=await data.OpenConnectionAsync(ct);
+        var pending=await db.QuerySingleOrDefaultAsync<MediaSubmission>(new CommandDefinition("SELECT id AS Id, storage_key AS StorageKey, mime_type AS MimeType, title AS Title, credit AS Credit, license AS License, youtube_id AS YoutubeId FROM mb_media_submissions WHERE id=@id AND status='Pending'",new{id},cancellationToken:ct));
+        if(pending is null)return NotFound();
+        if(!aprovar)
+        {
+            await db.ExecuteAsync(new CommandDefinition("UPDATE mb_media_submissions SET status='Rejected', review_notes=@notas, reviewed_at=UTC_TIMESTAMP(6), reviewed_by=@actor WHERE id=@id",new{notas=notas is null?null:notas[..Math.Min(notas.Length,1000)],actor,id},cancellationToken:ct));
+            return RedirectToAction(nameof(Submissoes));
+        }
+        await using var tx=await db.BeginTransactionAsync(ct);
+        try
+        {
+            if(contentId is not null&&await db.ExecuteScalarAsync<int>(new CommandDefinition("SELECT COUNT(*) FROM mb_content_items WHERE id=@contentId",new{contentId},tx,cancellationToken:ct))!=1)throw new ArgumentException("Conteúdo inexistente.");
+            if(placeId is not null&&await db.ExecuteScalarAsync<int>(new CommandDefinition("SELECT COUNT(*) FROM mb_places WHERE id=@placeId",new{placeId},tx,cancellationToken:ct))!=1)throw new ArgumentException("Lugar inexistente.");
+            var mediaId=await db.ExecuteScalarAsync<long>(new CommandDefinition("INSERT INTO mb_media_assets(storage_key,mime_type,description,credit,license,content_id,youtube_id,authorized_by) VALUES(@key,@mime,@description,@credit,@license,@contentId,@youtubeId,@actor); SELECT LAST_INSERT_ID()",new{key=pending.StorageKey,mime=pending.MimeType,description=pending.Title,credit=pending.Credit,license=pending.License,contentId,youtubeId=pending.YoutubeId,actor},tx,cancellationToken:ct));
+            if(placeId is not null)await db.ExecuteAsync(new CommandDefinition("INSERT INTO mb_place_media_assets(media_id,place_id) VALUES(@id,@placeId)",new{id=mediaId,placeId},tx,cancellationToken:ct));
+            await db.ExecuteAsync(new CommandDefinition("UPDATE mb_media_submissions SET status='Approved', review_notes=@notas, reviewed_at=UTC_TIMESTAMP(6), reviewed_by=@actor WHERE id=@id",new{notas=notas is null?null:notas[..Math.Min(notas.Length,1000)],actor,id},tx,cancellationToken:ct));
+            await db.ExecuteAsync(new CommandDefinition("INSERT INTO mb_audit_logs(actor_id,action,entity_type,entity_id,details) VALUES(@actor,'media.submission_approved','media_submission',@id,JSON_OBJECT('mediaId',@mediaId))",new{actor,id,mediaId},tx,cancellationToken:ct));
+            await tx.CommitAsync(ct);
+        }
+        catch(ArgumentException){await tx.RollbackAsync(ct);TempData["MediaMessage"]="Conteúdo ou lugar inexistente.";return RedirectToAction(nameof(Submissoes));}
+        return RedirectToAction(nameof(Submissoes));
+    }
 }
 public sealed class MediaAsset{public long Id{get;set;}public long? ContentId{get;set;}public string? StorageKey{get;set;}public string? MimeType{get;set;}public string? YoutubeId{get;set;}public string Description{get;set;}="";public string Credit{get;set;}="";public string License{get;set;}="";}
+
+/// <summary>Submissão de mídia enviada pela comunidade, aguardando conferência editorial.</summary>
+public sealed class MediaSubmission
+{
+    public long Id{get;set;}
+    public string Kind{get;set;}="photo";
+    public string Title{get;set;}="";
+    public string? Description{get;set;}
+    public string Credit{get;set;}="";
+    public string License{get;set;}="";
+    public string? PlaceName{get;set;}
+    public string? Neighborhood{get;set;}
+    public string? AuthorName{get;set;}
+    public string? AuthorEmail{get;set;}
+    public string? YoutubeId{get;set;}
+    public string? SourceUrl{get;set;}
+    public string? StorageKey{get;set;}
+    public string? MimeType{get;set;}
+    public string Status{get;set;}="Pending";
+    public DateTime CreatedAt{get;set;}
+    public bool IsPhoto=>string.Equals(Kind,"photo",StringComparison.OrdinalIgnoreCase);
+}

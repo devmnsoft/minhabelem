@@ -14,7 +14,13 @@
     var page = (int)(ViewData["Page"] ?? 1);
     var filtered = ViewData["Category"] != null || !string.IsNullOrWhiteSpace(ViewData["Search"] as string) || page > 1;
 }
-<section class="hero home-hero" aria-labelledby="hero-title">
+<section class="hero home-hero video-hero reveal" aria-labelledby="hero-title">
+    <video class="hero-video" playsinline muted loop poster="/images/belem-guajara-hero.jpg" loading="lazy" decoding="async">
+        <source src="/videos/belem-hero.mp4" type="video/mp4" />
+        <source src="/videos/belem-hero.webm" type="video/webm" />
+        Seu navegador não suporta vídeo.
+    </video>
+    <div class="hero-video-overlay"></div>
     <div class="hero-content">
         <span class="eyebrow">BELÉM DO PARÁ / AMAZÔNIA / BRASIL</span>
         <h1 id="hero-title">@Loc["Hero_Title"]</h1>
@@ -26,15 +32,19 @@
             <button type="submit">@Loc["SearchButton"] <span aria-hidden="true">↗</span></button>
         </form>
         <div class="hero-quick-tags">
-            <a href="/guia-ia" style="background:rgba(203,161,53,0.25);border-color:#fce8b2;color:#ffffff;font-weight:700;">✨ Pergunte ao Curió IA ↗</a>
-            <a href="/agenda/semana">@Loc["ThisWeek"] ↗</a>
-            <a href="/explore">@Loc["NavExplore"] ↗</a>
-            <a href="/guia">@Loc["NavGuide"] ↗</a>
+            <a href="/guia-ia" class="quick-pill">✨ Pergunte ao Curió IA ↗</a>
+            <a href="/agenda/semana" class="quick-pill">@Loc["ThisWeek"] ↗</a>
+            <a href="/explore" class="quick-pill">@Loc["NavExplore"] ↗</a>
+            <a href="/guia" class="quick-pill">@Loc["NavGuide"] ↗</a>
         </div>
     </div>
     <span class="hero-caption">
         <a href="https://commons.wikimedia.org/wiki/File:Esta%C3%A7%C3%A3o_das_Docas_Bel%C3%A9m_Par%C3%A1_2023-8696.jpg" target="_blank" rel="noopener noreferrer">Estação das Docas · Prburley / Wikimedia Commons</a>
         · <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">CC BY 4.0</a> · @Loc["PhotoOptimized"]
+    </span>
+    <span class="hero-identity" aria-hidden="true">
+        <img src="/images/curio-marca.svg" width="44" height="44" alt="" />
+        <span>Curió · Guia de Belém</span>
     </span>
 </section>
 <div class="city-ribbon"><span class="live-dot" aria-hidden="true"></span><strong>@Loc["CityNow"]</strong><span>@Loc["EditorialNote"]</span><a href="/agora">@Loc["ViewMore"] ↗</a></div>
@@ -61,7 +71,7 @@
             <article class="story @(item == Model[0] && !filtered ? "story-lead" : "")">
                 @if (!string.IsNullOrWhiteSpace(item.ImageUrl) && !string.IsNullOrWhiteSpace(item.ImageLicense) && !string.IsNullOrWhiteSpace(item.ImageCredit))
                 {
-                    <figure><img src="@item.ImageUrl" alt="" loading="lazy" decoding="async" /><figcaption>@item.ImageCredit</figcaption></figure>
+                    <figure><img src="@item.ImageUrl" alt="" width="640" height="400" loading="lazy" decoding="async" /><figcaption>@item.ImageCredit</figcaption></figure>
                 }
                 <span class="eyebrow">@Loc["Category_" + MinhaBelem.Core.Taxonomy.Taxonomy.Info(item.Category).Slug]</span>
                 <h3><a asp-action="Detalhe" asp-route-id="@item.Id">@item.DisplayTitle</a></h3>
@@ -199,7 +209,114 @@
         @foreach (var area in neighborhoods.Take(4)) { <a href="/meu-bairro/@area.Slug"><span class="eyebrow">@area.Zone</span><h3>@area.Name</h3><span aria-hidden="true">↗</span></a> }
         @if (neighborhoods.Count == 0) { <p class="empty-inline">@Loc["General_Empty"]</p> }
     </div></section>
-    <section class="section"><div class="sectionhead"><h2>@Loc["VideoTitle"]</h2></div><div class="grid">@foreach (var video in videos) { <article class="story"><span class="eyebrow">@video.Platform</span><h3><a href="@video.PostUrl" target="_blank" rel="noopener noreferrer">@video.Title ↗</a></h3><p>@video.CaptionSnippet</p></article> }</div>@if (videos.Count == 0) { <p class="empty-inline">@Loc["General_Empty"]</p> }</section>
+    <section class="section reveal" aria-labelledby="video-list-title">
+        <div class="sectionhead"><h2 id="video-list-title">@Loc["VideoTitle"]</h2></div>
+        <div class="video-grid">
+            @if (videos is not null && videos.Count > 0)
+            {
+                @foreach (var video in videos.Skip(6))
+                {
+                    <article class="video-card reveal">
+                        <div class="video-wrapper">
+                            @if (!string.IsNullOrWhiteSpace(video.EmbedHtml))
+                            {
+                                <div class="video-embed">@Html.Raw(video.EmbedHtml)</div>
+                                <div class="play-overlay"></div>
+                                <div class="video-badge" aria-hidden="true">▶ @video.Platform</div>
+                            }
+                            else
+                            {
+                                <div class="video-placeholder" style="background:var(--border-soft);display:flex;align-items:center;justify-content:center;">
+                                    <span style="font-size:2.5rem;">🎬</span>
+                                </div>
+                                <div class="play-overlay"></div>
+                                <div class="video-badge" aria-hidden="true">▶ @video.Platform</div>
+                            }
+                        </div>
+                        <h3><a href="@(video.PostUrl ?? "#")" target="_blank" rel="noopener noreferrer">@video.Title ↗</a></h3>
+                        <p>@video.CaptionSnippet</p>
+                        <div class="video-meta"><span aria-hidden="true">📺</span> @video.Platform · <span>@video.PublishedAt?.ToString("dd/MM/yyyy", culture) ?? ""</span></div>
+                    </article>
+                }
+            }
+            else
+            {
+                <div class="empty" style="text-align:center;padding:48px 24px;">
+                    <svg class="empty-art" aria-hidden="true" style="width:64px;height:64px;margin-bottom:16px;"><use href="/images/icons.svg#video" /></svg>
+                    <h3>@Loc["General_Empty"]</h3>
+                </div>
+            }
+        </div>
+    </section>
     <section class="section sponsor-feature"><div><span class="eyebrow">@Loc["NavPartners"] / MINHABELÉM</span><h2>@Loc["PartnerTitle"]</h2><p>@Loc["PartnerDescription"]</p></div><a href="/parceiros" class="button">@Loc["NavPartners"] ↗</a></section>
 }
-<section class="section collaboration"><div><span class="eyebrow">MINHABELÉM / COMUNIDADE</span><h2>@Loc["Collab_Title"]</h2><p>@Loc["Collab_Subtitle"]</p></div><form asp-controller="Home" asp-action="Colaborar" method="post"><label>@Loc["Collab_Name"]<input name="nome" maxlength="100" required autocomplete="name" /></label><label>@Loc["Collab_Message"]<textarea name="mensagem" maxlength="2500" rows="4" required></textarea></label><label class="checkbox-label"><input type="checkbox" name="consentimento" value="true" required /><span>@Loc["Collab_Consent"] (<a href="/privacidade">@Loc["Nav_Privacy"]</a>)</span></label><button type="submit">@Loc["Collab_Submit"] ↗</button></form></section>
+<section class="section video-section reveal" aria-labelledby="video-section-title">
+        <div class="sectionhead"><div><span class="eyebrow">MINHABELÉM / VÍDEOS</span><h2 id="video-section-title">@Loc["VideoTitle"]</h2></div><a href="/videos" class="button-link">@Loc["ViewAllVideos"] ↗</a></div>
+        <div class="video-grid">
+            @if (videos is not null && videos.Count > 0)
+            {
+                @foreach (var video in videos.Take(6))
+                {
+                    <article class="video-card reveal">
+                        <div class="video-wrapper">
+                            @if (!string.IsNullOrWhiteSpace(video.EmbedHtml))
+                            {
+                                <div class="video-embed">@Html.Raw(video.EmbedHtml)</div>
+                                <div class="play-overlay"></div>
+                                <div class="video-badge" aria-hidden="true">▶ @video.Platform</div>
+                            }
+                            else
+                            {
+                                <div class="video-placeholder" style="height:100%;background:var(--border-soft);display:flex;align-items:center;justify-content:center;">
+                                    <span style="font-size:2.5rem;" aria-hidden="true">🎬</span>
+                                </div>
+                                <div class="play-overlay"></div>
+                                <div class="video-badge" aria-hidden="true">▶ @video.Platform</div>
+                            }
+                        </div>
+                        <h3><a href="@(video.PostUrl ?? "#")" target="_blank" rel="noopener noreferrer">@video.Title ↗</a></h3>
+                        <p>@video.CaptionSnippet</p>
+                        <div class="video-meta"><span aria-hidden="true">📺</span> @video.Platform · <span>@video.PublishedAt?.ToString("dd/MM/yyyy", culture) ?? ""</span></div>
+                    </article>
+                }
+            }
+            else
+            {
+                <div class="empty" style="text-align:center;padding:48px 24px;">
+                    <svg class="empty-art" aria-hidden="true" style="width:64px;height:64px;margin-bottom:16px;"><use href="/images/icons.svg#video" /></svg>
+                    <h3>@Loc["General_Empty"]</h3>
+                    <p style="max-width:45ch;margin:8px auto 20px;color:var(--text-muted,#59675f);">Nenhum vídeo publicado no momento.</p>
+                </div>
+            }
+        </div>
+    </section>
+
+    <section class="section photo-gallery-section reveal" aria-labelledby="photo-gallery-title">
+        <div class="sectionhead"><div><span class="eyebrow">MINHABELÉM / FOTOS</span><h2 id="photo-gallery-title">@Loc["PhotoGalleryTitle"]</h2></div><a href="/guia/acervo" class="button-link">@Loc["ViewPhotoArchive"] ↗</a></div>
+        <div class="photo-gallery" id="home-photo-gallery">
+            <figure class="photo-item reveal" data-lightbox="home-photos" data-src="/images/licensed/sprint18-ver-o-peso-1280.webp" data-caption="Ver-o-Peso · Campina, Belém">
+                <img src="/images/licensed/sprint18-ver-o-peso-640.webp" alt="Ver-o-Peso · Campina, Belém" width="640" height="480" loading="lazy" decoding="async" />
+                <figcaption>Ver-o-Peso · Campina</figcaption>
+            </figure>
+            <figure class="photo-item reveal" data-lightbox="home-photos" data-src="/images/licensed/sprint18-tacaca-1280.webp" data-caption="Tacacá do Renato · Belém">
+                <img src="/images/licensed/sprint18-tacaca-640.webp" alt="Tacacá do Renato · Belém" width="640" height="480" loading="lazy" decoding="async" />
+                <figcaption>Tacacá · Belém</figcaption>
+            </figure>
+            <figure class="photo-item reveal" data-lightbox="home-photos" data-src="/images/licensed/sprint18-guajara-1280.webp" data-caption="Baía do Guajará · Belém">
+                <img src="/images/licensed/sprint18-guajara-640.webp" alt="Baía do Guajará · Belém" width="640" height="480" loading="lazy" decoding="async" />
+                <figcaption>Baía do Guajará</figcaption>
+            </figure>
+            <figure class="photo-item reveal" data-lightbox="home-photos" data-src="/images/licensed/estacao-docas-1920.webp" data-caption="Estação das Docas · Belém">
+                <img src="/images/licensed/estacao-docas-640.webp" alt="Estação das Docas · Belém" width="640" height="480" loading="lazy" decoding="async" />
+                <figcaption>Estação das Docas</figcaption>
+            </figure>
+        </div>
+        <div class="photo-upload-zone" role="group" aria-label="@Loc["UploadPhotoTitle"]">
+            <span class="photo-upload-icon">📷</span>
+            <p><strong>@Loc["UploadPhotoTitle"]</strong></p>
+            <p style="font-size:0.8rem;color:var(--text-muted,#59675f);">@Loc["UploadPhotoDesc"]</p>
+            <a class="button small" href="/fotos/enviar">Enviar foto ↗</a>
+        </div>
+    </section>
+
+    <section class="section collaboration"><div><span class="eyebrow">MINHABELÉM / COMUNIDADE</span><h2>@Loc["Collab_Title"]</h2><p>@Loc["Collab_Subtitle"]</p></div><form asp-controller="Home" asp-action="Colaborar" method="post"><label>@Loc["Collab_Name"]<input name="nome" maxlength="100" required autocomplete="name" /></label><label>@Loc["Collab_Message"]<textarea name="mensagem" maxlength="2500" rows="4" required></textarea></label><label class="checkbox-label"><input type="checkbox" name="consentimento" value="true" required /><span>@Loc["Collab_Consent"] (<a href="/privacidade">@Loc["Nav_Privacy"]</a>)</span></label><button type="submit">@Loc["Collab_Submit"] ↗</button></form></section>

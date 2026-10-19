@@ -291,9 +291,12 @@
         <form method="get" action="/admin/radar" style="display:flex; gap:8px; align-items:center;">
             <select name="status" aria-label="@Loc["BatchStatus"]" onchange="this.form.submit()" style="padding:6px 10px; border-radius:8px; border:1px solid var(--border-color); font-size:0.85rem;">
                 <option value="">Todos os status</option>
-                <option value="Pending" selected="@(Model.Query.Status == MinhaBelem.Core.Entities.SourceEvaluationStatus.Pending)">Pendentes de Avaliação</option>
-                <option value="Approved" selected="@(Model.Query.Status == MinhaBelem.Core.Entities.SourceEvaluationStatus.Approved)">Aprovadas</option>
-                <option value="Rejected" selected="@(Model.Query.Status == MinhaBelem.Core.Entities.SourceEvaluationStatus.Rejected)">Rejeitadas</option>
+                @Html.Raw(SelectOptions.Build(new[]
+                {
+                    ("Pending", "Pendentes de Avaliação"),
+                    ("Approved", "Aprovadas"),
+                    ("Rejected", "Rejeitadas")
+                }, v => v == Model.Query.Status.ToString()))
             </select>
         </form>
     </div>

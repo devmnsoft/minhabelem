@@ -175,5 +175,61 @@ tbody tr:hover { background: #f2f5ed; }
   .header { padding: 14px 12px; gap: 8px; }.brand-logo { width: 145px; }.header .lang-select { width: 98px; }
   .home-hero h1 { font-size: 3.4rem; }.home-hero .search { margin-top: 24px; }.hero.home-hero { background-image: linear-gradient(90deg,#092c25ef,#092c25ac),url('/images/licensed/estacao-docas-640.webp'); }
 }
+.portal .ai-assistant-shell { max-width: none; margin: 0; }
+.portal .ai-hero {
+  display: block; min-height: 0; overflow: hidden;
+  margin: 0; padding: 42px max(20px, calc((100% - 1080px) / 2)) 36px;
+  border-radius: 0 0 22px 22px;
+  background: linear-gradient(110deg, #092c25 0%, #174a3c 62%, #2a6a56 100%);
+  color: #f7f4ed;
+}
+.portal .ai-hero::before, .portal .ai-hero::after { content: none; display: none; }
+.portal .ai-hero h1 {
+  color: #fffdf8; max-width: 16ch; margin: 8px 0 12px;
+  font-size: clamp(2.1rem, 4.4vw, 3.5rem); line-height: 1.02;
+  text-shadow: none; letter-spacing: -.04em;
+}
+.portal .ai-hero .lead, .portal .ai-hero p { color: #f4efe4; max-width: 62ch; margin: 0; font-size: 1.05rem; line-height: 1.6; }
+.portal .ai-hero .eyebrow { color: #efd7ad; }
+.portal .ai-stage { max-width: 1080px; margin: 0 auto; padding: 28px 20px 72px; }
+.portal .ai-input-card { padding: 22px; overflow: hidden; border-top: 4px solid var(--clay); }
+.portal .ai-query-form textarea {
+  width: 100%; min-height: 120px; resize: vertical; box-sizing: border-box;
+  border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px;
+  font: inherit; line-height: 1.5; background: #fffdf8; color: var(--ink);
+}
+.portal .ai-query-form textarea:focus-visible { outline: 3px solid #174a3c; outline-offset: 2px; }
+.portal .ai-form-bar { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; margin-top: 14px; }
+.portal .ai-form-bar .checkbox-label { flex: 1 1 240px; min-width: 0; }
+.portal .ai-suggestions-box { margin-top: 18px; }
+.portal .ai-suggestions-title { margin: 0 0 10px; font-weight: 700; }
+.portal .ai-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.portal .ai-chip {
+  display: inline-block; max-width: 100%; white-space: normal; text-align: left;
+  padding: 8px 12px; border: 1px solid var(--line); border-radius: 999px;
+  background: #fffdf8; color: var(--ink); text-decoration: none; line-height: 1.35;
+}
+.portal .ai-chip:hover, .portal .ai-chip:focus-visible { background: #e7efe9; color: var(--ink); transform: none; }
+.portal .ai-answer-card, .portal .ai-result-card { overflow: hidden; }
+.portal .ai-answer-header, .portal .ai-toolbar, .portal .ai-card-actions, .portal .sectionhead {
+  display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between;
+}
+.portal .ai-markdown-body { overflow-wrap: anywhere; line-height: 1.65; margin-top: 12px; }
+.portal .ai-card-footer { margin-top: 16px; }
+.portal .ai-result-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; }
+.portal .ai-cover { display: block; width: 100%; height: 170px; object-fit: cover; border-radius: 10px; background: #ebe9de; margin-bottom: 10px; }
+.portal .ai-video { display: block; width: 100%; aspect-ratio: 16 / 9; border: 0; border-radius: 10px; background: #111; margin-bottom: 10px; }
+.portal .ai-block { margin-top: 28px; }
+.portal .ai-pager { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-top: 28px; }
+.portal .ai-assistant-shell .card:hover { transform: none; }
+html[data-contrast="high"] .ai-hero { background: #000 !important; color: #fff !important; }
+@media (max-width: 720px) {
+  .portal .ai-hero { padding: 32px 16px 28px; }
+  .portal .ai-stage { padding-inline: 14px; }
+  .portal .ai-form-bar .button, .portal .ai-card-actions .button, .portal .ai-pager .button { width: 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .portal .ai-chip, .portal .ai-assistant-shell .card { transition: none; }
+}
 @media(prefers-reduced-motion:reduce) { .city-window img,.page-progress { transition: none; } }
 @media print { .connection-notice,.page-progress { display: none; }.city-window { break-inside: avoid; }.guide-visit-card { position: static; } }

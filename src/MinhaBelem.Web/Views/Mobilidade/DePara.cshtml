@@ -1,0 +1,122 @@
+@model MinhaBelem.Web.Models.DeParaViewModel
+@using System.Globalization
+@{
+    ViewData["Title"] = "Planejador de rotas de ônibus";
+    var origens = Model.Terminals.Select(t => t.Name).ToArray();
+    var destinos = Model.AllLines
+        .SelectMany(l => new[] { l.Origin, l.Destination })
+        .Where(s => !string.IsNullOrWhiteSpace(s))
+        .Distinct()
+        .OrderBy(s => s)
+        .ToArray();
+}
+
+<section class="hero" aria-labelledby="depara-title">
+    <div class="hero-content">
+        <span class="eyebrow">MOBILIDADE / DE-PARA</span>
+        <h1 id="depara-title">De para, sem se perder</h1>
+        <p>Informe o ponto de partida e o destino. O planejador cruza as linhas oficiais do Integra Belém e mostra onde trocar de ônibus.</p>
+    </div>
+</section>
+
+<section class="section">
+    <form method="get" action="/mobilidade/de-para" class="filters" role="search">
+        <label>
+            De (origem)
+            <input name="origem" list="origens-depara" maxlength="120" value="@Model.Origin" placeholder="Ex.: Terminal Mangueirão" />
+            <datalist id="origens-depara">
+                @foreach (var o in origens) { <option value="@o"></option> }
+            </datalist>
+        </label>
+        <label>
+            Para (destino)
+            <input name="destino" list="destinos-depara" maxlength="120" value="@Model.Destination" placeholder="Ex.: Ver-o-Peso" />
+            <datalist id="destinos-depara">
+                @foreach (var d in destinos.Take(200)) { <option value="@d"></option> }
+            </datalist>
+        </label>
+        <button type="submit">Buscar linhas ↗</button>
+        <a class="button secondary" href="/mobilidade/de-para">Limpar</a>
+    </form>
+
+    @if (!Model.HasQuery)
+    {
+        <div class="empty" style="margin-top:28px;">
+            <h3>Escolha a origem e o destino</h3>
+            <p>O planejador usa as linhas e os terminais publicados pela SEGBEL/SEMOB, com horário, tarifa e pontos de integração de cada linha.</p>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:18px;">
+                <a class="button secondary small" href="/mobilidade">Ver todas as linhas</a>
+                <a class="button secondary small" href="/mobilidade/paradas">Paradas e terminais</a>
+                <a class="button secondary small" href="/guia-ia">Perguntar ao Curió IA</a>
+            </div>
+        </div>
+    }
+    else if (Model.DirectLines.Count == 0)
+    {
+        <div class="empty" style="margin-top:28px;">
+            <h3>Nenhuma linha direta encontrada</h3>
+            <p>Não encontramos linha publicada que conecte <strong>@Model.Origin</strong> a <strong>@Model.Destination</strong>. Tente o nome do bairro, do terminal ou do ponto de referência mais próximo.</p>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:18px;">
+                <a class="button secondary small" href="/mobilidade">Ver todas as linhas</a>
+                <a class="button secondary small" href="/mobilidade/paradas">Paradas e terminais</a>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="sectionhead" style="margin-top:32px;">
+            <div>
+                <span class="eyebrow">RESULTADO</span>
+                <h2>@Model.DirectLines.Count linha(s) para @Model.Origin ⇄ @Model.Destination</h2>
+            </div>
+            <a class="button-link" href="/mobilidade">Todas as linhas ↗</a>
+        </div>
+
+        @if (Model.SharedIntegrations.Count > 0)
+        {
+            <div class="notice" role="status" style="flex-direction:column;align-items:flex-start;gap:10px;">
+                <strong>🔄 Onde trocar de ônibus</strong>
+                <div class="stop-lines">
+                    @foreach (var t in Model.SharedIntegrations)
+                    {
+                        <a class="line-chip" href="/mobilidade/paradas?busca=@Uri.EscapeDataString(t.Name)">@t.Name</a>
+                    }
+                </div>
+                <span class="small">Integração <strong>física</strong> (dentro do terminal) ou <strong>temporal</strong> (parada lateral da pista), conforme a linha.</span>
+            </div>
+        }
+
+        <div class="grid" style="margin-top:24px;">
+            @foreach (var l in Model.DirectLines)
+            {
+                <article class="card line-card">
+                    <div class="line-header" style="display:flex;justify-content:space-between;align-items:center;gap:10px;">
+                        <span class="line-code-badge" style="background:var(--green-forest,#123826);color:#fff;padding:6px 14px;border-radius:10px;font-weight:900;font-size:1.1rem;">@l.Code</span>
+                        <span class="badge badge-info">@l.TransitType</span>
+                    </div>
+                    <h3 style="margin:12px 0 6px;"><a href="/mobilidade/linha/@l.Code">@l.Name</a></h3>
+                    <p class="small"><strong>Trajeto:</strong> @l.Origin ⇄ @l.Destination</p>
+                    @if (l.IsVerified)
+                    {
+                        <p class="small"><strong>Horário:</strong> @l.ScheduleText</p>
+                        @if (l.ConfirmedFare is { } f)
+                        {
+                            <p class="small"><strong>Tarifa:</strong> R$ @f.ToString("F2", CultureInfo.InvariantCulture) · meia R$ @((f / 2).ToString("F2", CultureInfo.InvariantCulture))</p>
+                        }
+                        @if (!string.IsNullOrWhiteSpace(l.IntegrationPoints))
+                        {
+                            <p class="small"><strong>Integração:</strong> @l.IntegrationPoints</p>
+                        }
+                    }
+                    else
+                    {
+                        <p class="small">Horário e tarifa: confirme com o operador.</p>
+                    }
+                    <div class="card-footer" style="margin-top:12px;border-top:1px solid var(--border-subtle,#eef3ef);padding-top:10px;">
+                        <a href="/mobilidade/linha/@l.Code" class="button-link">Itinerário completo →</a>
+                    </div>
+                </article>
+            }
+        </div>
+    }
+</section>

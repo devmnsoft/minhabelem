@@ -13,7 +13,9 @@ public enum AiTask
     FreshnessCheck,
     SafetyCheck,
     PublishPackage,
-    Translate
+    Translate,
+    /// <summary>Resposta ancorada do assistente Curió aos registros publicados.</summary>
+    TouristAnswer
 }
 
 /// <summary>Registro obrigatório de toda chamada de IA: modelo, versão, custo e resultado.</summary>
