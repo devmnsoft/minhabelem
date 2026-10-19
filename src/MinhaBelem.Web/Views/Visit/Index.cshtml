@@ -2,23 +2,235 @@
 @using MinhaBelem.Web.Models
 @inject IConfiguration Configuration
 @model MinhaBelem.Web.Controllers.VisitPage
-@{ViewData["Title"]=Loc["RouteTitle"];var modes=new[]{"transit","walking","bicycling","driving","boat"};var price=Model.EntryPrice;var share="/como-chegar?"+(Model.Query.PlaceId is {} placeId?"placeId="+placeId:"destino="+Uri.EscapeDataString(Model.Query.Destination));}
-<section class="hero"><p class="eyebrow">MINHABELÉM · @Loc["NavMobility"]</p><h1>@Loc["RouteTitle"]</h1><p>@Loc["RouteIntro"]</p></section>
-<main class="section route-shell"><div class="route-columns"><section class="card"><h2>@Loc["RoutePlan"]</h2><form method="post" action="/mobilidade/como-chegar" class="route-form">@Html.AntiForgeryToken()
-<label>@Loc["RouteOrigin"]<input name="Origin" id="route-origin" value="@Model.Query.Origin" list="route-places" maxlength="350" required autocomplete="off"/></label><button type="button" id="route-location" class="button secondary">@Loc["RouteLocation"]</button><p id="route-location-status" class="small" role="status">@Loc["RoutePrivacy"]</p>
-<label>@Loc["RouteDestination"]<input name="Destination" value="@Model.Query.Destination" list="route-places" maxlength="350" required/></label><datalist id="route-places">@foreach(var p in (IReadOnlyList<MinhaBelem.Core.Entities.Place>)ViewData["Places"]!){<option value="@(p.DisplayName+", "+p.FormattedAddress+", "+p.Municipality)"/>}</datalist>
-@if(Model.Query.PlaceId is {} pid){<input type="hidden" name="PlaceId" value="@pid"/>}
-<label>@Loc["RouteWhen"]<input name="LocalTime" type="datetime-local" value="@Model.Query.LocalTime?.ToString("yyyy-MM-ddTHH:mm")"/></label><label><input type="checkbox" name="ArriveBy" value="true" checked="@Model.Query.ArriveBy"/> @Loc["RouteArriveBy"]</label><label>@Loc["RouteMode"]<select name="Mode">@foreach(var m in modes){<option value="@m" selected="@(Model.Query.Mode==m)">@Loc["RouteMode_"+m]</option>}</select></label>
-<label>@Loc["RoutePreference"]<select name="Preference">@foreach(var p in new[]{"less_walking","less_transfers","fastest","cheapest"}){<option value="@p" selected="@(Model.Query.Preference==p)">@Loc["RoutePreference_"+p]</option>}</select></label><label>@Loc["RouteWalkLimit"]<input type="number" name="MaxWalkMeters" min="0" max="10000" value="@Model.Query.MaxWalkMeters"/></label><label><input type="checkbox" name="Accessible" value="true" checked="@Model.Query.Accessible"/> @Loc["RouteAccessible"]</label>
-<label>@Loc["RouteReturnCost"]<input type="number" name="inbound" min="0" max="100000" step="0.01" value="@Model.Inbound?.ToString(System.Globalization.CultureInfo.InvariantCulture)"/></label><label>@Loc["RouteOptional"]<input type="number" name="optional" min="0" max="100000" step="0.01" value="@Model.Optional.ToString(System.Globalization.CultureInfo.InvariantCulture)"/></label><button>@Loc["RouteCalculate"]</button></form></section>
-<section class="card route-map-panel" aria-labelledby="route-map-title"><h2 id="route-map-title">@Loc["RouteMap"]</h2>
-<div class="notice" role="note" style="margin-bottom:12px;font-size:0.85rem;">
-    <span>ℹ️ <strong>@Loc["A11y_Map_Alternative"]:</strong> O trajeto completo está descrito detalhadamente em etapas numeradas abaixo, com pontos de embarque, linhas e conexões. Não é necessário consultar o mapa para seguir a rota.</span>
-</div>
-@if(Model.Plan.Options.Any(x=>x.Polyline is not null)&&Configuration["Maps:BrowserKey"] is {Length:>0} mapKey){<div id="visit-map" class="visit-map" role="region" aria-label="@Loc["RouteMap"]"></div><script id="route-geometries" type="application/json">@Html.Raw(JsonSerializer.Serialize(Model.Plan.Options.Select(x=>x.Polyline).Where(x=>x is not null)))</script><script src="~/js/route-map.js"></script><script src="https://maps.googleapis.com/maps/api/js?key=@Uri.EscapeDataString(mapKey)&amp;libraries=geometry&amp;callback=initVisitMap" async defer></script>}
-else{<div class="route-map-empty"><svg aria-hidden="true" width="72" height="72"><use href="/images/icons.svg#boat"/></svg><p>@Loc["RouteMapFallback"]</p></div>}
-<a class="button secondary" href="@Model.Plan.ExternalUrl" target="_blank" rel="noopener noreferrer">@Loc[Model.Query.Mode=="boat"?"WaterOfficialSource":"RouteOpenMaps"] ↗</a><p class="notice">@Loc["RouteRealtimeUnavailable"]</p><p>@Loc["RouteState_"+Model.Plan.State]</p><p class="small">@Loc["RouteSource"]: @Model.Plan.Provider · @(Model.Plan.QueriedAt is {} queried?PortalTime.Local(queried).ToString("g"):Loc["RouteUnknown"].Value)</p></section></div>
-<section class="section" aria-labelledby="route-steps-heading"><h2 id="route-steps-heading">@Loc["A11y_Route_Steps"] &amp; @Loc["RouteAlternatives"]</h2><div class="grid">@foreach(var option in Model.Plan.Options){<article class="card" aria-label="@option.Description"><h3>@option.Description</h3><p>@(option.DistanceMeters/1000d) km · @Math.Ceiling(option.DurationSeconds/60d) min</p><p>@(option.Fare is {} fare?option.Currency+" "+fare.ToString("F2"):Loc["RouteUnknown"].Value) · @Loc["RouteEstimate"]</p><ol class="journey-timeline" aria-label="@Loc["A11y_Route_Steps"]">@foreach(var step in option.Steps){<li><strong>@(step.Mode=="WALK"?Loc["RouteMode_walking"].Value:step.Line??step.Mode)</strong><p>@step.Instruction</p>@if(step.Board is not null){<p>@Loc["RouteBoard"]: @step.Board → @Loc["RouteAlight"]: @step.Alight</p>}@if(step.Departure is {} departure){<time>@PortalTime.Local(departure.UtcDateTime).ToString("g")</time>}</li>}</ol></article>}</div></section>
-<section class="card"><h2>@Loc["RouteVisit"]</h2>@if(Model.Place is {} place){<a href="/guia/@place.Id">@place.DisplayName</a>}<p>@Loc["VisitState_"+Model.Assessment.State]</p>@if(Model.Assessment.NextChangeUtc is {} next){<p>@PortalTime.Local(next).ToString("f")</p>}@if(Model.Schedule.Info is {} info){<p><a href="@info.SourceUrl" rel="noopener noreferrer" target="_blank">@Loc["RouteSource"] ↗</a> · @info.ConfirmedAt.ToString("d") → @info.ValidUntil.ToString("d")</p><p>@info.PriceConditions</p>}
-<dl><dt>@Loc["RouteEntry"]</dt><dd>@(price is {} entry?"BRL "+entry.ToString("F2"):Loc["RouteUnknown"].Value)</dd><dt>@Loc["RouteKnownSubtotal"]</dt><dd>BRL @Model.KnownSubtotal.ToString("F2")</dd><dt>@Loc["RouteTotal"]</dt><dd>@(Model.Total is {} total?"BRL "+total.ToString("F2"):Loc["RouteIncompleteCost"].Value)</dd></dl><p>@Loc["RouteNoCrowding"]</p><a href="https://wa.me/?text=@Uri.EscapeDataString(Context.Request.Scheme+"://"+Context.Request.Host+share)" target="_blank" rel="noopener noreferrer">@Loc["RouteShare"] ↗</a><p class="small">@Loc["RoutePrivacy"]</p></section>
-<section class="section"><h2>@Loc["RouteAlerts"]</h2>@foreach(var alert in Model.Alerts){<article class="notice"><strong>@alert.Title</strong><p>@alert.Description</p><p>@alert.Neighborhood · @alert.StartAt.ToString("g") → @alert.EndAt?.ToString("g")</p></article>}</section></main><script src="~/js/visit.js" defer></script>
+@{
+    ViewData["Title"] = Loc["RouteTitle"];
+    var modes = new[] { "transit", "walking", "bicycling", "driving", "boat" };
+    var price = Model.EntryPrice;
+    var share = "/como-chegar?" + (Model.Query.PlaceId is { } placeId ? "placeId=" + placeId : "destino=" + Uri.EscapeDataString(Model.Query.Destination));
+}
+
+<section class="hero">
+    <p class="eyebrow">MINHABELÉM · @Loc["NavMobility"]</p>
+    <h1>@Loc["RouteTitle"]</h1>
+    <p>@Loc["RouteIntro"]</p>
+</section>
+
+<main class="section route-shell">
+    <div class="route-columns">
+        <section class="card">
+            <h2>@Loc["RoutePlan"]</h2>
+            <form method="post" action="/mobilidade/como-chegar" class="route-form">
+                @Html.AntiForgeryToken()
+
+                <div class="origin-field-group" style="display:grid;gap:6px;">
+                    <label for="route-origin">@Loc["RouteOrigin"] *</label>
+                    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                        <input name="Origin" id="route-origin" value="@Model.Query.Origin" list="route-places" maxlength="350" required autocomplete="off" style="flex:1;min-width:200px;" />
+                        <button type="button" id="route-location" class="button secondary small" style="white-space:nowrap;">📍 @Loc["RouteLocation"]</button>
+                    </div>
+                    <p id="route-location-status" class="small text-muted" role="status">@Loc["RoutePrivacy"]</p>
+                </div>
+
+                <label for="route-destination">
+                    <span>@Loc["RouteDestination"] *</span>
+                    <input name="Destination" id="route-destination" value="@Model.Query.Destination" list="route-places" maxlength="350" required />
+                </label>
+                <datalist id="route-places">
+                    @foreach (var p in (IReadOnlyList<MinhaBelem.Core.Entities.Place>)ViewData["Places"]!)
+                    {
+                        <option value="@(p.DisplayName + ", " + p.FormattedAddress + ", " + p.Municipality)" />
+                    }
+                </datalist>
+
+                @if (Model.Query.PlaceId is { } pid)
+                {
+                    <input type="hidden" name="PlaceId" value="@pid" />
+                }
+
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;">
+                    <label>
+                        <span>@Loc["RouteWhen"]</span>
+                        <input name="LocalTime" type="datetime-local" value="@Model.Query.LocalTime?.ToString("yyyy-MM-ddTHH:mm")" />
+                    </label>
+
+                    <label class="checkbox-label" style="display:flex;align-items:center;gap:10px;cursor:pointer;padding-top:24px;">
+                        <input type="checkbox" name="ArriveBy" value="true" checked="@Model.Query.ArriveBy" class="checkbox-input" style="width:20px;height:20px;margin:0;" />
+                        <span>@Loc["RouteArriveBy"]</span>
+                    </label>
+                </div>
+
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;">
+                    <label>
+                        <span>@Loc["RouteMode"]</span>
+                        <select name="Mode">
+                            @foreach (var m in modes)
+                            {
+                                <option value="@m" selected="@(Model.Query.Mode == m)">@Loc["RouteMode_" + m]</option>
+                            }
+                        </select>
+                    </label>
+
+                    <label>
+                        <span>@Loc["RoutePreference"]</span>
+                        <select name="Preference">
+                            @foreach (var p in new[] { "less_walking", "less_transfers", "fastest", "cheapest" })
+                            {
+                                <option value="@p" selected="@(Model.Query.Preference == p)">@Loc["RoutePreference_" + p]</option>
+                            }
+                        </select>
+                    </label>
+                </div>
+
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;">
+                    <label>
+                        <span>@Loc["RouteWalkLimit"] (metros)</span>
+                        <input type="number" name="MaxWalkMeters" min="0" max="10000" value="@Model.Query.MaxWalkMeters" />
+                    </label>
+
+                    <label class="checkbox-label" style="display:flex;align-items:center;gap:10px;cursor:pointer;padding-top:24px;">
+                        <input type="checkbox" name="Accessible" value="true" checked="@Model.Query.Accessible" class="checkbox-input" style="width:20px;height:20px;margin:0;" />
+                        <span>♿ @Loc["RouteAccessible"]</span>
+                    </label>
+                </div>
+
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;">
+                    <label>
+                        <span>@Loc["RouteReturnCost"] (BRL)</span>
+                        <input type="number" name="inbound" min="0" max="100000" step="0.01" value="@Model.Inbound?.ToString(System.Globalization.CultureInfo.InvariantCulture)" />
+                    </label>
+
+                    <label>
+                        <span>@Loc["RouteOptional"] (BRL)</span>
+                        <input type="number" name="optional" min="0" max="100000" step="0.01" value="@Model.Optional.ToString(System.Globalization.CultureInfo.InvariantCulture)" />
+                    </label>
+                </div>
+
+                <button type="submit" class="button" style="margin-top:10px;">@Loc["RouteCalculate"]</button>
+            </form>
+        </section>
+
+        <section class="card route-map-panel" aria-labelledby="route-map-title">
+            <h2 id="route-map-title">@Loc["RouteMap"]</h2>
+            <div class="notice" role="note" style="margin-bottom:12px;font-size:0.85rem;">
+                <span>ℹ️ <strong>@Loc["A11y_Map_Alternative"]:</strong> O trajeto completo está descrito detalhadamente em etapas numeradas abaixo, com pontos de embarque, linhas e conexões. Não é necessário consultar o mapa para seguir a rota.</span>
+            </div>
+
+            @if (Model.Plan.Options.Any(x => x.Polyline is not null) && Configuration["Maps:BrowserKey"] is { Length: > 0 } mapKey)
+            {
+                <div id="visit-map" class="visit-map" role="region" aria-label="@Loc["RouteMap"]"></div>
+                <script id="route-geometries" type="application/json">@Html.Raw(JsonSerializer.Serialize(Model.Plan.Options.Select(x => x.Polyline).Where(x => x is not null)))</script>
+                <script src="~/js/route-map.js"></script>
+                <script src="https://maps.googleapis.com/maps/api/js?key=@Uri.EscapeDataString(mapKey)&amp;libraries=geometry&amp;callback=initVisitMap" async defer></script>
+            }
+            else
+            {
+                <div class="route-map-empty">
+                    <svg aria-hidden="true" width="72" height="72"><use href="/images/icons.svg#boat" /></svg>
+                    <p>@Loc["RouteMapFallback"]</p>
+                </div>
+            }
+
+            <a class="button secondary" href="@Model.Plan.ExternalUrl" target="_blank" rel="noopener noreferrer" style="margin-top:12px;">
+                @Loc[Model.Query.Mode == "boat" ? "WaterOfficialSource" : "RouteOpenMaps"] ↗
+            </a>
+
+            <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border-subtle);display:grid;gap:6px;font-size:0.85rem;">
+                <p class="notice" style="margin:0;">@Loc["RouteRealtimeUnavailable"]</p>
+                <p style="margin:0;"><strong>Situação do cálculo:</strong> @Loc["RouteState_" + Model.Plan.State]</p>
+                <p class="small text-muted" style="margin:0;">@Loc["RouteSource"]: @Model.Plan.Provider · @(Model.Plan.QueriedAt is { } queried ? PortalTime.Local(queried).ToString("g") : Loc["RouteUnknown"].Value)</p>
+            </div>
+        </section>
+    </div>
+
+    <!-- Etapas do Trajeto e Alternativas -->
+    <section class="section" aria-labelledby="route-steps-heading">
+        <h2 id="route-steps-heading">@Loc["A11y_Route_Steps"] &amp; @Loc["RouteAlternatives"]</h2>
+        <div class="grid">
+            @foreach (var option in Model.Plan.Options)
+            {
+                <article class="card" aria-label="@option.Description">
+                    <h3>@option.Description</h3>
+                    <p class="small" style="margin:4px 0 12px;font-weight:600;color:var(--text-secondary);">
+                        📏 @(option.DistanceMeters / 1000d) km · ⏱️ @Math.Ceiling(option.DurationSeconds / 60d) min
+                    </p>
+                    <p class="small" style="margin-bottom:16px;">
+                        Tarifa: <strong>@(option.Fare is { } fare ? option.Currency + " " + fare.ToString("F2") : Loc["RouteUnknown"].Value)</strong> · @Loc["RouteEstimate"]
+                    </p>
+
+                    <ol class="journey-timeline" aria-label="@Loc["A11y_Route_Steps"]">
+                        @foreach (var step in option.Steps)
+                        {
+                            <li>
+                                <strong>@(step.Mode == "WALK" ? Loc["RouteMode_walking"].Value : step.Line ?? step.Mode)</strong>
+                                <p style="margin:4px 0;">@step.Instruction</p>
+                                @if (step.Board is not null)
+                                {
+                                    <p class="small text-muted">@Loc["RouteBoard"]: <strong>@step.Board</strong> → @Loc["RouteAlight"]: <strong>@step.Alight</strong></p>
+                                }
+                                @if (step.Departure is { } departure)
+                                {
+                                    <time class="small text-muted">Partida prevista: @PortalTime.Local(departure.UtcDateTime).ToString("g")</time>
+                                }
+                            </li>
+                        }
+                    </ol>
+                </article>
+            }
+        </div>
+    </section>
+
+    <!-- Resumo de Visitação & Custos -->
+    <section class="card" style="margin-top:30px;">
+        <h2>@Loc["RouteVisit"]</h2>
+        @if (Model.Place is { } place)
+        {
+            <p>Destino selecionado: <a href="/guia/@place.Id" class="button-link"><strong>@place.DisplayName</strong> ↗</a></p>
+        }
+        <p>@Loc["VisitState_" + Model.Assessment.State]</p>
+        @if (Model.Assessment.NextChangeUtc is { } next)
+        {
+            <p class="small text-muted">Próxima alteração de horário: @PortalTime.Local(next).ToString("f")</p>
+        }
+        @if (Model.Schedule.Info is { } info)
+        {
+            <div style="background:var(--green-surface-subtle);padding:14px;border-radius:8px;margin:12px 0;">
+                <p class="small" style="margin:0;"><a href="@info.SourceUrl" rel="noopener noreferrer" target="_blank">Fonte dos horários ↗</a> · Confirmado em: @info.ConfirmedAt.ToString("d") → Válido até: @info.ValidUntil.ToString("d")</p>
+                <p class="small" style="margin:4px 0 0;">@info.PriceConditions</p>
+            </div>
+        }
+
+        <dl style="display:grid;grid-template-columns:auto 1fr;gap:8px 16px;margin:16px 0;">
+            <dt><strong>@Loc["RouteEntry"]:</strong></dt>
+            <dd>@(price is { } entry ? "BRL " + entry.ToString("F2") : Loc["RouteUnknown"].Value)</dd>
+            <dt><strong>@Loc["RouteKnownSubtotal"]:</strong></dt>
+            <dd>BRL @Model.KnownSubtotal.ToString("F2")</dd>
+            <dt><strong>@Loc["RouteTotal"]:</strong></dt>
+            <dd><strong>@(Model.Total is { } total ? "BRL " + total.ToString("F2") : Loc["RouteIncompleteCost"].Value)</strong></dd>
+        </dl>
+        <p class="small text-muted">@Loc["RouteNoCrowding"]</p>
+        <div style="margin-top:16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+            <a href="https://wa.me/?text=@Uri.EscapeDataString(Context.Request.Scheme + "://" + Context.Request.Host + share)" target="_blank" rel="noopener noreferrer" class="button secondary small">
+                Compartilhar via WhatsApp ↗
+            </a>
+            <p class="small text-muted" style="margin:0;">@Loc["RoutePrivacy"]</p>
+        </div>
+    </section>
+
+    @if (Model.Alerts.Count > 0)
+    {
+        <section class="section">
+            <h2>@Loc["RouteAlerts"]</h2>
+            <div class="grid">
+                @foreach (var alert in Model.Alerts)
+                {
+                    <article class="notice error-notice">
+                        <strong>⚠️ @alert.Title</strong>
+                        <p>@alert.Description</p>
+                        <p class="small text-muted">Bairro: @alert.Neighborhood · Período: @alert.StartAt.ToString("g") → @alert.EndAt?.ToString("g")</p>
+                    </article>
+                }
+            </div>
+        </section>
+    }
+</main>
+<script src="~/js/visit.js" defer></script>

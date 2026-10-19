@@ -1,5 +1,4 @@
 @model MinhaBelem.Web.Models.ExploreViewModel
-<section class="section"><a class="button" href="/explore/planejar">@Loc["ItineraryPlannerTitle"] →</a></section>
 @using System.Globalization
 
 @{
@@ -16,7 +15,8 @@
             <p class="lead">@Loc["Explore_Hero_Subtitle"]</p>
 
             <div class="explore-quick-actions">
-                <a href="#roteiros" class="btn btn-primary">🗺️ @Loc["Explore_Itineraries"]</a>
+                <a href="/explore/planejar" class="btn btn-primary">🧭 @Loc["ItineraryPlannerTitle"] →</a>
+                <a href="#roteiros" class="btn btn-secondary">🗺️ @Loc["Explore_Itineraries"]</a>
                 <a href="#atracoes" class="btn btn-secondary">🏛️ @Loc["Explore_Places"]</a>
                 <a href="/explore/glossario" class="btn btn-secondary">📖 @Loc["Glossary_Title"]</a>
                 <a href="#dicas-praticas" class="btn btn-secondary">💡 @Loc["Explore_Practical_Advice"]</a>

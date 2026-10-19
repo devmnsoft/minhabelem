@@ -33,7 +33,7 @@ internal static class Sprint14Translations
             ["AdminSettings"] = ["Configurações", "Settings", "Paramètres", "Configuración", "Настройки", "设置", "設定"],
             ["AdminIntegrations"] = ["Integrações", "Integrations", "Intégrations", "Integraciones", "Интеграции", "集成", "連携"],
             ["AdminReports"] = ["Relatórios", "Reports", "Rapports", "Informes", "Отчёты", "报表", "レポート"],
-            ["AdminProgress"] = ["Evolução e homologação", "Progress and validation", "Avancement et validation", "Avance y validación", "Прогресс и проверка", "进展与验证", "進捗と検証"],
+            ["AdminProgress"] = ["Evolução e Operação", "Progress and operations", "Avancement et opérations", "Avance y operaciones", "Прогресс и операции", "进展与运行", "進捗と運用"],
             ["OperationalSettings"] = ["Configurações operacionais", "Operational settings", "Paramètres opérationnels", "Configuración operativa", "Рабочие настройки", "运行设置", "運用設定"],
             ["CollectorEnable"] = ["Ativar coleta supervisionada", "Enable supervised collection", "Activer la collecte supervisée", "Activar recopilación supervisada", "Включить контролируемый сбор", "启用受监督采集", "監督付き収集を有効化"],
             ["IntervalMinutes"] = ["Intervalo em minutos", "Interval in minutes", "Intervalle en minutes", "Intervalo en minutos", "Интервал в минутах", "间隔分钟数", "間隔（分）"],

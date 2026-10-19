@@ -1,32 +1,94 @@
 @model IReadOnlyList<MinhaBelem.Core.Entities.AdvertiserCampaign>
 @{ ViewData["Title"] = Loc["NavPartners"]; }
+
 <section class="hero">
     <span class="eyebrow">MINHABELÉM · @Loc["NavPartners"]</span>
     <h1>@Loc["CommercialHero"]</h1>
     <p>@Loc["CommercialIntro"]</p>
 </section>
+
 <partial name="_SponsoredCampaigns" model="Model" />
+
 <section class="section">
     <div class="grid">
-        <article class="card"><span class="eyebrow">01 · @Loc["NavGuide"]</span><h2>@Loc["CommercialFoodStay"]</h2><p>@Loc["CommercialBusinessText"]</p></article>
-        <article class="card"><span class="eyebrow">02 · @Loc["NavAgenda"]</span><h2>@Loc["CommercialCulture"]</h2><p>@Loc["CommercialCultureText"]</p></article>
-        <article class="card"><span class="eyebrow">03 · @Loc["NavNeighborhood"]</span><h2>@Loc["CommercialLocal"]</h2><p>@Loc["CommercialLocalText"]</p></article>
+        <article class="card">
+            <span class="eyebrow">01 · @Loc["NavGuide"]</span>
+            <h2>@Loc["CommercialFoodStay"]</h2>
+            <p>@Loc["CommercialBusinessText"]</p>
+        </article>
+        <article class="card">
+            <span class="eyebrow">02 · @Loc["NavAgenda"]</span>
+            <h2>@Loc["CommercialCulture"]</h2>
+            <p>@Loc["CommercialCultureText"]</p>
+        </article>
+        <article class="card">
+            <span class="eyebrow">03 · @Loc["NavNeighborhood"]</span>
+            <h2>@Loc["CommercialLocal"]</h2>
+            <p>@Loc["CommercialLocalText"]</p>
+        </article>
     </div>
-    <p class="notice">@Loc["CommercialEditorial"]</p>
+    <p class="notice" style="margin-top:24px;">@Loc["CommercialEditorial"]</p>
 </section>
+
 <section class="section cta">
     <h2>@Loc["CommercialProposal"]</h2>
-    @if (TempData["Notice"] is string notice) { <p class="notice" role="status">@notice</p> }
-    <form asp-action="Anunciar" method="post" class="card route-form">
+    @if (TempData["Notice"] is string notice)
+    {
+        <div class="notice" role="status" style="margin-bottom:20px;">
+            <span>ℹ️ @notice</span>
+        </div>
+    }
+
+    <form asp-action="Anunciar" method="post" class="card route-form partner-proposal-form" style="max-width:760px;margin-inline:auto;">
         @Html.AntiForgeryToken()
-        <label>@Loc["CampaignCompany"] *<input name="empresa" maxlength="150" required /></label>
-        <label>@Loc["CommercialContact"] *<input name="contato" maxlength="100" required /></label>
-        <label>@Loc["CommercialEmail"] *<input name="email" type="email" maxlength="150" required /></label>
-        <label>@Loc["CommercialPhone"]<input name="telefone" type="tel" maxlength="30" /></label>
-        <label>@Loc["CommercialInterest"]<select name="plano"><option value="Guia">@Loc["CommercialFoodStay"]</option><option value="Categoria">@Loc["CommercialCulture"]</option><option value="Bairro">@Loc["CommercialLocal"]</option><option value="Personalizado">@Loc["CommercialCustom"]</option></select></label>
-        <label>@Loc["CommercialMessage"]<textarea name="mensagem" rows="3" maxlength="2000"></textarea></label>
-        <label><input type="checkbox" name="consentimento" value="true" required /> @Loc["CommercialConsent"]</label>
-        <a href="/privacidade">@Loc["PrivacyPolicy"]</a>
-        <button type="submit">@Loc["CommercialSend"]</button>
+
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;">
+            <label>
+                <span>@Loc["CampaignCompany"] *</span>
+                <input name="empresa" maxlength="150" required placeholder="Nome da empresa ou negócio" />
+            </label>
+
+            <label>
+                <span>@Loc["CommercialContact"] *</span>
+                <input name="contato" maxlength="100" required placeholder="Nome do responsável" />
+            </label>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;">
+            <label>
+                <span>@Loc["CommercialEmail"] *</span>
+                <input name="email" type="email" maxlength="150" required placeholder="contato@empresa.com.br" />
+            </label>
+
+            <label>
+                <span>@Loc["CommercialPhone"]</span>
+                <input name="telefone" type="tel" maxlength="30" placeholder="(91) 99999-9999" />
+            </label>
+        </div>
+
+        <label>
+            <span>@Loc["CommercialInterest"]</span>
+            <select name="plano">
+                <option value="Guia">@Loc["CommercialFoodStay"]</option>
+                <option value="Categoria">@Loc["CommercialCulture"]</option>
+                <option value="Bairro">@Loc["CommercialLocal"]</option>
+                <option value="Personalizado">@Loc["CommercialCustom"]</option>
+            </select>
+        </label>
+
+        <label>
+            <span>@Loc["CommercialMessage"]</span>
+            <textarea name="mensagem" rows="3" maxlength="2000" placeholder="Conte-nos sobre o perfil do seu público ou campanha..."></textarea>
+        </label>
+
+        <div style="display:flex;flex-direction:column;gap:10px;margin:10px 0;">
+            <label class="checkbox-label" style="display:flex;align-items:center;gap:10px;cursor:pointer;">
+                <input type="checkbox" name="consentimento" value="true" required class="checkbox-input" style="width:20px;height:20px;margin:0;" />
+                <span>@Loc["CommercialConsent"]</span>
+            </label>
+            <a href="/privacidade" class="small button-link">@Loc["PrivacyPolicy"] →</a>
+        </div>
+
+        <button type="submit" class="button" style="margin-top:10px;">@Loc["CommercialSend"]</button>
     </form>
 </section>

@@ -2,8 +2,8 @@ namespace MinhaBelem.Web.Models;
 
 public sealed class ProjectEvolutionViewModel
 {
-    public int SprintNumber { get; set; } = 14;
-    public string SprintTitle { get; set; } = "Redesign e homologação";
+    public int SprintNumber { get; set; } = 19;
+    public string SprintTitle { get; set; } = "Operação Definitiva & Governança";
     public string Domain { get; set; } = "minhabelem.com.br";
     public string Environment { get; set; } = "VPS Windows / IIS / MySQL 8 / MinhaBelem.Worker";
     public int TotalRequirements { get; set; } = 0;
@@ -29,7 +29,7 @@ public sealed class ModuleEvolutionStatus
     public string Category { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
     /// <summary>
-    /// Classificação oficial: "Não iniciado", "Em desenvolvimento", "Implementado", "Testado", "Homologado", "Operacional em produção", "Bloqueado"
+    /// Classificação oficial: "Não iniciado", "Em desenvolvimento", "Implementado", "Testado", "Validado", "Operacional em produção", "Bloqueado"
     /// </summary>
     public string Status { get; set; } = "Não verificado";
     public int ProgressPercent { get; set; } = 0;

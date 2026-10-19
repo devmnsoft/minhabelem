@@ -1,5 +1,7 @@
 using System.Globalization;
 using System.IO;
+using MinhaBelem.Core.Entities;
+using MinhaBelem.Infrastructure.Ai;
 using MinhaBelem.Web.Resources;
 using Xunit;
 
@@ -161,4 +163,48 @@ public sealed class Sprint19EvolutionTests
         Assert.Contains(".password-toggle-btn", css);
         Assert.Contains(".a11y-panel", css);
     }
+
+    [Fact]
+    public void NativeBelemAiEngineGeneratesAuthenticGuidanceForGastronomyAndIslands()
+    {
+        var dummyPlaces = new List<Place>
+        {
+            new Place { Id = 1, Name = "Restaurante Ilha do Combu", PrimaryType = "restaurant", FormattedAddress = "Ilha do Combu, Belém" },
+            new Place { Id = 2, Name = "Tacacá da Dona Maria", PrimaryType = "restaurant", FormattedAddress = "Avenida Nazaré, Belém" },
+            new Place { Id = 3, Name = "Theatro da Paz", PrimaryType = "tourist_attraction", FormattedAddress = "Praça da República, Belém" }
+        };
+
+        var gastroResult = NativeBelemAiEngine.Generate("Onde comer o melhor tacacá e açaí em Belém?", "pt-BR", dummyPlaces, Array.Empty<ContentItem>(), Array.Empty<TransitLine>());
+        Assert.NotNull(gastroResult.ResponseText);
+        Assert.Contains("Tacacá", gastroResult.ResponseText);
+        Assert.Contains("Açaí", gastroResult.ResponseText);
+        Assert.NotEmpty(gastroResult.Suggestions);
+
+        var islandResultEn = NativeBelemAiEngine.Generate("How to take the boat to Combu Island?", "en-US", dummyPlaces, Array.Empty<ContentItem>(), Array.Empty<TransitLine>());
+        Assert.NotNull(islandResultEn.ResponseText);
+        Assert.Contains("Combu", islandResultEn.ResponseText);
+        Assert.Contains("boat", islandResultEn.ResponseText, StringComparison.OrdinalIgnoreCase);
+
+        var heritageResult = NativeBelemAiEngine.Generate("História e ingressos do Theatro da Paz", "pt-BR", dummyPlaces, Array.Empty<ContentItem>(), Array.Empty<TransitLine>());
+        Assert.NotNull(heritageResult.ResponseText);
+        Assert.Contains("Theatro da Paz", heritageResult.ResponseText);
+    }
+
+    [Fact]
+    public void HomologationConnotationsAreCleanedFromUserMessages()
+    {
+        var root = FindRepositoryRoot();
+        var perfilPath = Path.Combine(root, "src", "MinhaBelem.Web", "Views", "Conta", "Perfil.cshtml");
+        Assert.True(File.Exists(perfilPath));
+        var perfil = File.ReadAllText(perfilPath);
+        Assert.DoesNotContain("senha provisória de homologação", perfil);
+        Assert.Contains("senha temporária pendente de redefinição", perfil);
+
+        var evolucaoPath = Path.Combine(root, "src", "MinhaBelem.Web", "Views", "Admin", "Evolucao.cshtml");
+        Assert.True(File.Exists(evolucaoPath));
+        var evolucao = File.ReadAllText(evolucaoPath);
+        Assert.DoesNotContain("Evolução e homologação", evolucao);
+        Assert.Contains("Evolução e Governança Operacional", evolucao);
+    }
 }
+

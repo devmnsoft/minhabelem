@@ -1,13 +1,207 @@
 @using MinhaBelem.Web.Models
 @model MinhaBelem.Web.Controllers.ItineraryPlanningPage
-@{ViewData["Title"]=Loc["ItineraryPlannerTitle"];}
-<section class="hero"><h1>@Loc["ItineraryPlannerTitle"]</h1><p>@Loc["ItineraryPlannerScope"]</p></section><main class="section"><form method="post" action="/explore/planejar" class="card route-form">@Html.AntiForgeryToken()<label>@Loc["RouteOrigin"]<input name="Origin" required maxlength="350" value="@Model.Request.Origin"/></label><label>@Loc["RouteWhen"]<input type="datetime-local" name="LocalStart" required value="@Model.Request.LocalStart.ToString("yyyy-MM-ddTHH:mm")"/></label><label>@Loc["Period"]<select name="Days">@foreach(var d in new[]{.5m,1m,2m,3m,5m}){<option value="@d.ToString(System.Globalization.CultureInfo.InvariantCulture)" selected="@(d==Model.Request.Days)">@d · @Loc["ItineraryDays"]</option>}</select></label><label>@Loc["RouteMode"]<select name="Mode">@foreach(var m in new[]{"transit","walking","bicycling","driving","boat"}){<option value="@m" selected="@(Model.Request.Mode==m)">@Loc["RouteMode_"+m]</option>}</select></label><label>@Loc["ItineraryVisitors"]<input type="number" name="Visitors" min="1" max="20" required value="@Model.Request.Visitors"/></label><label>@Loc["RouteTotal"] · BRL<input type="number" name="Budget" min="0" step=".01" value="@Model.Request.Budget?.ToString(System.Globalization.CultureInfo.InvariantCulture)"/></label><label>@Loc["ItineraryStay"]<input type="number" name="VisitMinutes" min="30" max="240" value="@Model.Request.VisitMinutes"/></label><label>@Loc["BatchCategory"]<select name="Category"><option value="">—</option>@foreach(var c in MinhaBelem.Infrastructure.Places.PlacesCatalog.Types){<option value="@c" selected="@(Model.Request.Category==c)">@c</option>}</select></label><label><input name="Children" type="checkbox" value="true" checked="@Model.Request.Children"/> @Loc["ChildrenProgram"]</label><label><input name="Accessible" type="checkbox" value="true" checked="@Model.Request.Accessible"/> @Loc["RouteAccessible"]</label><label><input name="FreeOnly" type="checkbox" value="true" checked="@Model.Request.FreeOnly"/> @Loc["FreeEvents"]</label><button>@Loc["RouteCalculate"]</button></form>
-<p class="small">@Loc["ItineraryGroupCost"]</p>
-@if(Model.Result is {} result){<p class="notice">@Loc[result.State=="calculated"?"ItineraryCalculated":"RouteState_unavailable"]</p>@foreach(var day in result.Days){<section class="section"><h2>@day.LocalDate.ToString("D")</h2><ol class="journey-timeline">@foreach(var stop in day.Visits){<li><h3><a href="/guia/@stop.Place.Id">@stop.Place.DisplayName</a></h3><p>@PortalTime.Local(stop.ArrivalUtc).ToString("t") → @PortalTime.Local(stop.DepartureUtc).ToString("t")</p><p>@Math.Ceiling(stop.Route.DurationSeconds/60d) min · @Loc["RouteEstimate"]</p><a href="@stop.SourceUrl" target="_blank" rel="noopener noreferrer">@Loc["RouteSource"] ↗</a><a href="/como-chegar?placeId=@stop.Place.Id">@Loc["RouteTitle"]</a></li>}</ol><p>@Loc["RouteKnownSubtotal"]: BRL @day.KnownCost.ToString("F2")</p>@if(!day.CostComplete){<p>@Loc["RouteIncompleteCost"]</p>}@if(day.ReturnRoute is {} back){<a href="@back.ExternalUrl" rel="noopener noreferrer" target="_blank">@Loc["ItineraryReturn"] ↗</a>}</section>}}
-@if(Model.Result?.State == "calculated") {
-<p>@Loc["ItinerarySharePrivacy"]</p>
-<button type="button" data-share-itinerary data-copied="@Loc["ItineraryCopied"]" data-failed="@Loc["ItineraryCopyFailed"]">@Loc["ItineraryShare"]</button>
-<p role="status" data-itinerary-share-status></p>
+@{
+    ViewData["Title"] = Loc["ItineraryPlannerTitle"];
 }
-</main><script src="~/js/itinerary-share.js" defer></script>
 
+<div class="itinerary-planner-shell">
+    <section class="hero itinerary-hero">
+        <div class="hero-content">
+            <span class="eyebrow">ROTEIROS INTELIGENTES & CULTURAIS</span>
+            <h1>@Loc["ItineraryPlannerTitle"]</h1>
+            <p class="lead">@Loc["ItineraryPlannerScope"]</p>
+        </div>
+    </section>
+
+    <main class="section itinerary-container" id="conteudo">
+        <!-- Formulário de Planejamento -->
+        <div class="card itinerary-form-card">
+            <div class="form-header">
+                <h2>Configure seu Roteiro Personalizado em Belém</h2>
+                <p class="small text-muted">A plataforma calcula rotas eficientes, horários de visitação, custos estimados e conexões fluviais e terrestres.</p>
+            </div>
+
+            <form method="post" action="/explore/planejar" class="itinerary-grid-form">
+                @Html.AntiForgeryToken()
+
+                <div class="form-row-2">
+                    <label>
+                        <span class="label-text">@Loc["RouteOrigin"] *</span>
+                        <input name="Origin" required maxlength="350" value="@Model.Request.Origin" placeholder="Ex: Estação das Docas, Hotel, Aeroporto de Belém..." />
+                    </label>
+
+                    <label>
+                        <span class="label-text">@Loc["RouteWhen"] *</span>
+                        <input type="datetime-local" name="LocalStart" required value="@Model.Request.LocalStart.ToString("yyyy-MM-ddTHH:mm")" />
+                    </label>
+                </div>
+
+                <div class="form-row-3">
+                    <label>
+                        <span class="label-text">@Loc["Period"]</span>
+                        <select name="Days">
+                            @foreach (var d in new[] { .5m, 1m, 2m, 3m, 5m })
+                            {
+                                <option value="@d.ToString(System.Globalization.CultureInfo.InvariantCulture)" selected="@(d == Model.Request.Days)">
+                                    @d @(d <= 1 ? "Dia" : "Dias")
+                                </option>
+                            }
+                        </select>
+                    </label>
+
+                    <label>
+                        <span class="label-text">@Loc["RouteMode"]</span>
+                        <select name="Mode">
+                            @foreach (var m in new[] { "transit", "walking", "bicycling", "driving", "boat" })
+                            {
+                                <option value="@m" selected="@(Model.Request.Mode == m)">@Loc["RouteMode_" + m]</option>
+                            }
+                        </select>
+                    </label>
+
+                    <label>
+                        <span class="label-text">@Loc["ItineraryVisitors"] *</span>
+                        <input type="number" name="Visitors" min="1" max="20" required value="@Model.Request.Visitors" />
+                    </label>
+                </div>
+
+                <div class="form-row-3">
+                    <label>
+                        <span class="label-text">@Loc["RouteTotal"] (BRL)</span>
+                        <input type="number" name="Budget" min="0" step=".01" placeholder="Ex: 150.00 (opcional)" value="@Model.Request.Budget?.ToString(System.Globalization.CultureInfo.InvariantCulture)" />
+                    </label>
+
+                    <label>
+                        <span class="label-text">@Loc["ItineraryStay"] (minutos)</span>
+                        <input type="number" name="VisitMinutes" min="30" max="240" value="@Model.Request.VisitMinutes" />
+                    </label>
+
+                    <label>
+                        <span class="label-text">@Loc["BatchCategory"]</span>
+                        <select name="Category">
+                            <option value="">Todas as categorias</option>
+                            @foreach (var c in MinhaBelem.Infrastructure.Places.PlacesCatalog.Types)
+                            {
+                                <option value="@c" selected="@(Model.Request.Category == c)">@c</option>
+                            }
+                        </select>
+                    </label>
+                </div>
+
+                <!-- Preferências e Inclusão -->
+                <fieldset class="itinerary-preferences">
+                    <legend class="eyebrow">PREFERÊNCIAS & ACESSIBILIDADE</legend>
+                    <div class="checkbox-group">
+                        <label class="checkbox-label">
+                            <input name="Children" type="checkbox" value="true" checked="@Model.Request.Children" class="checkbox-input" />
+                            <span>👶 @Loc["ChildrenProgram"]</span>
+                        </label>
+                        <label class="checkbox-label">
+                            <input name="Accessible" type="checkbox" value="true" checked="@Model.Request.Accessible" class="checkbox-input" />
+                            <span>♿ @Loc["RouteAccessible"] (rotas planas e locais adaptados)</span>
+                        </label>
+                        <label class="checkbox-label">
+                            <input name="FreeOnly" type="checkbox" value="true" checked="@Model.Request.FreeOnly" class="checkbox-input" />
+                            <span>🎟️ @Loc["FreeEvents"] (apenas atrações gratuitas)</span>
+                        </label>
+                    </div>
+                </fieldset>
+
+                <div class="form-submit-row">
+                    <button type="submit" class="button">
+                        <span>@Loc["RouteCalculate"]</span>
+                        <span aria-hidden="true">🗺️</span>
+                    </button>
+                    <p class="small text-muted">@Loc["ItineraryGroupCost"]</p>
+                </div>
+            </form>
+        </div>
+
+        <!-- Resultado do Roteiro -->
+        @if (Model.Result is { } result)
+        {
+            <div class="itinerary-results" aria-live="polite">
+                <div class="notice @(result.State == "calculated" ? "" : "error-notice")" role="status" style="margin-bottom:24px;">
+                    <strong>ℹ️ @Loc[result.State == "calculated" ? "ItineraryCalculated" : "RouteState_unavailable"]</strong>
+                </div>
+
+                @foreach (var day in result.Days)
+                {
+                    <section class="card itinerary-day-card">
+                        <div class="day-header">
+                            <div>
+                                <span class="eyebrow">PROGRAMAÇÃO DIÁRIA</span>
+                                <h2>@day.LocalDate.ToString("D")</h2>
+                            </div>
+                            <div class="day-cost-badge">
+                                <strong>Custo Estimado: BRL @day.KnownCost.ToString("F2")</strong>
+                            </div>
+                        </div>
+
+                        <!-- Conselho Inteligente do Guia IA para o Dia -->
+                        <div class="cultural-badge-box" style="margin:16px 0;background:var(--green-surface-subtle);border-left:4px solid var(--green-forest);padding:14px 18px;border-radius:8px;">
+                            <strong>💡 Dica Inteligente do Guia para este dia:</strong>
+                            <p class="small" style="margin:4px 0 0;color:var(--text-secondary);">
+                                Em Belém, as manhãs são ideais para passeios ao ar livre, feiras e parques (como Ver-o-Peso e Utinga). Por volta das 15h costuma chover pontualmente — momento perfeito para visitar espaços climatizados como o Theatro da Paz ou museus da Cidade Velha. Às 17h, feche a tarde com um tacacá quentinho ou o pôr do sol na Baía do Guajará!
+                            </p>
+                        </div>
+
+                        <ol class="journey-timeline" aria-label="Etapas cronológicas do roteiro">
+                            @foreach (var stop in day.Visits)
+                            {
+                                <li>
+                                    <div class="timeline-stop-header">
+                                        <h3><a href="/guia/@stop.Place.Id">@stop.Place.DisplayName</a></h3>
+                                        <time class="timeline-time">
+                                            @PortalTime.Local(stop.ArrivalUtc).ToString("t") → @PortalTime.Local(stop.DepartureUtc).ToString("t")
+                                        </time>
+                                    </div>
+                                    <p class="small text-muted">@stop.Place.FormattedAddress</p>
+                                    <p class="small">
+                                        ⏱️ Deslocamento estimado: ~@Math.Ceiling(stop.Route.DurationSeconds / 60d) min (@Loc["RouteEstimate"])
+                                    </p>
+                                    <div class="timeline-actions" style="margin-top:8px;display:flex;gap:12px;font-size:0.85rem;">
+                                        <a href="/como-chegar?placeId=@stop.Place.Id" class="button-link">Trajeto detalhado →</a>
+                                        @if (!string.IsNullOrWhiteSpace(stop.SourceUrl))
+                                        {
+                                            <a href="@stop.SourceUrl" target="_blank" rel="noopener noreferrer" class="text-muted">Fonte Oficial ↗</a>
+                                        }
+                                    </div>
+                                </li>
+                            }
+                        </ol>
+
+                        <div class="day-footer" style="margin-top:20px;padding-top:14px;border-top:1px solid var(--border-subtle);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
+                            <span class="small text-muted">@Loc["RouteKnownSubtotal"]: <strong>BRL @day.KnownCost.ToString("F2")</strong></span>
+                            @if (!day.CostComplete)
+                            {
+                                <span class="small text-muted">⚠️ @Loc["RouteIncompleteCost"]</span>
+                            }
+                            @if (day.ReturnRoute is { } back)
+                            {
+                                <a href="@back.ExternalUrl" rel="noopener noreferrer" target="_blank" class="button secondary small">
+                                    @Loc["ItineraryReturn"] ↗
+                                </a>
+                            }
+                        </div>
+                    </section>
+                }
+
+                @if (Model.Result?.State == "calculated")
+                {
+                    <div class="card itinerary-share-card" style="margin-top:24px;text-align:center;padding:24px;">
+                        <h3>Compartilhe seu Roteiro</h3>
+                        <p class="small text-muted" style="margin-bottom:14px;">@Loc["ItinerarySharePrivacy"]</p>
+                        <button type="button" class="button" data-share-itinerary data-copied="@Loc["ItineraryCopied"]" data-failed="@Loc["ItineraryCopyFailed"]">
+                            <span>@Loc["ItineraryShare"]</span>
+                            <span aria-hidden="true">📤</span>
+                        </button>
+                        <p role="status" data-itinerary-share-status class="small" style="margin-top:8px;font-weight:600;color:var(--green-forest);"></p>
+                    </div>
+                }
+            </div>
+        }
+    </main>
+</div>
+
+<script src="~/js/itinerary-share.js" defer></script>

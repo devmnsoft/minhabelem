@@ -1,6 +1,6 @@
 @model MinhaBelem.Web.Models.ProjectEvolutionViewModel
-@{ ViewData["Title"] = "Evolução e homologação"; Layout = "_AdminLayout"; }
-<div class="admin-header"><div><span class="eyebrow">MINHABELÉM / SPRINT @Model.SprintNumber</span><h1>Evolução e homologação</h1><p>@Model.SprintTitle</p></div><a class="button" href="/admin/radar">@Loc["QueueTitle"] ↗</a></div>
+@{ ViewData["Title"] = "Evolução e Governança Operacional"; Layout = "_AdminLayout"; }
+<div class="admin-header"><div><span class="eyebrow">MINHABELÉM / SPRINT @Model.SprintNumber</span><h1>Evolução e Governança Operacional</h1><p>@Model.SprintTitle</p></div><a class="button" href="/admin/radar">@Loc["QueueTitle"] ↗</a></div>
 <div class="notice" role="status">A implantação na VPS e a prontidão de produção exigem confirmação operacional. Esta página apresenta somente a telemetria disponível no banco atual.</div>
 <div class="grid">
     <section class="card"><span class="eyebrow">Windows Service</span><h2>@Model.WorkerStatus</h2><p>Estado derivado do heartbeat persistido, sujeito ao horário da última atualização.</p></section>
