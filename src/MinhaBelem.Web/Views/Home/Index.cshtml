@@ -15,96 +15,51 @@
     var filtered = ViewData["Category"] != null || !string.IsNullOrWhiteSpace(ViewData["Search"] as string) || page > 1;
 }
 
-<!-- HERO PRINCIPAL DE BELÉM DO PARÁ -->
-<section class="hero home-hero reveal" aria-labelledby="hero-title">
+<section class="hero home-hero" aria-labelledby="hero-title">
     <div class="hero-content">
-        <span class="eyebrow">BELÉM DO PARÁ / AMAZÔNIA / BRASIL</span>
-        <h1 id="hero-title">@Loc["Hero_Title"]</h1>
-        <p>@Loc["Hero_Subtitle"]</p>
+        <span class="eyebrow">BELÉM DO PARÁ · AMAZÔNIA</span>
+        <h1 id="hero-title">@Loc["CityQuestion"]</h1>
+        <p>@Loc["CityWelcome"]</p>
         <form method="get" action="/" class="search" role="search">
-            <label for="busca" class="sr-only">@Loc["SearchPlaceholder"]</label>
+            <label for="busca" class="sr-only">@Loc["CitySearch"]</label>
             <svg class="icon" aria-hidden="true"><use href="/images/icons.svg#search" /></svg>
-            <input id="busca" name="busca" maxlength="120" placeholder="@Loc["SearchPlaceholder"]" value="@ViewData["Search"]" />
-            <button type="submit">@Loc["SearchButton"] <span aria-hidden="true">↗</span></button>
+            <input type="search" id="busca" name="busca" maxlength="120" placeholder="@Loc["CitySearch"]" value="@ViewData["Search"]" />
+            <button type="submit">@Loc["SearchButton"]</button>
         </form>
-        <div class="hero-quick-tags">
-            <a href="/guia-ia" class="quick-pill">✨ Pergunte ao Curió IA ↗</a>
-            <a href="/como-chegar" class="quick-pill">🚌 Rotas e Ônibus ↗</a>
-            <a href="/agenda/semana" class="quick-pill">@Loc["ThisWeek"] ↗</a>
-            <a href="/explore" class="quick-pill">@Loc["NavExplore"] ↗</a>
-            <a href="/guia" class="quick-pill">@Loc["NavGuide"] ↗</a>
-        </div>
+        <nav class="hero-quick-tags" aria-label="@Loc["CityQuestion"]">
+            <a href="/agenda?dias=0" class="quick-pill"><span aria-hidden="true">☀</span> @Loc["AgendaToday"]</a>
+            <a href="/agenda" class="quick-pill"><span aria-hidden="true">▦</span> @Loc["NavAgenda"]</a>
+            <a href="/como-chegar" class="quick-pill"><span aria-hidden="true">↗</span> @Loc["RouteTitle"]</a>
+            <a href="/guia" class="quick-pill"><span aria-hidden="true">⌖</span> @Loc["NavGuide"]</a>
+        </nav>
+        <a href="/guia-ia" class="hero-curio"><img src="/images/curio-marca.svg" width="32" height="32" alt="" />@Loc["CityCurio"] <span aria-hidden="true">↗</span></a>
     </div>
-    <span class="hero-caption">
-        <a href="https://commons.wikimedia.org/wiki/File:Esta%C3%A7%C3%A3o_das_Docas_Bel%C3%A9m_Par%C3%A1_2023-8696.jpg" target="_blank" rel="noopener noreferrer">Estação das Docas · Prburley / Wikimedia Commons</a>
-        · <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">CC BY 4.0</a> · @Loc["PhotoOptimized"]
-    </span>
-    <span class="hero-identity" aria-hidden="true">
-        <img src="/images/curio-marca.svg" width="44" height="44" alt="" />
-        <span>Curió · Guia de Belém</span>
-    </span>
+    <figure class="hero-photo">
+        <img src="/images/licensed/estacao-docas-1920.webp" alt="@Loc["EstacaoDocasPhoto"]" width="1920" height="1280" fetchpriority="high" />
+        <figcaption class="hero-caption">
+            Estação das Docas · <a href="https://commons.wikimedia.org/wiki/File:Esta%C3%A7%C3%A3o_das_Docas_Bel%C3%A9m_Par%C3%A1_2023-8696.jpg" target="_blank" rel="noopener noreferrer">Prburley / Wikimedia Commons</a>
+            · <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">CC BY 4.0</a> · @Loc["PhotoOptimized"]
+        </figcaption>
+    </figure>
 </section>
-
-<!-- FAIXA DA CIDADE EM TEMPO REAL -->
-<div class="city-ribbon">
-    <span class="live-dot" aria-hidden="true"></span>
-    <strong>@Loc["CityNow"]</strong>
-    <span>@Loc["EditorialNote"]</span>
-    <a href="/agora">@Loc["ViewMore"] ↗</a>
-</div>
-
-@if (!filtered)
-{
-    <!-- DESTAQUE DA MOBILIDADE: COMO VOCÊ QUER SE DESLOCAR POR BELÉM? (SPRINT 22) -->
-    <section class="section home-mobility-highlight" aria-labelledby="home-mobility-title">
-        <div class="mobility-banner-card">
-            <div class="mobility-banner-header">
-                <div>
-                    <span class="eyebrow">COMO VOCÊ QUER SE DESLOCAR POR BELÉM? 🚌 🚤</span>
-                    <h2 id="home-mobility-title">Como Chegar, Ônibus, BRT e Travessias Fluviais</h2>
-                    <p>Planeje seu deslocamento por Belém com linhas verificadas, itinerários, integrações e barcos para as ilhas.</p>
-                </div>
-                <a href="/mobilidade" class="button" aria-label="Acessar Central de Mobilidade completa">Central de Mobilidade ↗</a>
-            </div>
-            <div class="mobility-quick-grid">
-                <a href="/como-chegar" class="mobility-quick-action">
-                    <span class="action-icon" aria-hidden="true">🗺️</span>
-                    <strong>Como Chegar</strong>
-                    <span>Planejador multimodal com mapas e etapas a pé</span>
-                </a>
-                <a href="/mobilidade#linhas" class="mobility-quick-action">
-                    <span class="action-icon" aria-hidden="true">🚌</span>
-                    <strong>Pesquisar Ônibus</strong>
-                    <span>Busque por número, nome da linha ou bairro</span>
-                </a>
-                <a href="/mobilidade?tipo=BRT" class="mobility-quick-action">
-                    <span class="action-icon" aria-hidden="true">🚊</span>
-                    <strong>BRT Metropolitano</strong>
-                    <span>Corredores expressos, terminais e paradas</span>
-                </a>
-                <a href="/mobilidade/fluvial" class="mobility-quick-action">
-                    <span class="action-icon" aria-hidden="true">🚤</span>
-                    <strong>Transporte Fluvial</strong>
-                    <span>Ilha do Combu, Cotijuba e Mosqueiro</span>
-                </a>
-                <a href="/mobilidade/de-para" class="mobility-quick-action">
-                    <span class="action-icon" aria-hidden="true">🔀</span>
-                    <strong>De-Para</strong>
-                    <span>Cruzamento inteligente de conexões e integrações</span>
-                </a>
-            </div>
-        </div>
-    </section>
-
-    <partial name="_CityWindows" />
-}
 
 @if (ViewData["Campaigns"] is IReadOnlyList<AdvertiserCampaign> campaigns)
 {
     <partial name="_SponsoredCampaigns" model="campaigns" />
 }
 
-<!-- FAIXA DE CATEGORIAS -->
+<!-- SEÇÃO DE NOTÍCIAS EDITORIAIS -->
+<section class="section news-section" id="noticias" aria-labelledby="news-title">
+    <div class="sectionhead">
+        <div>
+            <span class="eyebrow">MINHABELÉM / 360</span>
+            <h2 id="news-title">@(filtered ? Loc["Home_LatestNews"] : Loc["CityToday"])</h2>
+            <p class="section-subtitle">@Loc["EditorialNote"]</p>
+        </div>
+        <a href="/agora">@Loc["ViewMore"] ↗</a>
+    </div>
+
+    <!-- FAIXA DE CATEGORIAS -->
 <nav class="categories category-strip" aria-label="@Loc["AllCategories"]">
     <a href="/" aria-current="@(ViewData["Category"] == null ? "page" : null)">@Loc["AllCategories"]</a>
     @foreach (var category in MinhaBelem.Core.Taxonomy.Taxonomy.All)
@@ -113,15 +68,6 @@
     }
 </nav>
 
-<!-- SEÇÃO DE NOTÍCIAS EDITORIAIS -->
-<section class="section news-section" aria-labelledby="news-title">
-    <div class="sectionhead">
-        <div>
-            <span class="eyebrow">MINHABELÉM / 360</span>
-            <h2 id="news-title">@Loc["Home_LatestNews"]</h2>
-        </div>
-        <a href="/agora">@Loc["ViewMore"] ↗</a>
-    </div>
 
     @if (Model.Count == 0)
     {
@@ -162,31 +108,9 @@
     }
 </section>
 
-<!-- GUIA DE LOCAIS DE BELÉM -->
-@if (places.Count > 0)
+@if (filtered)
 {
-    <section class="section">
-        <div class="sectionhead">
-            <div>
-                <span class="eyebrow">PATRIMÔNIO & VISITAÇÃO</span>
-                <h2>@Loc["NavGuide"]</h2>
-            </div>
-            <a href="/guia">@Loc["ViewMore"] ↗</a>
-        </div>
-        <div class="grid">
-            @foreach (var place in places.Take(6))
-            {
-                <article class="card">
-                    <span class="eyebrow">@place.PrimaryType</span>
-                    <h3><a href="/guia/@place.Id">@place.DisplayName</a></h3>
-                    <p>@place.DisplayEditorialNote</p>
-                    <div class="card-meta">
-                        <span>📍 @place.Neighborhood</span>
-                    </div>
-                </article>
-            }
-        </div>
-    </section>
+    <partial name="_HomePlaces" model="places" />
 }
 
 @if (!filtered)
@@ -195,7 +119,7 @@
     <section class="section home-events-highlight" aria-labelledby="home-events-title">
         <div class="sectionhead">
             <div>
-                <span class="eyebrow">AGENDA CULTURAL & FESTIVA</span>
+                <span class="eyebrow">@Loc["NavAgenda"]</span>
                 <h2 id="home-events-title">@Loc["Upcoming_Belém_Events"]</h2>
                 <p class="section-subtitle">
                     @Loc["Upcoming_Belém_Events_Subtitle"]
@@ -209,12 +133,7 @@
 
         @if (events.Count == 0)
         {
-            <div class="empty">
-                <svg class="empty-art" aria-hidden="true"><use href="/images/icons.svg#calendar" /></svg>
-                <h3>@Loc["General_Empty"]</h3>
-                <p>@Loc["AgendaEmpty"]</p>
-                <a class="button secondary" href="/agenda">@Loc["AgendaAll"] ↗</a>
-            </div>
+            <p class="notice">@Loc["AgendaEmpty"] <a href="/agenda">@Loc["AgendaAll"] ↗</a></p>
         }
         else
         {
@@ -294,6 +213,7 @@
         }
     </section>
 
+<partial name="_HomePlaces" model="places" />
     <!-- EXPLORE & ROTEIROS DE BELÉM -->
     <section class="section discovery-feature">
         <div>
@@ -315,6 +235,22 @@
             {
                 <p>@Loc["General_Empty"]</p>
             }
+        </div>
+    </section>
+
+    <section class="section home-mobility-highlight" aria-labelledby="home-mobility-title">
+        <div class="mobility-banner-card">
+            <div class="mobility-banner-header"><div>
+                <span class="eyebrow">@Loc["NavMobility"]</span>
+                <h2 id="home-mobility-title">@Loc["CityMove"]</h2>
+                <p>@Loc["CityMoveText"]</p>
+            </div><a href="/mobilidade" class="button">@Loc["NavMobility"] ↗</a></div>
+            <nav class="mobility-quick-grid" aria-label="@Loc["NavMobility"]">
+                <a href="/mobilidade/de-para" class="mobility-quick-action"><strong>De-Para</strong><span>@Loc["RouteTitle"] ↗</span></a>
+                <a href="/mobilidade#linhas" class="mobility-quick-action"><strong>@Loc["NavMobility"]</strong><span>@Loc["CityRoutes"] · BRT ↗</span></a>
+                <a href="/mobilidade/paradas" class="mobility-quick-action"><strong>@Loc["TransitStops"]</strong><span>@Loc["ViewMore"] ↗</span></a>
+                <a href="/mobilidade/fluvial" class="mobility-quick-action"><strong>@Loc["RiverMobility"]</strong><span>@Loc["CityFluvialText"] ↗</span></a>
+            </nav>
         </div>
     </section>
 
@@ -341,24 +277,6 @@
         {
             <p class="empty">@Loc["General_Empty"] · <a href="/guia">@Loc["NavGuide"] ↗</a></p>
         }
-    </section>
-
-    <!-- MOBILIDADE FLUVIAL E SERVIÇOS URBANOS -->
-    <section class="section city-columns">
-        <div class="mobility-feature">
-            <svg class="feature-icon" aria-hidden="true"><use href="/images/icons.svg#boat" /></svg>
-            <span class="eyebrow">@Loc["NavMobility"]</span>
-            <h2>@Loc["RiverMobility"]</h2>
-            <p>@Loc["MobilityDescription"]</p>
-            <a href="/mobilidade" class="button">@Loc["NavMobility"] ↗</a>
-        </div>
-        <div class="service-feature">
-            <svg class="feature-icon" aria-hidden="true"><use href="/images/icons.svg#city" /></svg>
-            <span class="eyebrow">@Loc["NavCitizenship"]</span>
-            <h2>@Loc["PublicServices"]</h2>
-            <p>@Loc["ServicesDescription"]</p>
-            <a href="/?categoria=servicos" class="button secondary">@Loc["ViewMore"] ↗</a>
-        </div>
     </section>
 
     <!-- MEU BAIRRO -->
@@ -397,8 +315,40 @@
     </section>
 }
 
+<!-- ACERVO FOTOGRÁFICO DOCUMENTAL E ENVIO DE FOTOS -->
+<section class="section photo-gallery-section" aria-labelledby="photo-gallery-title">
+    <div class="sectionhead">
+        <div>
+            <span class="eyebrow">MINHABELÉM / FOTOS</span>
+            <h2 id="photo-gallery-title">@Loc["CityGallery"]</h2>
+        </div>
+        <a href="/guia/acervo" class="button-link">@Loc["ViewPhotoArchive"] ↗</a>
+    </div>
+    <div class="photo-gallery" id="home-photo-gallery">
+        <figure class="photo-item">
+            <a href="/images/licensed/sprint18-ver-o-peso-1280.webp" data-lightbox="home-photos" data-src="/images/licensed/sprint18-ver-o-peso-1280.webp" data-caption="Ver-o-Peso · Belém"><img src="/images/licensed/sprint18-ver-o-peso-640.webp" alt="Mercado Ver-o-Peso em Belém do Pará" width="640" height="480" loading="lazy" decoding="async" /></a>
+            <figcaption>Ver-o-Peso · Campina<br /><a href="https://commons.wikimedia.org/wiki/File:Bel%C3%A9m_Fishing_port_and_Ver-o-peso_01.jpg" target="_blank" rel="noopener noreferrer">Cayambe · CC BY-SA 3.0</a></figcaption>
+        </figure>
+        <figure class="photo-item">
+            <a href="/images/licensed/sprint18-tacaca-1280.webp" data-lightbox="home-photos" data-src="/images/licensed/sprint18-tacaca-1280.webp" data-caption="Tacacá do Renato · Belém"><img src="/images/licensed/sprint18-tacaca-640.webp" alt="Tacacá tradicional fervente em cuia" width="640" height="480" loading="lazy" decoding="async" /></a>
+            <figcaption>Tacacá · Tradição Paraense<br /><a href="https://commons.wikimedia.org/wiki/File:Tacac%C3%A1_soup_at_Tacac%C3%A1_do_Renato,_Bel%C3%A9m,_Brazil_04.jpg" target="_blank" rel="noopener noreferrer">Ridiculopathy · CC0</a></figcaption>
+        </figure>
+        <figure class="photo-item">
+            <a href="/images/licensed/sprint18-guajara-1280.webp" data-lightbox="home-photos" data-src="/images/licensed/sprint18-guajara-1280.webp" data-caption="Baía do Guajará · Belém"><img src="/images/licensed/sprint18-guajara-640.webp" alt="Pôr do sol na Baía do Guajará" width="640" height="480" loading="lazy" decoding="async" /></a>
+            <figcaption>Baía do Guajará<br /><a href="https://commons.wikimedia.org/wiki/File:Baia_do_Guajar%C3%A1.jpg" target="_blank" rel="noopener noreferrer">Ancalibor2019 · CC BY-SA 4.0</a></figcaption>
+        </figure>
+    </div>
+    <div class="photo-upload-zone" role="group" aria-label="@Loc["UploadPhotoTitle"]">
+        <span class="photo-upload-icon" aria-hidden="true">📷</span>
+        <p><strong>@Loc["UploadPhotoTitle"]</strong></p>
+        <p>@Loc["UploadPhotoDesc"]</p>
+        <a class="button small" href="/fotos/enviar">Enviar foto ↗</a>
+    </div>
+</section>
+
+
 <!-- SEÇÃO ÚNICA E CONSOLIDADA DE VÍDEOS DE BELÉM (ELIMINADA A DUPLICAÇÃO DA SPRINT ANTERIOR) -->
-<section class="section video-section reveal" aria-labelledby="video-section-title">
+<section class="section video-section" aria-labelledby="video-section-title">
     <div class="sectionhead">
         <div>
             <span class="eyebrow">MINHABELÉM / VÍDEOS</span>
@@ -409,9 +359,9 @@
     <div class="video-grid">
         @if (videos is not null && videos.Count > 0)
         {
-            @foreach (var video in videos.Take(6))
+            @foreach (var video in videos.Take(3))
             {
-                <article class="video-card reveal">
+                <article class="video-card">
                     <div class="video-wrapper">
                         @if (!string.IsNullOrWhiteSpace(video.EmbedHtml))
                         {
@@ -436,47 +386,8 @@
         }
         else
         {
-            <div class="empty">
-                <svg class="empty-art" aria-hidden="true"><use href="/images/icons.svg#video" /></svg>
-                <h3>@Loc["General_Empty"]</h3>
-                <p>Nenhum vídeo publicado no momento.</p>
-            </div>
+            <p class="notice">@Loc["CityNoVideo"]</p>
         }
-    </div>
-</section>
-
-<!-- ACERVO FOTOGRÁFICO DOCUMENTAL E ENVIO DE FOTOS -->
-<section class="section photo-gallery-section reveal" aria-labelledby="photo-gallery-title">
-    <div class="sectionhead">
-        <div>
-            <span class="eyebrow">MINHABELÉM / FOTOS</span>
-            <h2 id="photo-gallery-title">@Loc["PhotoGalleryTitle"]</h2>
-        </div>
-        <a href="/guia/acervo" class="button-link">@Loc["ViewPhotoArchive"] ↗</a>
-    </div>
-    <div class="photo-gallery" id="home-photo-gallery">
-        <figure class="photo-item reveal" data-lightbox="home-photos" data-src="/images/licensed/sprint18-ver-o-peso-1280.webp" data-caption="Ver-o-Peso · Belém">
-            <img src="/images/licensed/sprint18-ver-o-peso-640.webp" alt="Mercado Ver-o-Peso em Belém do Pará" width="640" height="480" loading="lazy" decoding="async" />
-            <figcaption>Ver-o-Peso · Campina</figcaption>
-        </figure>
-        <figure class="photo-item reveal" data-lightbox="home-photos" data-src="/images/licensed/estacao-docas-1920.webp" data-caption="Estação das Docas · Belém">
-            <img src="/images/licensed/estacao-docas-640.webp" alt="Estação das Docas na orla de Belém" width="640" height="480" loading="lazy" decoding="async" />
-            <figcaption>Estação das Docas</figcaption>
-        </figure>
-        <figure class="photo-item reveal" data-lightbox="home-photos" data-src="/images/licensed/sprint18-tacaca-1280.webp" data-caption="Tacacá do Renato · Belém">
-            <img src="/images/licensed/sprint18-tacaca-640.webp" alt="Tacacá tradicional fervente em cuia" width="640" height="480" loading="lazy" decoding="async" />
-            <figcaption>Tacacá · Tradição Paraense</figcaption>
-        </figure>
-        <figure class="photo-item reveal" data-lightbox="home-photos" data-src="/images/licensed/sprint18-guajara-1280.webp" data-caption="Baía do Guajará · Belém">
-            <img src="/images/licensed/sprint18-guajara-640.webp" alt="Pôr do sol na Baía do Guajará" width="640" height="480" loading="lazy" decoding="async" />
-            <figcaption>Baía do Guajará</figcaption>
-        </figure>
-    </div>
-    <div class="photo-upload-zone" role="group" aria-label="@Loc["UploadPhotoTitle"]">
-        <span class="photo-upload-icon" aria-hidden="true">📷</span>
-        <p><strong>@Loc["UploadPhotoTitle"]</strong></p>
-        <p>@Loc["UploadPhotoDesc"]</p>
-        <a class="button small" href="/fotos/enviar">Enviar foto ↗</a>
     </div>
 </section>
 

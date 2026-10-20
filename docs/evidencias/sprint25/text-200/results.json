@@ -1,0 +1,64 @@
+{
+  "method": "Real MVC snapshots from disposable database. No POST or external integrations executed by snapshot server.",
+  "checked": 4,
+  "interactions": [
+    {
+      "culture": "pt-BR",
+      "width": 390,
+      "menu": true,
+      "escape": true,
+      "themePersistence": true
+    }
+  ],
+  "failures": [],
+  "results": [
+    {
+      "culture": "pt-BR",
+      "width": 390,
+      "theme": "light",
+      "file": "home.html",
+      "scrollWidth": 390,
+      "brokenImages": [],
+      "overflow": [],
+      "h1": "O que você quer fazer em Belém?",
+      "unknownKeys": [],
+      "violations": []
+    },
+    {
+      "culture": "pt-BR",
+      "width": 390,
+      "theme": "dark",
+      "file": "home.html",
+      "scrollWidth": 390,
+      "brokenImages": [],
+      "overflow": [],
+      "h1": "O que você quer fazer em Belém?",
+      "unknownKeys": [],
+      "violations": []
+    },
+    {
+      "culture": "pt-BR",
+      "width": 390,
+      "theme": "dark",
+      "file": "home-menu.html",
+      "scrollWidth": 390,
+      "brokenImages": [],
+      "overflow": [],
+      "h1": "O que você quer fazer em Belém?",
+      "unknownKeys": [],
+      "violations": []
+    },
+    {
+      "culture": "pt-BR",
+      "width": 390,
+      "theme": "dark",
+      "file": "home-preferences.html",
+      "scrollWidth": 390,
+      "brokenImages": [],
+      "overflow": [],
+      "h1": "O que você quer fazer em Belém?",
+      "unknownKeys": [],
+      "violations": []
+    }
+  ]
+}

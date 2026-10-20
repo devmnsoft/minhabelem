@@ -6,23 +6,19 @@
 @layer layout {
   /* --- Cabeçalho Global do Portal --- */
   .header {
-    position: sticky;
-    top: 0;
+    position: relative;
+    flex-wrap: wrap;
     z-index: 1000;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: var(--space-4);
-    padding: var(--space-3) max(4vw, var(--space-4));
-    background: rgba(255, 253, 248, 0.95);
+    gap: 12px;
+    padding: 12px 20px;
+    background: var(--surface-primary);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     border-bottom: 1px solid var(--color-border);
     transition: background-color var(--transition-fast), border-color var(--transition-fast);
-  }
-
-  [data-theme="dark"] .header {
-    background: rgba(18, 37, 32, 0.95);
   }
 
   /* Marca & Identidade Paraense */
@@ -74,7 +70,7 @@
     gap: var(--space-1);
   }
 
-  @media (min-width: 1024px) {
+  @media (min-width: 1200px) {
     .main-nav {
       display: flex;
       flex-wrap: wrap;
@@ -104,7 +100,7 @@
   }
 
   .main-nav a.nav-highlight {
-    color: var(--color-terracotta);
+    color: var(--color-terracotta-dark);
     font-weight: 700;
   }
 
@@ -152,7 +148,7 @@
   .nav-dropdown:focus-within .nav-dropdown-btn,
   .nav-dropdown-btn[aria-expanded="true"] {
     background-color: var(--color-green-surface);
-    color: var(--color-green-forest);
+    color: var(--color-link);
   }
 
   .nav-dropdown-menu {
@@ -170,8 +166,6 @@
     z-index: 1010;
   }
 
-  .nav-dropdown:hover .nav-dropdown-menu,
-  .nav-dropdown:focus-within .nav-dropdown-menu,
   .nav-dropdown.is-open .nav-dropdown-menu {
     display: flex;
   }
@@ -189,7 +183,7 @@
 
   .nav-dropdown-menu a:hover {
     background-color: var(--color-green-surface);
-    color: var(--color-green-forest);
+    color: var(--color-link);
   }
 
   [data-theme="dark"] .nav-dropdown-menu {
@@ -202,22 +196,22 @@
     display: none;
   }
 
-  @media (max-width: 768px) {
+  @media (max-width: 1199px) {
     .mobile-tab-bar {
       display: flex;
       position: fixed;
       bottom: 0;
       left: 0;
       right: 0;
-      height: 56px;
-      background: rgba(255, 253, 248, 0.98);
+      height: calc(64px + env(safe-area-inset-bottom));
+      background: var(--surface-primary);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
       border-top: 1px solid var(--color-border);
-      z-index: 990;
+      z-index: 1100;
       align-items: center;
       justify-content: space-around;
-      padding: 0 var(--space-2);
+      padding: 0 var(--space-2) env(safe-area-inset-bottom);
     }
 
     [data-theme="dark"] .mobile-tab-bar {
@@ -260,8 +254,8 @@
       color: #4ade80;
     }
 
-    body {
-      padding-bottom: 60px;
+    body.portal {
+      padding-bottom: calc(64px + env(safe-area-inset-bottom));
     }
   }
 
@@ -301,7 +295,7 @@
 
   .mobility-quick-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
     gap: var(--space-4);
   }
 
@@ -453,33 +447,39 @@
     cursor: pointer;
   }
 
-  @media (min-width: 1024px) {
+  @media (min-width: 1200px) {
     .menu-toggle {
       display: none;
     }
   }
 
-  /* Gaveta do Menu Mobile Aberto */
-  body.menu-open .main-nav {
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    background: var(--color-cream-card);
-    border-bottom: 2px solid var(--color-border);
-    box-shadow: var(--shadow-lg);
-    padding: var(--space-4);
-    gap: var(--space-2);
-    z-index: 999;
+  /* One disclosure, in normal flow: usable with a keyboard or a short viewport. */
+  .header .brand-logo { width: 180px; }
+  .header .brand-tagline { display: none; }
+  .header .header-tools { margin-left: auto; }
+  .header-search { display: inline-flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; color: var(--text-primary); }
+  .header-search .icon { width: 20px; height: 20px; }
+  .header .main-nav.is-open { display: flex; flex: 0 0 100%; order: 4; flex-direction: column; align-items: stretch; padding: 16px 0; gap: 4px; border-top: 1px solid var(--border-default); }
+  .header .main-nav.is-open a { padding: 12px 16px; white-space: normal; }
+  .header .main-nav.is-open .nav-dropdown { display: block; }
+  .header .main-nav.is-open .nav-dropdown-menu { position: static; box-shadow: none; min-width: 0; }
+  .header .main-nav.is-open .nav-dropdown-btn { width: 100%; justify-content: space-between; }
+  .main-nav a,.nav-dropdown-btn { min-height: 44px; }
+  .header .menu-toggle { order: 3; }
+  .header .lang-select { max-width: 120px; min-height: 44px; }
+  .header .a11y-trigger-btn span:last-child { display: none; }
+  @media (max-width: 599px) {
+    .header .brand { flex: 1; }
+    .header .brand-logo { width: 164px; }
+    .header .header-tools { order: 2; flex: 0 0 100%; justify-content: flex-start; gap: 8px; }
+    .header .menu-toggle { position: absolute; right: 20px; top: 12px; }
+    .header .theme-toggle,.header .a11y-trigger-btn { min-height: 44px; min-width: 44px; }
   }
-
-  body.menu-open .main-nav a {
-    padding: 12px 16px;
-    font-size: 1rem;
-    border-radius: var(--radius-sm);
+  @media (min-width: 1200px) {
+    .header { flex-wrap: nowrap; padding: 16px max(24px,calc((100vw - 1320px)/2)); }
+    .header .main-nav { display: flex; flex-wrap: nowrap; }
+    .header .main-nav.is-open { flex: initial; order: initial; flex-direction: row; padding: 0; border: 0; }
+    .header .main-nav a { padding-inline: 10px; }
   }
 
   /* --- Breadcrumbs --- */
@@ -669,7 +669,7 @@
     }
   }
 
-  @media (min-width: 1024px) {
+  @media (min-width: 1200px) {
     .footer-container {
       grid-template-columns: 1.5fr 1fr 1fr 1.2fr;
     }

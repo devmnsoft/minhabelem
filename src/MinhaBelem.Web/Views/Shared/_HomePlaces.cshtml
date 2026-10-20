@@ -1,0 +1,30 @@
+@model IReadOnlyList<MinhaBelem.Core.Entities.Place>
+@{ var places = Model; }
+<!-- GUIA DE LOCAIS DE BELÉM -->
+@if (places.Count > 0)
+{
+    <section class="section">
+        <div class="sectionhead">
+            <div>
+                <span class="eyebrow">@Loc["CityHeritage"]</span>
+                <h2>@Loc["NavGuide"]</h2>
+            </div>
+            <a href="/guia">@Loc["ViewMore"] ↗</a>
+        </div>
+        <div class="grid">
+            @foreach (var place in places.Take(6))
+            {
+                <article class="card">
+                    <span class="eyebrow">@place.PrimaryType</span>
+                    <h3><a href="/guia/@place.Id">@place.DisplayName</a></h3>
+                    <p>@place.DisplayEditorialNote</p>
+                    <div class="card-meta">
+                        <span>📍 @place.Neighborhood</span>
+                    </div>
+                </article>
+            }
+        </div>
+    </section>
+}
+
+

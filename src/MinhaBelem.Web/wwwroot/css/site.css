@@ -6,367 +6,53 @@
 
 @layer tokens, base, layout, components, accessibility, pages;
 
-@import url('tokens.css') layer(tokens);
-@import url('base.css') layer(base);
-@import url('layout.css') layer(layout);
-@import url('components.css') layer(components);
-
-@layer accessibility {
-  /* --- 1. Alto Contraste Extremo (WCAG 2.2 AAA / eMAG) --- */
-  html[data-contrast="high"],
-  html[data-contrast="high"] body {
-    background-color: #000000 !important;
-    color: #ffffff !important;
-  }
-
-  html[data-contrast="high"] h1,
-  html[data-contrast="high"] h2,
-  html[data-contrast="high"] h3,
-  html[data-contrast="high"] h4,
-  html[data-contrast="high"] h5,
-  html[data-contrast="high"] h6,
-  html[data-contrast="high"] strong,
-  html[data-contrast="high"] b {
-    color: #ffff00 !important;
-  }
-
-  html[data-contrast="high"] a,
-  html[data-contrast="high"] .button-link {
-    color: #00ffff !important;
-    text-decoration: underline !important;
-  }
-
-  html[data-contrast="high"] a:hover {
-    color: #ffff00 !important;
-  }
-
-  html[data-contrast="high"] p,
-  html[data-contrast="high"] span,
-  html[data-contrast="high"] li,
-  html[data-contrast="high"] td,
-  html[data-contrast="high"] label {
-    color: #ffffff !important;
-  }
-
-  html[data-contrast="high"] .card,
-  html[data-contrast="high"] .story,
-  html[data-contrast="high"] .event-spotlight-card,
-  html[data-contrast="high"] .video-card,
-  html[data-contrast="high"] .header,
-  html[data-contrast="high"] .footer,
-  html[data-contrast="high"] .admin-sidebar,
-  html[data-contrast="high"] .table-scroll,
-  html[data-contrast="high"] .a11y-panel,
-  html[data-contrast="high"] input,
-  html[data-contrast="high"] select,
-  html[data-contrast="high"] textarea {
-    background-color: #000000 !important;
-    border: 2px solid #ffffff !important;
-    box-shadow: none !important;
-    color: #ffffff !important;
-  }
-
-  html[data-contrast="high"] .button,
-  html[data-contrast="high"] a.button,
-  html[data-contrast="high"] button.button,
-  html[data-contrast="high"] .pagination span {
-    background-color: #000000 !important;
-    color: #ffff00 !important;
-    border: 2px solid #ffff00 !important;
-  }
-
-  html[data-contrast="high"] .button:hover,
-  html[data-contrast="high"] a.button:hover {
-    background-color: #ffff00 !important;
-    color: #000000 !important;
-  }
-
-  html[data-contrast="high"] .badge,
-  html[data-contrast="high"] .event-price-tag {
-    background-color: #000000 !important;
-    color: #ffffff !important;
-    border: 2px solid #ffffff !important;
-  }
-
-  /* --- 2. Escala de Tamanho da Fonte --- */
-  html[data-font-size="medium"] {
-    font-size: 19.2px !important;
-  }
-
-  html[data-font-size="large"] {
-    font-size: 22.4px !important;
-  }
-
-  /* --- 3. Espaçamento Ampliado de Leitura (Dislexia e Baixa Visão) --- */
-  html[data-spacing="wide"] body,
-  html[data-spacing="wide"] p,
-  html[data-spacing="wide"] span,
-  html[data-spacing="wide"] a,
-  html[data-spacing="wide"] li {
-    letter-spacing: 0.04em !important;
-    word-spacing: 0.12em !important;
-    line-height: 1.85 !important;
-  }
-
-  /* --- 4. Destaque Visual de Foco (WCAG 2.2 Critério 2.4.13) --- */
-  html[data-focus-highlight="true"] *:focus-visible {
-    outline: 4px solid #d81b60 !important;
-    outline-offset: 4px !important;
-    box-shadow: 0 0 0 6px rgba(216, 27, 96, 0.4) !important;
-  }
-
-  /* --- 5. Redução de Movimento --- */
-  html[data-reduced-motion="true"] *,
-  html[data-reduced-motion="true"] *::before,
-  html[data-reduced-motion="true"] *::after,
-  @media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after {
-      animation-duration: 0.001ms !important;
-      animation-iteration-count: 1 !important;
-      transition-duration: 0.001ms !important;
-      scroll-behavior: auto !important;
-    }
-  }
-
-  /* --- 6. Painel Global de Acessibilidade (Drawer Confinado sem Overflow) --- */
-  .a11y-backdrop {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.4);
-    z-index: 99999;
-    display: none;
-  }
-
-  .a11y-backdrop.open,
-  .a11y-backdrop:not([aria-hidden="true"]) {
-    display: block;
-  }
-
-  .a11y-panel {
-    position: fixed;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    width: min(440px, 100vw);
-    max-width: 100%;
-    background: var(--color-cream-card);
-    border-left: 2px solid var(--color-border);
-    box-shadow: var(--shadow-lg);
-    z-index: 100000;
-    display: flex;
-    flex-direction: column;
-    padding: var(--space-6);
-    overflow-y: auto;
-    visibility: hidden;
-    pointer-events: none;
-    transform: translateX(100%);
-    transition: transform var(--transition-normal), visibility var(--transition-normal);
-  }
-
-  .a11y-panel.open,
-  .a11y-panel[aria-hidden="false"] {
-    visibility: visible;
-    pointer-events: auto;
-    transform: translateX(0);
-  }
-
-  .password-wrapper {
-    position: relative;
-    display: flex;
-    align-items: center;
-    width: 100%;
-  }
-
-  .password-wrapper input {
-    padding-right: 50px !important;
-  }
-
-  .password-toggle-btn {
-    position: absolute;
-    right: 4px;
-    min-width: 44px;
-    min-height: 44px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    color: var(--color-text-muted);
-    border-radius: var(--radius-sm);
-  }
-}
+@import url('tokens.css');
+@import url('base.css');
+@import url('layout.css');
+@import url('components.css');
+@import url('accessibility.css');
 
 @layer pages {
   /* ==========================================================================
      PÁGINA INICIAL (HOME) — HERO, DESTAQUES E IDENTIDADE PARAENSE
      ========================================================================== */
+  /* Home: a readable editorial opening and a real, credited city photograph. */
   .hero.home-hero {
     position: relative;
-    min-height: clamp(520px, 65vh, 720px);
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    padding: clamp(60px, 8vw, 110px) max(5vw, var(--space-4)) clamp(40px, 6vw, 80px);
-    border-radius: 0 0 var(--radius-xl) var(--radius-xl);
-    overflow: hidden;
-    background-color: var(--color-green-deep);
-    background-image:
-      linear-gradient(90deg, rgba(8, 47, 43, 0.78) 0%, rgba(8, 47, 43, 0.50) 55%, rgba(8, 47, 43, 0.20) 100%),
-      url('/images/licensed/estacao-docas-1920.webp');
-    background-size: cover;
-    background-position: center;
-    color: #ffffff;
-    box-shadow: var(--shadow-lg);
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    background: var(--surface-primary);
+    color: var(--text-primary);
+    border-bottom: 1px solid var(--border-default);
+    padding: 0;
+    min-height: 0;
   }
-
-  .hero-video {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    z-index: 0;
-    pointer-events: none;
-  }
-
-  .hero-video-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: transparent;
-    z-index: 1;
-  }
-
-  .hero-content {
-    position: relative;
-    z-index: 2;
-    max-width: 760px;
-  }
-
-  .hero-content .eyebrow {
-    color: var(--color-gold);
-    letter-spacing: 0.16em;
-    font-size: 0.8rem;
-    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
-  }
-
-  .home-hero h1 {
-    font-size: clamp(2.4rem, 5.5vw, 4.4rem);
-    line-height: 1.05;
-    margin: var(--space-3) 0 var(--space-4);
-    color: #ffffff;
-    letter-spacing: -0.03em;
-    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.6);
-  }
-
-  .home-hero p {
-    font-size: clamp(1.02rem, 1.2vw, 1.2rem);
-    line-height: 1.6;
-    color: #edf5f0;
-    max-width: 52ch;
-    margin-bottom: var(--space-6);
-    text-shadow: 0 1px 6px rgba(0, 0, 0, 0.55);
-  }
-
-  /* Barra de Busca Global no Hero */
-  .hero-content .search {
-    position: relative;
-    display: flex;
-    align-items: center;
-    background: #ffffff;
-    border-radius: var(--radius-full);
-    padding: 6px 8px 6px 20px;
-    box-shadow: var(--shadow-lg);
-    max-width: 620px;
-    margin-bottom: var(--space-4);
-  }
-
-  .hero-content .search .icon {
-    width: 22px;
-    height: 22px;
-    color: var(--color-text-muted);
-    flex-shrink: 0;
-    margin-right: 10px;
-  }
-
-  .hero-content .search input {
-    border: none !important;
-    background: transparent !important;
-    padding: 8px 0 !important;
-    box-shadow: none !important;
-    color: var(--color-text-primary) !important;
-    font-size: 1rem;
-    flex: 1;
-  }
-
-  .hero-content .search input:focus {
-    outline: none !important;
-  }
-
-  .hero-content .search button {
-    background: var(--color-green-forest);
-    color: #ffffff;
-    border: none;
-    border-radius: var(--radius-full);
-    padding: 10px 22px;
-    font-weight: 700;
-    font-size: 0.9rem;
-    cursor: pointer;
-    transition: background-color var(--transition-fast);
-    white-space: nowrap;
-  }
-
-  .hero-content .search button:hover {
-    background: var(--color-terracotta);
-  }
-
-  .hero-quick-tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-2);
-    margin-top: var(--space-3);
-  }
-
-  .hero-caption {
-    position: absolute;
-    bottom: 16px;
-    right: 20px;
-    z-index: 2;
-    font-size: 0.72rem;
-    color: rgba(255, 255, 255, 0.75);
-    background: rgba(8, 47, 43, 0.75);
-    backdrop-filter: blur(8px);
-    padding: 4px 12px;
-    border-radius: var(--radius-sm);
-  }
-
-  .hero-caption a {
-    color: #ffffff;
-    text-decoration: underline;
-  }
-
-  .hero-identity {
-    position: absolute;
-    top: 24px;
-    right: 24px;
-    z-index: 2;
-    display: flex;
-    align-items: center;
-    gap: var(--space-2);
-    font-size: 0.85rem;
-    font-weight: 700;
-    color: #ffffff;
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(8px);
-    padding: 6px 14px;
-    border-radius: var(--radius-full);
+  .home-hero .hero-content { padding: 32px 20px; min-width: 0; }
+  .home-hero .eyebrow { color: var(--color-terracotta-dark); }
+  .home-hero h1 { font-size: clamp(2.2rem, 4.5vw, 4.6rem); line-height: 1.06; max-width: 13ch; margin: 12px 0 20px; letter-spacing: -.045em; color: var(--text-primary); }
+  .home-hero p { max-width: 42ch; color: var(--text-secondary); }
+  .home-hero .search { display: flex; flex-wrap: wrap; gap: 8px; padding: 8px; margin: 24px 0; border: 1px solid var(--color-input-border); border-radius: var(--radius-sm); background: var(--surface-primary); }
+  .home-hero .search:focus-within { outline: 3px solid var(--focus-ring); outline-offset: 3px; }
+  .home-hero .search .icon { width: 20px; height: 20px; align-self: center; margin-left: 6px; }
+  .home-hero .search input { flex: 1; min-width: 100px; width: 0; border: 0; padding: 10px 4px; color: var(--text-primary); background: var(--surface-primary); }
+  .home-hero .search input::placeholder { color: var(--text-muted); opacity: 1; }
+  .home-hero .search button { min-height: 44px; padding: 10px 16px; border: 0; border-radius: var(--radius-xs); background: var(--color-green-forest); color: var(--color-white); cursor: pointer; }
+  .hero-quick-tags { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px; }
+  .home-hero .quick-pill { display: flex; align-items: center; gap: 8px; min-height: 48px; padding: 10px 12px; border: 1px solid var(--border-default); border-radius: var(--radius-sm); font-size: .875rem; color: var(--text-primary); background: var(--surface-primary); }
+  .home-hero .quick-pill:hover { background: var(--surface-secondary); border-color: var(--color-input-border); }
+  .home-hero .hero-photo { position: relative; min-width: 0; margin: 0; }
+  .home-hero .hero-photo img { width: 100%; height: 240px; object-fit: cover; }
+  .home-hero .hero-caption { position: static; padding: 10px 16px; font-size: .75rem; color: var(--text-secondary); background: var(--surface-secondary); }
+  .home-hero .hero-caption a { color: var(--text-primary); text-decoration: underline; }
+  .home-hero .hero-curio { display: flex; align-items: center; gap: 10px; margin-top: 20px; font-weight: 600; text-decoration: underline; }
+  .home-hero .hero-curio img { width: 32px; height: 32px; }
+  html[data-theme="dark"] .home-hero .hero-curio img { filter: brightness(0) invert(1); }
+  @media (min-width: 900px) {
+    .hero.home-hero { grid-template-columns: minmax(0,1fr) minmax(0,1fr); }
+    .home-hero .hero-content { padding: 56px max(32px,calc((100vw - 1240px)/2)); padding-right: 40px; }
+    .home-hero .hero-photo { display: flex; flex-direction: column; }
+    .home-hero .hero-photo img { flex: 1; min-height: 480px; height: 100%; }
+    .home-hero .hero-caption { position: absolute; bottom: 16px; left: 16px; right: 16px; border-radius: var(--radius-xs); background: var(--surface-primary); }
   }
 
   /* Janelas da Cidade (Belém 360 / City Windows) */
@@ -451,7 +137,7 @@
   .city-window-copy .icon {
     width: 32px;
     height: 32px;
-    color: var(--color-terracotta);
+    color: var(--color-terracotta-dark);
     margin-bottom: var(--space-2);
   }
 
@@ -511,13 +197,13 @@
 
   .route-list a:hover {
     transform: translateX(4px);
-    border-color: var(--color-terracotta);
+    border-color: var(--color-terracotta-dark);
   }
 
   .route-list a span:first-child {
     font-size: 1.15rem;
     font-weight: 800;
-    color: var(--color-terracotta);
+    color: var(--color-terracotta-dark);
     font-family: var(--font-heading);
   }
 
@@ -598,7 +284,7 @@
   /* Acervo Fotográfico Documental de Belém */
   .photo-gallery {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
     gap: var(--space-4);
     margin-block: var(--space-4) var(--space-6);
   }
@@ -720,7 +406,7 @@
   .agenda-save[aria-pressed="true"] {
     background: var(--color-terracotta);
     color: #ffffff;
-    border-color: var(--color-terracotta);
+    border-color: var(--color-terracotta-dark);
   }
 
   /* ==========================================================================

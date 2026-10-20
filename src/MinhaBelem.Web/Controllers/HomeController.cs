@@ -133,7 +133,7 @@ public sealed class HomeController(
             DateTo = ate,
             OnlyUpcomingEvents = categoria == "eventos",
             // A capa tem um bloco próprio de próximos eventos: a lista geral não os repete.
-            ExcludeEvents = categoria != "eventos" && !string.IsNullOrWhiteSpace(categoria),
+            ExcludeEvents = categoria != "eventos" && (string.IsNullOrWhiteSpace(busca) || !string.IsNullOrWhiteSpace(categoria)),
             Page = pagina,
             Culture = currentCulture
         }, ct));

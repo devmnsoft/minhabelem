@@ -73,11 +73,6 @@
     <meta name="theme-color" content="#123f36" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <link rel="stylesheet" href="~/css/tokens.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/css/base.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/css/layout.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/css/components.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/css/accessibility.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 </head>
 <body class="culture-@currentCulture.ToLowerInvariant() @(Context.Request.Path.StartsWithSegments("/admin") || Context.Request.Path.StartsWithSegments("/editorial") ? "administration" : "portal")">
@@ -96,52 +91,55 @@
             </span>
         </a>
 
-        <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="main-navigation">@Loc["MenuToggle"] <span aria-hidden="true">☰</span></button>
+        <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="main-navigation">@Loc["CityMore"] <span aria-hidden="true">☰</span></button>
         <nav id="main-navigation" class="main-nav" aria-label="@Loc["Nav_Home"]">
             <a href="/">@Loc["Nav_Home"]</a>
             <a href="/agenda">@Loc["Nav_Agenda"]</a>
             <a href="/explore" class="nav-highlight">@Loc["Nav_Explore"]</a>
-            <a href="/como-chegar">@Loc["RouteTitle"]</a>
-            <a href="/?categoria=cultura#noticias">@Loc["Home_LatestNews"]</a>
+            <a href="/mobilidade">@Loc["CityRoutes"]</a>
 
             <div class="nav-dropdown">
-                <button type="button" class="nav-dropdown-btn" aria-expanded="false" aria-haspopup="true">
-                    <span>Mais</span>
+                <button type="button" class="nav-dropdown-btn" aria-expanded="false" aria-controls="more-navigation">
+                    <span>@Loc["CityMore"]</span>
                     <span aria-hidden="true">▾</span>
                 </button>
-                <div class="nav-dropdown-menu" role="menu">
-                    <a href="/mobilidade" role="menuitem">🚌 @Loc["NavMobility"]</a>
-                    <a href="/mobilidade/de-para" role="menuitem">🔀 Planejador De-Para</a>
-                    <a href="/guia" role="menuitem">🏛️ @Loc["Nav_Guide"]</a>
-                    <a href="/guia-ia" class="nav-ai-highlight" role="menuitem">✨ @Loc["TouristAssistantTitle"]</a>
-                    <a href="/videos" role="menuitem">🎬 @Loc["VideoGalleryTitle"]</a>
-                    <a href="/meu-bairro" role="menuitem">🏘️ @Loc["NavNeighborhood"]</a>
-                    <a href="/salvos" role="menuitem">💾 @Loc["SavedPlans"]</a>
-                    <a href="/parceiros" role="menuitem">🤝 @Loc["NavPartners"]</a>
-                    <a href="/explore/glossario" role="menuitem">📖 @Loc["Glossary_Title"]</a>
+                <div id="more-navigation" class="nav-dropdown-menu">
+                    <a href="/#noticias">@Loc["CityNews"]</a>
+                    <a href="/como-chegar">@Loc["RouteTitle"]</a>
+                    <a href="/mobilidade">🚌 @Loc["NavMobility"]</a>
+                    <a href="/mobilidade/de-para">🔀 Planejador De-Para</a>
+                    <a href="/guia">🏛️ @Loc["Nav_Guide"]</a>
+                    <a href="/guia-ia" class="nav-ai-highlight">✨ @Loc["TouristAssistantTitle"]</a>
+                    <a href="/videos">🎬 @Loc["VideoGalleryTitle"]</a>
+                    <a href="/meu-bairro">🏘️ @Loc["NavNeighborhood"]</a>
+                    <a href="/salvos">💾 @Loc["SavedPlans"]</a>
+                    <a href="/parceiros">🤝 @Loc["NavPartners"]</a>
+                    <a href="/explore/glossario">📖 @Loc["Glossary_Title"]</a>
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        <a href="/conta/perfil">@Loc["Nav_Account"]</a>
+                        @if (User.HasClaim("amr", "mfa"))
+                        {
+                            <a href="/admin" class="nav-highlight">⚙️ @Loc["Admin_Dashboard"]</a>
+                        }
+                    }
+                    else
+                    {
+                        <a href="/conta/login" class="nav-login">@Loc["Nav_Login"]</a>
+                    }
+
                 </div>
             </div>
 
-            @if (User.Identity?.IsAuthenticated == true)
-            {
-                <a href="/conta/perfil">@Loc["Nav_Account"]</a>
-                @if (User.HasClaim("amr", "mfa"))
-                {
-                    <a href="/admin" class="nav-highlight">⚙️ @Loc["Admin_Dashboard"]</a>
-                }
-            }
-            else
-            {
-                <a href="/conta/login" class="nav-login">@Loc["Nav_Login"]</a>
-            }
         </nav>
 
         <div class="header-tools">
+            <a class="header-search" href="/#busca" aria-label="@Loc["SearchButton"]"><svg class="icon" aria-hidden="true"><use href="/images/icons.svg#search" /></svg></a>
             <!-- Modo Escuro / Claro -->
-            <button type="button" class="theme-toggle" aria-label="Alternar tema" aria-pressed="false">🌙</button>
+            <button type="button" class="theme-toggle" aria-label="@Loc["CityTheme"]" aria-pressed="false">🌙</button>
 
             <!-- Botão de Acessibilidade Visual (WCAG 2.2 AA) -->
-            <button type="button" class="a11y-trigger-btn" data-open-a11y aria-haspopup="dialog" aria-expanded="false" title="@Loc["A11y_Panel_Title"]">
+            <button type="button" class="a11y-trigger-btn" data-open-a11y aria-haspopup="dialog" aria-expanded="false" title="@Loc["A11y_Panel_Title"]" aria-label="@Loc["A11y_Panel_Title"]">
                 <span aria-hidden="true">♿</span>
                 <span>@Loc["A11y_Open_Panel"]</span>
             </button>
@@ -246,12 +244,6 @@
         </div>
     </footer>
 
-    <!-- Botão flutuante de IA (Curió) -->
-    <button class="ai-float-btn" data-href="/guia-ia" aria-label="Converse com o Curió IA — assistente turístico de Belém" title="Curió IA — Pergunte sobre Belém">
-        ✨
-        <span class="ai-float-badge" aria-hidden="true">IA</span>
-    </button>
-
     <!-- Lightbox para fotos e vídeos -->
     <div id="mb-lightbox" class="mb-lightbox" aria-hidden="true" role="dialog" aria-modal="true" aria-label="Visualizador de mídia">
         <button id="mb-lightbox-prev" class="mb-lightbox-nav" aria-label="Anterior">&#10094;</button>
@@ -262,32 +254,35 @@
     </div>
 
     <partial name="_AccessibilityPanel" />
-    <script src="~/js/site.js" asp-append-version="true"></script>
-    <script src="~/js/evolution.js" asp-append-version="true"></script>
-    @await RenderSectionAsync("Scripts", required: false)
 
     <!-- Barra de Navegação Rápida Mobile (5 abas essenciais - Sprint 22) -->
+    @if (!Context.Request.Path.StartsWithSegments("/admin") && !Context.Request.Path.StartsWithSegments("/editorial"))
+    {
     <nav class="mobile-tab-bar" aria-label="Navegação rápida móvel">
         <a href="/" class="@(Context.Request.Path == "/" ? "active" : "")">
             <span class="tab-icon" aria-hidden="true">🏠</span>
-            <span>Início</span>
+            <span>@Loc["Nav_Home"]</span>
         </a>
         <a href="/agenda" class="@(Context.Request.Path.StartsWithSegments("/agenda") ? "active" : "")">
             <span class="tab-icon" aria-hidden="true">📅</span>
-            <span>Agenda</span>
+            <span>@Loc["Nav_Agenda"]</span>
         </a>
         <a href="/explore" class="@(Context.Request.Path.StartsWithSegments("/explore") ? "active" : "")">
             <span class="tab-icon" aria-hidden="true">🗺️</span>
-            <span>Explorar</span>
+            <span>@Loc["Nav_Explore"]</span>
         </a>
-        <a href="/como-chegar" class="@(Context.Request.Path.StartsWithSegments("/como-chegar") || Context.Request.Path.StartsWithSegments("/mobilidade") ? "active" : "")">
+        <a href="/mobilidade" class="@(Context.Request.Path.StartsWithSegments("/como-chegar") || Context.Request.Path.StartsWithSegments("/mobilidade") ? "active" : "")">
             <span class="tab-icon" aria-hidden="true">🚌</span>
-            <span>Rotas</span>
+            <span>@Loc["CityRoutes"]</span>
         </a>
-        <button type="button" class="mobile-tab-more" onclick="document.querySelector('.menu-toggle').click();" aria-label="Abrir menu completo">
+        <button type="button" class="mobile-tab-more" aria-controls="main-navigation" aria-expanded="false" aria-label="@Loc["CityMore"]">
             <span class="tab-icon" aria-hidden="true">☰</span>
-            <span>Mais</span>
+            <span>@Loc["CityMore"]</span>
         </button>
     </nav>
+    }
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="~/js/evolution.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

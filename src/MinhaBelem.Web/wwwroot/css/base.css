@@ -14,7 +14,7 @@
     font-size: 16px;
     -webkit-text-size-adjust: 100%;
     scroll-behavior: smooth;
-    color-scheme: light dark;
+    color-scheme: light;
   }
 
   body {
@@ -28,9 +28,11 @@
     -moz-osx-font-smoothing: grayscale;
     display: flex;
     flex-direction: column;
-    overflow-x: hidden;
+    overflow-wrap: break-word;
   }
 
+  html[data-theme="dark"] { color-scheme: dark; }
+  [hidden] { display: none !important; }
   /* --- Tipografia Semântica --- */
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-heading);
@@ -70,26 +72,28 @@
     font-weight: 800;
     text-transform: uppercase;
     letter-spacing: 0.12em;
-    color: var(--color-terracotta);
+    color: var(--color-terracotta-dark);
     margin-bottom: var(--space-2);
   }
 
   a {
-    color: var(--color-green-mid);
+    color: var(--color-link);
     text-decoration: none;
     transition: color var(--transition-fast), border-color var(--transition-fast);
   }
 
   a:hover {
-    color: var(--color-terracotta);
+    color: var(--color-terracotta-dark);
   }
+
+  p a, figcaption a { text-decoration: underline; text-underline-offset: .15em; }
 
   a:focus-visible,
   button:focus-visible,
   input:focus-visible,
   select:focus-visible,
   textarea:focus-visible {
-    outline: 3px solid var(--color-green-mid);
+    outline: 3px solid var(--focus-ring);
     outline-offset: 2px;
   }
 
@@ -97,6 +101,14 @@
     display: block;
     max-width: 100%;
     height: auto;
+  }
+
+  svg.icon, svg.empty-art, svg.feature-icon {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
   }
 
   /* --- Formulários Básicos --- */
@@ -119,7 +131,7 @@
   textarea {
     width: 100%;
     padding: 12px 16px;
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--color-input-border);
     border-radius: var(--radius-sm);
     background-color: var(--color-cream-card);
     color: var(--color-text-primary);

@@ -1,0 +1,71 @@
+{
+  "mode": "Rendered MVC snapshots; HTTP origin recorded separately",
+  "checked": 4,
+  "failures": [],
+  "results": [
+    {
+      "culture": "pt-BR",
+      "device": "desktop",
+      "file": "home.html",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "h1": "Uma cidade. Infinitas descobertas.",
+      "lang": "pt-BR",
+      "a11y": {
+        "missingImageAlt": 0,
+        "unnamedButtons": 0,
+        "unlabeledFields": []
+      },
+      "brokenImages": [],
+      "overflow": []
+    },
+    {
+      "culture": "pt-BR",
+      "device": "notebook",
+      "file": "home.html",
+      "width": 1280,
+      "scrollWidth": 1280,
+      "h1": "Uma cidade. Infinitas descobertas.",
+      "lang": "pt-BR",
+      "a11y": {
+        "missingImageAlt": 0,
+        "unnamedButtons": 0,
+        "unlabeledFields": []
+      },
+      "brokenImages": [],
+      "overflow": []
+    },
+    {
+      "culture": "pt-BR",
+      "device": "tablet",
+      "file": "home.html",
+      "width": 768,
+      "scrollWidth": 768,
+      "h1": "Uma cidade. Infinitas descobertas.",
+      "lang": "pt-BR",
+      "a11y": {
+        "missingImageAlt": 0,
+        "unnamedButtons": 0,
+        "unlabeledFields": []
+      },
+      "brokenImages": [],
+      "overflow": []
+    },
+    {
+      "culture": "pt-BR",
+      "device": "mobile",
+      "file": "home.html",
+      "width": 390,
+      "scrollWidth": 390,
+      "h1": "Uma cidade. Infinitas descobertas.",
+      "lang": "pt-BR",
+      "a11y": {
+        "missingImageAlt": 0,
+        "unnamedButtons": 0,
+        "unlabeledFields": []
+      },
+      "brokenImages": [],
+      "overflow": []
+    }
+  ]
+}
